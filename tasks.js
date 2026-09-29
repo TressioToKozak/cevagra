@@ -16,9 +16,34 @@ const list = (title, items, selectable=false) => ({type:"list",title,items,selec
 export class DifficultyManager {
   static forRound(round) {
     const tier=Math.min(4,Math.ceil(round/3));
-    return {tier,rows:[5,6,8,10][tier-1],errors:tier<3?1:2,time:[10,12,14,16][tier-1]};
+    return {tier,rows:[5,6,8,10][tier-1],errors:tier<3?1:2};
   }
-  static maximumRunSeconds(){ return 3*10+3*12+3*14+3*16+24+8+4; }
+}
+
+export class TaskTimer {
+  static calculate(task, round=1) {
+    if(task.mode==="final")return 18;
+    const rows=task.panels?.reduce((total,panel)=>total+(panel.rows?.length||panel.items?.length||0),0)||task.items?.length||0;
+    const answers=task.solution.length;
+    const late=Math.min(1.5,Math.max(0,round-6)*.25);
+    const multi=answers>1?2:0;
+    const similar=task.difficulty.tier>=2&&["picking","serials","scanner"].includes(task.type)?1:0;
+    let seconds;
+    switch(task.type){
+      case "wms": seconds=5; break;
+      case "packing": seconds=6+(task.highlight?.value.includes("FRAGILE")?2:0); break;
+      case "quality": seconds=5+rows*.3+multi-late; break;
+      case "picking": seconds=5.5+(rows-4)*.45+similar-late; break;
+      case "labels": seconds=5+rows*.35+multi-late; break;
+      case "inventory": seconds=6+rows*.35+multi-late; break;
+      case "serials": seconds=6+rows*.35+multi+similar-late; break;
+      case "scanner": seconds=5+rows*.4+multi+similar-late; break;
+      case "pallet": case "loading": seconds=7+(task.items?.length||0)*.65+2-late; break;
+      default: seconds=8;
+    }
+    if(answers>1)seconds=Math.max(seconds,["serials","labels"].includes(task.type)?10:9);
+    return Math.max(5,Math.min(14,Math.round(seconds)));
+  }
 }
 
 export class TaskGenerator {
@@ -97,10 +122,11 @@ export class TaskGenerator {
     task.panels=[table("ITEMS",["ITEM","SKU","STATUS"],shuffle(rows,this.rng),true)];task.solution=solution;task.selectable=rows.map(row=>row.key);return task;
   }
 
-  generate(type,d){return this[type](d);}
+  generate(type,d,round=d.tier*3){const task=this[type](d);task.difficulty={...d,time:TaskTimer.calculate(task,round)};return task;}
   generateFinal(){
-    const d={tier:5,errors:3,time:24},shipment=id("SHP",this.rng),carrier=choice(CARRIERS,this.rng),destination=choice(destinations,this.rng),product=sku(this.rng),issues=["WRONG QTY","WRONG CARRIER","MISSING SERIAL"],all=[...issues,"WRONG PALLET","DAMAGED ITEM","WRONG SKU"];
-    return {type:"final",title:"FINAL DISPATCH",instruction:"FIND ALL 3 WRONG DETAILS, THEN HOLD THE SHIPMENT",difficulty:d,mode:"final",solution:issues,action:"HOLD",selectable:all,penalty:5,panels:[table("ORDER",["SHIPMENT","SKU","QTY","CARRIER","TO"],[{cells:[shipment,product,12,carrier,destination]}]),table("SHIPMENT",["SKU","PACKED","LABEL CARRIER","SERIALS"],[{cells:[product,10,choice(CARRIERS.filter(name=>name!==carrier),this.rng),"11 / 12"]}]),list("WHAT IS WRONG?",shuffle(all,this.rng).map(value=>({key:value,label:value})),true)]};
+    const d={tier:5,errors:3},shipment=id("SHP",this.rng),carrier=choice(CARRIERS,this.rng),destination=choice(destinations,this.rng),product=sku(this.rng),issues=["WRONG QTY","WRONG CARRIER","MISSING SERIAL"],all=[...issues,"WRONG PALLET","DAMAGED ITEM","WRONG SKU"];
+    const task={type:"final",title:"FINAL DISPATCH",instruction:"FIND ALL 3 WRONG DETAILS, THEN HOLD THE SHIPMENT",difficulty:d,mode:"final",solution:issues,action:"HOLD",selectable:all,penalty:5,panels:[table("ORDER",["SHIPMENT","SKU","QTY","CARRIER","TO"],[{cells:[shipment,product,12,carrier,destination]}]),table("SHIPMENT",["SKU","PACKED","LABEL CARRIER","SERIALS"],[{cells:[product,10,choice(CARRIERS.filter(name=>name!==carrier),this.rng),"11 / 12"]}]),list("WHAT IS WRONG?",shuffle(all,this.rng).map(value=>({key:value,label:value})),true)]};
+    task.difficulty={...d,time:TaskTimer.calculate(task,13)};return task;
   }
 }
 

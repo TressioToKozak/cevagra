@@ -1,4 +1,4 @@
-import { TaskGenerator, DifficultyManager, TASK_TYPES, taskIsCorrect, CARRIERS } from "./tasks.js";
+import { TaskGenerator, DifficultyManager, TaskTimer, TASK_TYPES, taskIsCorrect, CARRIERS } from "./tasks.js";
 import { LeaderboardManager, normalizeName } from "./storage.js";
 import { readFileSync } from "node:fs";
 
@@ -15,6 +15,7 @@ for (let run = 0; run < 300; run++) {
       if (task.mode === "order") assert(taskIsCorrect(task, [], task.solution), `${type} validates order`);
       else assert(taskIsCorrect(task, task.solution), `${type} validates selection`);
       assert(!taskIsCorrect(task, [], []), `${type} rejects empty response`);
+      assert(task.difficulty.time >= 5 && task.difficulty.time <= 14, `${type} has a safe complexity timer`);
     }
   }
   const final = generator.generateFinal();
@@ -24,10 +25,30 @@ for (let run = 0; run < 300; run++) {
 }
 console.log(`Procedural validation passed: ${checks.toLocaleString()} checks across 300 simulated runs.`);
 
-assert(DifficultyManager.maximumRunSeconds() >= 180 && DifficultyManager.maximumRunSeconds() <= 210, "maximum active game time is 3–3.5 minutes");
-assert([1,2,3].every(round => DifficultyManager.forRound(round).time === 10), "easy rounds use ten seconds");
-assert(DifficultyManager.forRound(12).time === 16, "hard rounds use sixteen seconds");
-assert(new TaskGenerator().generateFinal().difficulty.time === 24, "final task uses twenty-four seconds");
+const timerGenerator = new TaskGenerator();
+const early = Object.fromEntries(TASK_TYPES.map(type => [type,timerGenerator.generate(type,DifficultyManager.forRound(1),1).difficulty.time]));
+const late = Object.fromEntries(TASK_TYPES.map(type => [type,timerGenerator.generate(type,DifficultyManager.forRound(12),12).difficulty.time]));
+assert(early.wms === 5 && late.wms === 5, "yes/no tasks use five seconds");
+assert(early.picking >= 6 && early.picking <= 8, "small SKU search uses six to eight seconds");
+assert(early.packing >= 6 && early.packing <= 8 && late.packing <= 10, "box tasks use six to ten seconds");
+assert(early.serials >= 8 && late.serials >= 10 && late.serials <= 14, "serial time grows with list size");
+assert(early.pallet >= 10 && late.pallet <= 14 && early.loading >= 10 && late.loading <= 14, "ordering tasks include interaction time");
+assert(new TaskGenerator().generateFinal().difficulty.time === 18, "final task uses eighteen seconds");
+const sameTask=timerGenerator.serials(DifficultyManager.forRound(9));
+assert(TaskTimer.calculate(sameTask,12) < TaskTimer.calculate(sameTask,1), "late-game modifier trims the same task timer");
+const fullRunTimes=[];
+for(let run=0;run<300;run++){
+  const generated=new TaskGenerator(),recent=[];let seconds=3+18+(13*.5);
+  for(let round=1;round<=12;round++){
+    let pool=TASK_TYPES.filter(type=>!recent.slice(-3).includes(type));
+    if(round<=3)pool=pool.filter(type=>!["pallet","loading","quality"].includes(type));
+    if(round>=10)pool=pool.filter(type=>!["packing","wms"].includes(type));
+    const type=pool[Math.floor(Math.random()*pool.length)];recent.push(type);
+    seconds+=generated.generate(type,DifficultyManager.forRound(round),round).difficulty.time;
+  }
+  fullRunTimes.push(seconds);
+}
+assert(Math.min(...fullRunTimes)>=110&&Math.max(...fullRunTimes)<=180,"300 full timer simulations stay near two to three minutes");
 assert(CARRIERS.join(",") === "DHL,UPS,TNT,TOF,KLG,BRINGCARGO", "only approved carrier names are used");
 const source = JSON.stringify(Array.from({length:50},()=>new TaskGenerator().labels(DifficultyManager.forRound(8))));
 assert(CARRIERS.some(carrier => source.includes(carrier)), "label tasks use approved carriers");
@@ -41,6 +62,7 @@ assert(!/reconciliation|discrepancy|exception|corrective|allocation|investigate|
 assert((html.match(/<i><\/i>/g)||[]).length >= 24 && css.includes("@keyframes snowfall"), "lightweight falling snow is present");
 assert(html.includes("holiday-corner gifts") && html.includes("holiday-corner tree") && html.includes("candy-cane"), "edge decorations are present");
 assert(gameSource.includes('this.playerName="";this.resetState();this.landing("")'), "play again clears the player and returns to entry");
+assert(!/SCANNER OFFLINE|PALLET DAMAGED|TRUCK ARRIVED EARLY|maybeIncident|incidentCount/.test(gameSource), "random interruption events are removed");
 
 const memory = new Map();
 global.localStorage = { getItem: (key) => memory.get(key) ?? null, setItem: (key, value) => memory.set(key, value), removeItem: (key) => memory.delete(key) };
