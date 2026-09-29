@@ -24,9 +24,10 @@ for (let run = 0; run < 300; run++) {
 }
 console.log(`Procedural validation passed: ${checks.toLocaleString()} checks across 300 simulated runs.`);
 
-assert(DifficultyManager.maximumRunSeconds() < 180, "maximum active game time is under three minutes");
-assert([1,2,3].every(round => DifficultyManager.forRound(round).time <= 7), "easy rounds use no more than seven seconds");
-assert(DifficultyManager.forRound(12).time <= 12, "hard rounds use no more than twelve seconds");
+assert(DifficultyManager.maximumRunSeconds() >= 180 && DifficultyManager.maximumRunSeconds() <= 210, "maximum active game time is 3–3.5 minutes");
+assert([1,2,3].every(round => DifficultyManager.forRound(round).time === 10), "easy rounds use ten seconds");
+assert(DifficultyManager.forRound(12).time === 16, "hard rounds use sixteen seconds");
+assert(new TaskGenerator().generateFinal().difficulty.time === 24, "final task uses twenty-four seconds");
 assert(CARRIERS.join(",") === "DHL,UPS,TNT,TOF,KLG,BRINGCARGO", "only approved carrier names are used");
 const source = JSON.stringify(Array.from({length:50},()=>new TaskGenerator().labels(DifficultyManager.forRound(8))));
 assert(CARRIERS.some(carrier => source.includes(carrier)), "label tasks use approved carriers");
@@ -35,8 +36,11 @@ const css = readFileSync("styles.css", "utf8");
 const gameSource = readFileSync("game.js", "utf8");
 assert(!/SOUND ON|SETTINGS/.test(html + gameSource), "sound and settings controls are removed");
 assert(css.includes("height:calc(100dvh") && css.includes("max-width:none") && css.includes("overflow:hidden"), "full-screen no-scroll rules are present");
-assert(css.includes(".task-instruction{font-size:clamp(20px") && css.includes(".task-head h1{font:800 clamp(10px"), "question is larger than task title");
+assert(css.includes(".task-instruction{font-size:clamp(28px,3vw,42px)") && css.includes(".task-head h1{font:800 clamp(10px"), "question is larger than task title");
 assert(!/reconciliation|discrepancy|exception|corrective|allocation|investigate|compliance|inconsistency/i.test(html + gameSource + source), "player text avoids difficult terms");
+assert((html.match(/<i><\/i>/g)||[]).length >= 24 && css.includes("@keyframes snowfall"), "lightweight falling snow is present");
+assert(html.includes("holiday-corner gifts") && html.includes("holiday-corner tree") && html.includes("candy-cane"), "edge decorations are present");
+assert(gameSource.includes('this.playerName="";this.resetState();this.landing("")'), "play again clears the player and returns to entry");
 
 const memory = new Map();
 global.localStorage = { getItem: (key) => memory.get(key) ?? null, setItem: (key, value) => memory.set(key, value), removeItem: (key) => memory.delete(key) };

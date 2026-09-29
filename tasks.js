@@ -16,9 +16,9 @@ const list = (title, items, selectable=false) => ({type:"list",title,items,selec
 export class DifficultyManager {
   static forRound(round) {
     const tier=Math.min(4,Math.ceil(round/3));
-    return {tier,rows:[5,6,8,10][tier-1],errors:tier<3?1:2,time:[7,8,10,12][tier-1]};
+    return {tier,rows:[5,6,8,10][tier-1],errors:tier<3?1:2,time:[10,12,14,16][tier-1]};
   }
-  static maximumRunSeconds(){ return 3*7+3*8+3*10+3*12+15+8+4; }
+  static maximumRunSeconds(){ return 3*10+3*12+3*14+3*16+24+8+4; }
 }
 
 export class TaskGenerator {
@@ -29,7 +29,7 @@ export class TaskGenerator {
     const target=sku(this.rng,d.tier), products=uniqueValues(d.rows,()=>{let value;do{value=sku(this.rng,d.tier);}while(value===target);return value;}); products[int(0,products.length-1,this.rng)]=target;
     const rows=products.map((product,i)=>({key:`ROW-${i}`,cells:[location(this.rng),product,int(1,20,this.rng)]}));
     const solution=rows.filter(row=>row.cells[1]===target).map(row=>row.key);
-    const task=this.base("picking","SKU FIND",`FIND ${target}`,d);
+    const task=this.base("picking","SKU FIND","FIND THIS SKU",d); task.highlight={label:"TARGET SKU",value:target};
     task.panels=[table("STOCK",["LOCATION","SKU","QTY"],shuffle(rows,this.rng),true)]; task.solution=solution; task.selectable=rows.map(row=>row.key); return task;
   }
 
@@ -62,7 +62,7 @@ export class TaskGenerator {
     const weight=int(8,27,this.rng),fragile=d.tier>=3&&this.rng()>.5,limits=[10,20,30,40],fitting=limits.find(limit=>limit>=weight),valid=`BOX ${String.fromCharCode(65+limits.indexOf(fitting))}`;
     const rows=limits.slice(0,d.tier<3?3:4).map((limit,i)=>{const name=`BOX ${String.fromCharCode(65+i)}`;return {key:name,cells:[name,`${limit} KG`,fragile?(name===valid||limit>fitting?"YES":"NO"):"—"]};});
     if(fragile){const validRow=rows.find(row=>row.key===valid);validRow.cells[2]="YES";}
-    const task=this.base("packing","BOX CHECK",fragile?`ITEM: ${weight} KG · FRAGILE — CHOOSE THE SMALLEST BOX THAT FITS`:`ITEM: ${weight} KG — CHOOSE THE SMALLEST BOX THAT FITS`,d);
+    const task=this.base("packing","BOX CHECK","CHOOSE THE SMALLEST BOX THAT FITS",d); task.highlight={label:"ITEM",value:`${weight} KG${fragile?" · FRAGILE":""}`};
     task.panels=[table("BOXES",["BOX","MAX WEIGHT","FRAGILE"],rows,true)];task.solution=[valid];task.selectable=rows.map(row=>row.key);return task;
   }
 
@@ -99,7 +99,7 @@ export class TaskGenerator {
 
   generate(type,d){return this[type](d);}
   generateFinal(){
-    const d={tier:5,errors:3,time:15},shipment=id("SHP",this.rng),carrier=choice(CARRIERS,this.rng),destination=choice(destinations,this.rng),product=sku(this.rng),issues=["WRONG QTY","WRONG CARRIER","MISSING SERIAL"],all=[...issues,"WRONG PALLET","DAMAGED ITEM","WRONG SKU"];
+    const d={tier:5,errors:3,time:24},shipment=id("SHP",this.rng),carrier=choice(CARRIERS,this.rng),destination=choice(destinations,this.rng),product=sku(this.rng),issues=["WRONG QTY","WRONG CARRIER","MISSING SERIAL"],all=[...issues,"WRONG PALLET","DAMAGED ITEM","WRONG SKU"];
     return {type:"final",title:"FINAL DISPATCH",instruction:"FIND ALL 3 WRONG DETAILS, THEN HOLD THE SHIPMENT",difficulty:d,mode:"final",solution:issues,action:"HOLD",selectable:all,penalty:5,panels:[table("ORDER",["SHIPMENT","SKU","QTY","CARRIER","TO"],[{cells:[shipment,product,12,carrier,destination]}]),table("SHIPMENT",["SKU","PACKED","LABEL CARRIER","SERIALS"],[{cells:[product,10,choice(CARRIERS.filter(name=>name!==carrier),this.rng),"11 / 12"]}]),list("WHAT IS WRONG?",shuffle(all,this.rng).map(value=>({key:value,label:value})),true)]};
   }
 }
