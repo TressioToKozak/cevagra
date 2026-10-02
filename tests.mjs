@@ -60,7 +60,7 @@ assert(taskIsCorrect(carrierTask,[],[],null,carrierMatches), "carrier task requi
 const palletTask=new TaskGenerator().pallet(DifficultyManager.forRound(6));
 const palletOrder=[...palletTask.items].sort((a,b)=>palletTask.solution.indexOf(a.key)-palletTask.solution.indexOf(b.key));
 assert(palletOrder[0].fragile && palletOrder.at(-1).weight > palletOrder[1].weight, "pallet visual order is fragile/light on top and heavy at bottom");
-assert(TASK_TYPES.length >= 12, "a shift has enough task types to avoid repeats");
+assert(TASK_TYPES.length === 12 && !TASK_TYPES.includes("temperature"), "a shift has twelve distinct tasks and no temperature question");
 for(let run=0;run<200;run++){
   const used=[];
   for(let round=1;round<=12;round++){
@@ -80,6 +80,10 @@ const gameSource = readFileSync("game.js", "utf8");
 assert(html.includes('src="logo.png"') && html.includes("CEVA LOGISTICS"), "CEVA logo is used in the header");
 assert(!/data-move|USE ARROWS|order-controls/.test(gameSource), "box ordering no longer uses arrow controls");
 assert(gameSource.includes("draggable=\"true\"") && gameSource.includes("assignBox"), "ordering and multi-box truck matching use drag interactions");
+assert(gameSource.includes("data-insert") && css.includes(".order-drop"), "ordering uses explicit insertion gaps rather than swapping boxes");
+assert(!/TEMPERATURE|2–8°C|REQUIRED TEMPERATURE AREA/.test(source + JSON.stringify(TASK_TYPES)), "temperature-area question is removed");
+assert(/SANTA|CHRISTMAS|ELF|SLEIGH/.test(source + gameSource), "tasks use Christmas-themed wording");
+assert(css.includes('content:"CEVA • GIFT"') && css.includes(".parcel:before"), "carrier parcels have cardboard, tape, and shipping-label details");
 assert(gameSource.includes('const correct=taskIsCorrect') && gameSource.includes('fastBonus=timeout?0'), "a correct answer at timeout still earns base points");
 assert(!/SOUND ON|SETTINGS/.test(html + gameSource), "sound and settings controls are removed");
 assert(css.includes("height:calc(100dvh") && css.includes("max-width:none") && css.includes("overflow:hidden"), "full-screen no-scroll rules are present");
