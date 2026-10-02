@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { SeededRandom } from "./rng.js";
-import { ACTIVE_SECONDS, COMPETITION_SECONDS, GAME_CONFIGS, TRANSITION_SECONDS, buildCompetition } from "./tasks.js";
+import { ACTIVE_SECONDS, COMPETITION_SECONDS, GAME_CONFIGS, TRANSITION_SECONDS, buildCompetition, buildGameOrder } from "./tasks.js";
 import { scoreClassification, scoreStandard, sumScores } from "./scoring.js";
 import { StageGuard } from "./lifecycle.js";
 import { LeaderboardManager, normalizeName } from "./storage.js";
@@ -15,6 +15,9 @@ assert(ACTIVE_SECONDS===165,"active gameplay totals 165 seconds");
 assert(3+(GAME_CONFIGS.length-1)*TRANSITION_SECONDS===15,"countdown and between-game transitions total 15 seconds");
 assert(COMPETITION_SECONDS===180,"competition duration is three minutes");
 assert(GAME_CONFIGS.map(game=>game.time).join(",")==="15,20,15,25,15,20,15,15,25","all stage timers match specification");
+const orderA=buildGameOrder(new SeededRandom("ORDER-A")),orderB=buildGameOrder(new SeededRandom("ORDER-B"));
+assert(orderA.at(-1).id==="final"&&orderB.at(-1).id==="final","Final Dispatch always remains last");
+assert(orderA.slice(0,-1).map(game=>game.id).join(",")!==orderB.slice(0,-1).map(game=>game.id).join(","),"pre-final minigame order changes between runs");
 assert(Object.keys(MINIGAME_CLASSES).join(",")===GAME_CONFIGS.map(game=>game.id).join(","),"every configured stage has a playable class");
 for(const Game of Object.values(MINIGAME_CLASSES))assert(Game.prototype instanceof BaseMinigame,"every game implements shared lifecycle");
 
@@ -23,10 +26,15 @@ const snapshotB=buildCompetition("OFFICE-FINAL",new SeededRandom("OFFICE-FINAL")
 const snapshotC=buildCompetition("ANOTHER-SEED",new SeededRandom("ANOTHER-SEED"));
 assert(JSON.stringify(snapshotA)===JSON.stringify(snapshotB),"same competition seed is reproducible");
 assert(JSON.stringify(snapshotA)!==JSON.stringify(snapshotC),"different seed changes task data");
+assert(snapshotA.picking.rounds[0].target!==snapshotC.picking.rounds[0].target,"new runs use different SKUs");
+assert(JSON.stringify(snapshotA.detective.solution)!==JSON.stringify(snapshotC.detective.solution),"WMS error positions vary between runs");
+assert(JSON.stringify(snapshotA.quality.parcels.map(item=>[item.id,item.issue]))!==JSON.stringify(snapshotC.quality.parcels.map(item=>[item.id,item.issue])),"quality issues move to different boxes");
+assert(JSON.stringify(snapshotA.conveyor.parcels)!==JSON.stringify(snapshotC.conveyor.parcels),"conveyor parcel order changes between runs");
 assert(snapshotA.picking.rounds.length===10&&snapshotA.barcode.rounds.length===10,"rapid games have capped challenge sets");
 assert(snapshotA.conveyor.parcels.length===12,"conveyor has a finite parcel set");
 assert(new Set(snapshotA.conveyor.parcels.map(parcel=>parcel.carrier)).size>1,"conveyor uses multiple carriers");
 assert(snapshotA.packing.boxes.every(box=>box.w>0&&box.h>0),"packing pieces have real dimensions");
+assert(snapshotA.packing.boxes.reduce((sum,box)=>sum+box.w*box.h,0)>=30,"packing layout uses a more challenging occupied area");
 assert(snapshotA.detective.solution.length===3,"WMS detective has equivalent discrepancy count");
 assert(snapshotA.loading.solution.length===7,"truck loading has seven ordered pallets");
 assert(snapshotA.memory.shipment.length===5&&snapshotA.memory.options.length===8,"memory challenge has five targets and three decoys");
@@ -78,7 +86,8 @@ const html=readFileSync("index.html","utf8"),css=readFileSync("styles.css","utf8
 assert(html.includes('src="logo.png"')&&html.includes("CEVA LOGISTICS"),"CEVA logo and brand remain");
 assert(html.includes("holiday-corner gifts")&&css.includes("@keyframes snowfall"),"Christmas decorations remain");
 assert(game.includes("COMPETITION REMAINING")&&game.includes("/ 1000"),"HUD shows global progress and accumulated score");
-assert(game.includes("lockGame(token)")&&game.includes("pendingResult||this.active.complete"),"early answers lock once while the allocated stage timer continues");
+assert(game.includes("finish:()=>this.completeGame(token)")&&!game.includes("lockGame(token)"),"accepted answers advance immediately without waiting for the timer");
+assert(game.includes('createRunSeed')&&game.includes('buildGameOrder'),"each run receives fresh task data and a shuffled pre-final order");
 assert(game.includes("LOCAL DEVICE LEADERBOARD")&&game.includes("not a centralized company leaderboard"),"leaderboard is honestly identified as local");
 assert(minigames.includes("pointerdown")&&minigames.includes("pointermove")&&minigames.includes("pointerup"),"conveyor boxes use pointer drag interactions");
 assert(minigames.includes("requestAnimationFrame(tick)")&&minigames.includes("!this.dragging&&!this.settling"),"conveyor movement pauses safely while dragging");
@@ -91,6 +100,8 @@ assert(minigames.includes("truck-slots")&&minigames.includes("rear-door"),"truck
 assert(GAME_CONFIGS.every(config=>config.action&&config.instruction&&config.hint),"every minigame has action, objective, and correctness guidance");
 assert(minigames.includes("pallet-grid")&&minigames.includes("every(value=>!value)"),"packing grid prevents collisions");
 assert(minigames.includes("invalid-target")&&css.includes(".pallet-cell.invalid-target"),"packing drag previews valid and invalid positions");
+assert(minigames.includes("for(let dy=0;dy<box.h;dy++)for(let dx=0;dx<box.w;dx++)")&&minigames.includes("preview-edge"),"packing preview covers the complete box footprint");
+assert(css.includes(".quality-box.dented{clip-path:none")&&css.includes(".quality-box.selected"),"damaged quality boxes retain a full click target and visible selection");
 assert(!minigames.includes('"MATCH"')&&!minigames.includes('"WRONG"'),"WMS rows do not reveal correctness");
 assert(minigames.includes("setTimeout")||minigames.includes("this.timeout"),"memory reveal uses a managed timeout");
 assert(minigames.includes("this.cleanups")&&minigames.includes("cleanup()"),"minigames clean listeners and timers");

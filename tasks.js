@@ -14,6 +14,7 @@ export const GAME_CONFIGS=[
 export const ACTIVE_SECONDS=GAME_CONFIGS.reduce((sum,game)=>sum+game.time,0);
 export const TRANSITION_SECONDS=1.5;
 export const COMPETITION_SECONDS=180;
+export const buildGameOrder=(rng)=>[...rng.shuffle(GAME_CONFIGS.slice(0,-1)),GAME_CONFIGS.at(-1)];
 
 const digits=(rng,length=5)=>String(rng.int(10**(length-1),10**length-1));
 export const sku=(rng)=>`SKU-${digits(rng)}`;
@@ -31,11 +32,11 @@ export function buildCompetition(seed,rng){
 export function buildTask(type,rng){
   if(type==="picking"||type==="barcode"){const targets=unique(10,()=>sku(rng));return {targets,rounds:targets.map((target,index)=>({target,options:similarSkus(rng,target,6+Math.floor(index/3))}))};}
   if(type==="conveyor"){return {parcels:Array.from({length:12},(_,index)=>({id:`GIFT-${index+1}`,carrier:rng.pick(CARRIERS),gift:rng.pick(GIFTS)}))};}
-  if(type==="packing"){const shapes=[[2,2],[2,1],[1,2],[3,1],[1,1],[2,2],[3,1],[1,2]];return {cols:8,rows:5,boxes:shapes.map(([w,h],index)=>({id:`BOX-${index+1}`,w,h,gift:rng.pick(GIFTS)}))};}
-  if(type==="detective"){const rows=Array.from({length:8},(_,index)=>{const expected=sku(rng),wrong=[1,4,6].includes(index),actual=wrong?similarSkus(rng,expected,2).find(value=>value!==expected):expected;return {id:`REC-${index+1}`,location:`${"ABCD"[index%4]}-${String(index+1).padStart(2,"0")}`,expected,actual};});return {rows,solution:rows.filter(row=>row.expected!==row.actual).map(row=>row.id)};}
-  if(type==="loading"){const ids=unique(7,()=>`PLT-${digits(rng,4)}`),pallets=Array.from({length:7},(_,index)=>({id:ids[index],stop:index+1,city:["Oslo","Boston","Zurich","Toronto","Helsinki","Edinburgh","Copenhagen"][index]}));return {pallets:rng.shuffle(pallets),solution:[...pallets].sort((a,b)=>b.stop-a.stop).map(item=>item.id)};}
+  if(type==="packing"){const shapes=[[3,2],[2,2],[3,1],[1,3],[2,1],[1,2],[2,2],[3,1],[2,1],[1,1]];return {cols:8,rows:5,boxes:rng.shuffle(shapes).map(([w,h],index)=>({id:`BOX-${index+1}`,w,h,gift:rng.pick(GIFTS)}))};}
+  if(type==="detective"){const wrongRows=new Set(rng.shuffle([0,1,2,3,4,5,6,7]).slice(0,3)),rows=Array.from({length:8},(_,index)=>{const expected=sku(rng),wrong=wrongRows.has(index),actual=wrong?similarSkus(rng,expected,2).find(value=>value!==expected):expected;return {id:`REC-${index+1}`,location:`${"ABCD"[index%4]}-${String(index+1).padStart(2,"0")}`,expected,actual};});return {rows,solution:rows.filter(row=>row.expected!==row.actual).map(row=>row.id)};}
+  if(type==="loading"){const ids=unique(7,()=>`PLT-${digits(rng,4)}`),cities=rng.shuffle(["Oslo","Boston","Zurich","Toronto","Helsinki","Edinburgh","Copenhagen"]),pallets=Array.from({length:7},(_,index)=>({id:ids[index],stop:index+1,city:cities[index]}));return {pallets:rng.shuffle(pallets),solution:[...pallets].sort((a,b)=>b.stop-a.stop).map(item=>item.id)};}
   if(type==="memory"){const shipment=rng.shuffle(GIFTS).slice(0,5);return {shipment,options:rng.shuffle([...shipment,...rng.shuffle(GIFTS.filter(gift=>!shipment.includes(gift))).slice(0,3)])};}
-  if(type==="quality"){const issues=["dented","wrong-label","missing","wrong-sku"],parcels=Array.from({length:8},(_,index)=>({id:`GIFT-${index+1}`,sku:sku(rng),carrier:rng.pick(CARRIERS),issue:index<4?issues[index]:null}));return {parcels:rng.shuffle(parcels),solution:parcels.filter(parcel=>parcel.issue).map(parcel=>parcel.id)};}
+  if(type==="quality"){const issues=rng.shuffle(["dented","wrong-label","missing","wrong-sku",null,null,null,null]),parcels=Array.from({length:8},(_,index)=>({id:`GIFT-${index+1}`,sku:sku(rng),carrier:rng.pick(CARRIERS),issue:issues[index]}));return {parcels:rng.shuffle(parcels),solution:parcels.filter(parcel=>parcel.issue).map(parcel=>parcel.id)};}
   if(type==="final"){
     const order={id:`SHP-${digits(rng)}`,sku:sku(rng),quantity:12,carrier:rng.pick(CARRIERS),serials:12};
     const issuePool=rng.shuffle(["WRONG QUANTITY","WRONG CARRIER","WRONG SKU","MISSING SERIALS"]),solution=issuePool.slice(0,3);

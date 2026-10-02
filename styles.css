@@ -75,3 +75,9 @@ html,body{width:100%;height:100%;overflow:hidden}body{min-height:100dvh}.site-he
 .stock-card:hover,.barcode-parcel:hover,.shape-box:hover,.quality-box:hover,.load-pallet:hover,.moving-box:hover{transform:none!important;filter:brightness(1.05);box-shadow:0 3px 10px #0005}.stock-card:hover,.barcode-parcel:hover,.shape-box:hover,.quality-box:hover{background-color:inherit}.quality-box.selected,.memory-options button.selected,.record-table button.selected{outline:3px solid var(--green);transform:none!important;filter:brightness(1.08)}
 @media(max-width:900px){.minigame-head{grid-template-columns:1fr}.instruction-card{padding:5px 8px}.truck-scene{grid-template-columns:60px 1fr 52px}.truck-slots{height:125px}.load-pallet b{font-size:8px}.load-pallet span{font-size:6px}}
 .stock-card:hover{background:#15232c!important}.barcode-parcel:hover{background:linear-gradient(135deg,#c6944a,#e0b76f)!important}.shape-box:hover{background:#c49149!important}.quality-box:hover{background:linear-gradient(135deg,#ca9650,#a96f38)!important}.load-pallet:hover{background:linear-gradient(135deg,#b77f3f,#d0a35c)!important}
+
+/* Full-footprint Packing Tetris preview */
+.pallet-cell.preview-edge{box-shadow:inset 0 0 0 2px #ffffff55}.pallet-cell.valid-target{background:#2e6b50!important;border-color:#7be3aa!important}.pallet-cell.invalid-target{background:#74373b!important;border-color:#ff7378!important}
+
+/* Keep damaged parcels fully clickable and selection unmistakable */
+.quality-box.dented{clip-path:none!important;background:linear-gradient(145deg,#ca9650 0 63%,#754526 64% 68%,#b77d3f 69%)!important}.quality-box.dented:after{content:"⚡";position:absolute;z-index:2;right:10px;top:8px;color:#672024;font-size:25px;transform:rotate(18deg)}.quality-box.selected{outline:3px solid #7be3aa!important;outline-offset:-5px;box-shadow:inset 0 0 0 5px #173f33,0 3px 10px #0006!important}.quality-box.selected b:before{content:"✓ ";color:#0d5137}
