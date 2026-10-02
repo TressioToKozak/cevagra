@@ -9,12 +9,12 @@ export const GAME_CONFIGS=[
   {id:"loading",name:"TRUCK LOADING",time:20,max:100,action:"DRAG",instruction:"Load the pallets into the truck.",hint:"The LAST delivery goes deepest inside, so load it FIRST."},
   {id:"memory",name:"MEMORY CHALLENGE",time:15,max:100,action:"MEMORIZE",instruction:"Remember the gifts before they disappear.",hint:"Then select only the gifts from Santa’s manifest."},
   {id:"quality",name:"QUALITY CONTROL",time:15,max:100,action:"SELECT",instruction:"Inspect the parcels and find every visible problem.",hint:"Look for damage, bad labels, missing data and wrong SKUs."},
-  {id:"final",name:"FINAL DISPATCH",time:25,max:200,action:"CHECK",instruction:"Identify every shipment discrepancy.",hint:"Select all mismatches, then decide HOLD or RELEASE."}
+  {id:"final",name:"FINAL DISPATCH",time:25,max:200,action:"CHECK",instruction:"Identify every shipment discrepancy.",hint:"Select all mismatches, then confirm that the shipment must be held."}
 ];
 export const ACTIVE_SECONDS=GAME_CONFIGS.reduce((sum,game)=>sum+game.time,0);
 export const TRANSITION_SECONDS=1.5;
 export const COMPETITION_SECONDS=180;
-export const buildGameOrder=(rng)=>[...rng.shuffle(GAME_CONFIGS.slice(0,-1)),GAME_CONFIGS.at(-1)];
+export const buildGameOrder=(rng)=>{const order=rng.shuffle(GAME_CONFIGS.slice(0,-1));if(new Set(order.map(game=>game.id)).size!==order.length)throw new Error("Duplicate minigame in competition order");return [...order,GAME_CONFIGS.at(-1)];};
 
 const digits=(rng,length=5)=>String(rng.int(10**(length-1),10**length-1));
 export const sku=(rng)=>`SKU-${digits(rng)}`;

@@ -17,6 +17,7 @@ assert(COMPETITION_SECONDS===180,"competition duration is three minutes");
 assert(GAME_CONFIGS.map(game=>game.time).join(",")==="15,20,15,25,15,20,15,15,25","all stage timers match specification");
 const orderA=buildGameOrder(new SeededRandom("ORDER-A")),orderB=buildGameOrder(new SeededRandom("ORDER-B"));
 assert(orderA.at(-1).id==="final"&&orderB.at(-1).id==="final","Final Dispatch always remains last");
+assert(new Set(orderA.map(game=>game.id)).size===GAME_CONFIGS.length,"each minigame appears at most once per run");
 assert(orderA.slice(0,-1).map(game=>game.id).join(",")!==orderB.slice(0,-1).map(game=>game.id).join(","),"pre-final minigame order changes between runs");
 assert(Object.keys(MINIGAME_CLASSES).join(",")===GAME_CONFIGS.map(game=>game.id).join(","),"every configured stage has a playable class");
 for(const Game of Object.values(MINIGAME_CLASSES))assert(Game.prototype instanceof BaseMinigame,"every game implements shared lifecycle");
@@ -102,6 +103,9 @@ assert(minigames.includes("pallet-grid")&&minigames.includes("every(value=>!valu
 assert(minigames.includes("invalid-target")&&css.includes(".pallet-cell.invalid-target"),"packing drag previews valid and invalid positions");
 assert(minigames.includes("for(let dy=0;dy<box.h;dy++)for(let dx=0;dx<box.w;dx++)")&&minigames.includes("preview-edge"),"packing preview covers the complete box footprint");
 assert(css.includes(".quality-box.dented{clip-path:none")&&css.includes(".quality-box.selected"),"damaged quality boxes retain a full click target and visible selection");
+assert((minigames.match(/data-action="/g)||[]).length===1&&minigames.includes("CONFIRM · HOLD SHIPMENT"),"final dispatch has one confirmation action");
+assert(css.includes("height:calc(var(--h)*32px)")&&css.includes("width:calc(var(--w)*48px)"),"packing rack sizes reflect both grid dimensions");
+assert(css.includes("@keyframes panelReveal")&&css.includes("@keyframes selectedPulse"),"minigames include restrained entrance and selection animations");
 assert(!minigames.includes('"MATCH"')&&!minigames.includes('"WRONG"'),"WMS rows do not reveal correctness");
 assert(minigames.includes("setTimeout")||minigames.includes("this.timeout"),"memory reveal uses a managed timeout");
 assert(minigames.includes("this.cleanups")&&minigames.includes("cleanup()"),"minigames clean listeners and timers");
