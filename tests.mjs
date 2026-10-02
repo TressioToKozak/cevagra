@@ -1,80 +1,114 @@
-import { TaskGenerator, DifficultyManager, TaskTimer, TASK_TYPES, taskIsCorrect, CARRIERS } from "./tasks.js";
-import { LeaderboardManager, normalizeName } from "./storage.js";
 import { readFileSync } from "node:fs";
+import { SeededRandom } from "./rng.js";
+import { ACTIVE_SECONDS, COMPETITION_SECONDS, GAME_CONFIGS, TRANSITION_SECONDS, buildCompetition, buildGameOrder } from "./tasks.js";
+import { scoreClassification, scoreStandard, sumScores } from "./scoring.js";
+import { StageGuard } from "./lifecycle.js";
+import { LeaderboardManager, normalizeName } from "./storage.js";
+import { MINIGAME_CLASSES, BaseMinigame } from "./minigames.js";
 
-let checks = 0;
-const assert = (condition, message) => { checks++; if (!condition) throw new Error(message); };
-for (let run = 0; run < 300; run++) {
-  const generator = new TaskGenerator();
-  for (let round = 1; round <= 12; round++) {
-    const d = DifficultyManager.forRound(round);
-    for (const type of TASK_TYPES) {
-      const task = generator.generate(type, d);
-      assert(task.solution.length > 0, `${type} has a solution`);
-      assert(new Set(task.solution).size === task.solution.length, `${type} solution is unique`);
-      if (task.mode === "order") assert(taskIsCorrect(task, [], task.solution), `${type} validates order`);
-      else assert(taskIsCorrect(task, task.solution), `${type} validates selection`);
-      assert(!taskIsCorrect(task, [], []), `${type} rejects empty response`);
-      assert(task.difficulty.time >= 5 && task.difficulty.time <= 14, `${type} has a safe complexity timer`);
-    }
-  }
-  const final = generator.generateFinal();
-  assert(final.solution.length >= 2 && final.solution.length <= 4, "final has 2–4 issues");
-  assert(taskIsCorrect(final, final.solution, [], "HOLD"), "final validates correct hold");
-  assert(!taskIsCorrect(final, final.solution, [], "RELEASE"), "final rejects invalid release");
+let checks=0;
+const assert=(condition,message)=>{checks++;if(!condition)throw new Error(message);};
+
+assert(GAME_CONFIGS.length===9,"competition has eight minigames and one final");
+assert(GAME_CONFIGS.slice(0,8).every(game=>game.max===100)&&GAME_CONFIGS.at(-1).max===200,"score caps total 1,000");
+assert(ACTIVE_SECONDS===165,"active gameplay totals 165 seconds");
+assert(3+(GAME_CONFIGS.length-1)*TRANSITION_SECONDS===15,"countdown and between-game transitions total 15 seconds");
+assert(COMPETITION_SECONDS===180,"competition duration is three minutes");
+assert(GAME_CONFIGS.map(game=>game.time).join(",")==="15,20,15,25,15,20,15,15,25","all stage timers match specification");
+const orderA=buildGameOrder(new SeededRandom("ORDER-A")),orderB=buildGameOrder(new SeededRandom("ORDER-B"));
+assert(orderA.at(-1).id==="final"&&orderB.at(-1).id==="final","Final Dispatch always remains last");
+assert(new Set(orderA.map(game=>game.id)).size===GAME_CONFIGS.length,"each minigame appears at most once per run");
+assert(orderA.slice(0,-1).map(game=>game.id).join(",")!==orderB.slice(0,-1).map(game=>game.id).join(","),"pre-final minigame order changes between runs");
+assert(Object.keys(MINIGAME_CLASSES).join(",")===GAME_CONFIGS.map(game=>game.id).join(","),"every configured stage has a playable class");
+for(const Game of Object.values(MINIGAME_CLASSES))assert(Game.prototype instanceof BaseMinigame,"every game implements shared lifecycle");
+
+const snapshotA=buildCompetition("OFFICE-FINAL",new SeededRandom("OFFICE-FINAL"));
+const snapshotB=buildCompetition("OFFICE-FINAL",new SeededRandom("OFFICE-FINAL"));
+const snapshotC=buildCompetition("ANOTHER-SEED",new SeededRandom("ANOTHER-SEED"));
+assert(JSON.stringify(snapshotA)===JSON.stringify(snapshotB),"same competition seed is reproducible");
+assert(JSON.stringify(snapshotA)!==JSON.stringify(snapshotC),"different seed changes task data");
+assert(snapshotA.picking.rounds[0].target!==snapshotC.picking.rounds[0].target,"new runs use different SKUs");
+assert(JSON.stringify(snapshotA.detective.solution)!==JSON.stringify(snapshotC.detective.solution),"WMS error positions vary between runs");
+assert(JSON.stringify(snapshotA.quality.parcels.map(item=>[item.id,item.issue]))!==JSON.stringify(snapshotC.quality.parcels.map(item=>[item.id,item.issue])),"quality issues move to different boxes");
+assert(JSON.stringify(snapshotA.conveyor.parcels)!==JSON.stringify(snapshotC.conveyor.parcels),"conveyor parcel order changes between runs");
+assert(snapshotA.picking.rounds.length===10&&snapshotA.barcode.rounds.length===10,"rapid games have capped challenge sets");
+assert(snapshotA.conveyor.parcels.length===12,"conveyor has a finite parcel set");
+assert(new Set(snapshotA.conveyor.parcels.map(parcel=>parcel.carrier)).size>1,"conveyor uses multiple carriers");
+assert(snapshotA.packing.boxes.every(box=>box.w>0&&box.h>0),"packing pieces have real dimensions");
+assert(snapshotA.packing.boxes.reduce((sum,box)=>sum+box.w*box.h,0)>=30,"packing layout uses a more challenging occupied area");
+assert(snapshotA.detective.solution.length===3,"WMS detective has equivalent discrepancy count");
+assert(snapshotA.loading.solution.length===7,"truck loading has seven ordered pallets");
+assert(snapshotA.memory.shipment.length===5&&snapshotA.memory.options.length===8,"memory challenge has five targets and three decoys");
+assert(snapshotA.quality.solution.length===4,"quality control has four visual issues");
+assert(snapshotA.final.solution.length===3&&snapshotA.final.action==="HOLD","final has three discrepancies and requires hold");
+const Conveyor=MINIGAME_CLASSES.conveyor,conveyor=new Conveyor();
+conveyor.init({root:{},data:{parcels:[{carrier:"DHL"}]},config:{time:20},remaining:()=>10,flash:()=>{},update:()=>{},finish:()=>{}});
+conveyor.active={carrier:"DHL"};conveyor.box={classList:{add:()=>{}}};conveyor.timeout=handler=>handler();conveyor.advance=()=>{};
+const zoneClass={add:()=>{},remove:()=>{}};
+conveyor.sort({dataset:{chute:"DHL"},classList:zoneClass});assert(conveyor.correct===1&&conveyor.mistakes===0,"correct conveyor drop scores once");
+conveyor.settling=false;conveyor.active={carrier:"UPS"};conveyor.sort({dataset:{chute:"TNT"},classList:zoneClass});assert(conveyor.mistakes===1,"wrong conveyor drop applies a penalty");
+const Loading=MINIGAME_CLASSES.loading,loading=new Loading();loading.init({root:{},data:snapshotA.loading,config:{time:20},remaining:()=>10,flash:()=>{},update:()=>{}});loading.slots=[...snapshotA.loading.solution];assert(loading.score()>85,"correct truck loading order receives accuracy and speed points");
+for(let run=0;run<1000;run++){
+  const data=buildCompetition(`SEED-${run}`,new SeededRandom(`SEED-${run}`));
+  assert(data.detective.solution.every(id=>{const row=data.detective.rows.find(item=>item.id===id);return row.expected!==row.actual;}),"WMS solutions are genuine hidden mismatches");
+  assert(new Set(data.final.solution).size===3,"final discrepancies are unique");
+  assert(new Set(data.loading.pallets.map(item=>item.id)).size===7,"pallet identifiers are unique");
 }
-console.log(`Procedural validation passed: ${checks.toLocaleString()} checks across 300 simulated runs.`);
 
-const timerGenerator = new TaskGenerator();
-const early = Object.fromEntries(TASK_TYPES.map(type => [type,timerGenerator.generate(type,DifficultyManager.forRound(1),1).difficulty.time]));
-const late = Object.fromEntries(TASK_TYPES.map(type => [type,timerGenerator.generate(type,DifficultyManager.forRound(12),12).difficulty.time]));
-assert(early.wms === 5 && late.wms === 5, "yes/no tasks use five seconds");
-assert(early.picking >= 6 && early.picking <= 8, "small SKU search uses six to eight seconds");
-assert(early.packing >= 6 && early.packing <= 8 && late.packing <= 10, "box tasks use six to ten seconds");
-assert(early.serials >= 8 && late.serials >= 10 && late.serials <= 14, "serial time grows with list size");
-assert(early.pallet >= 10 && late.pallet <= 14 && early.loading >= 10 && late.loading <= 14, "ordering tasks include interaction time");
-assert(new TaskGenerator().generateFinal().difficulty.time === 18, "final task uses eighteen seconds");
-const sameTask=timerGenerator.serials(DifficultyManager.forRound(9));
-assert(TaskTimer.calculate(sameTask,12) < TaskTimer.calculate(sameTask,1), "late-game modifier trims the same task timer");
-const fullRunTimes=[];
-for(let run=0;run<300;run++){
-  const generated=new TaskGenerator(),recent=[];let seconds=3+18+(13*.5);
-  for(let round=1;round<=12;round++){
-    let pool=TASK_TYPES.filter(type=>!recent.slice(-3).includes(type));
-    if(round<=3)pool=pool.filter(type=>!["pallet","loading","quality"].includes(type));
-    if(round>=10)pool=pool.filter(type=>!["packing","wms"].includes(type));
-    const type=pool[Math.floor(Math.random()*pool.length)];recent.push(type);
-    seconds+=generated.generate(type,DifficultyManager.forRound(round),round).difficulty.time;
-  }
-  fullRunTimes.push(seconds);
-}
-assert(Math.min(...fullRunTimes)>=110&&Math.max(...fullRunTimes)<=180,"300 full timer simulations stay near two to three minutes");
-assert(CARRIERS.join(",") === "DHL,UPS,TNT,TOF,KLG,BRINGCARGO", "only approved carrier names are used");
-const source = JSON.stringify(Array.from({length:50},()=>new TaskGenerator().labels(DifficultyManager.forRound(8))));
-assert(CARRIERS.some(carrier => source.includes(carrier)), "label tasks use approved carriers");
-const html = readFileSync("index.html", "utf8");
-const css = readFileSync("styles.css", "utf8");
-const gameSource = readFileSync("game.js", "utf8");
-assert(!/SOUND ON|SETTINGS/.test(html + gameSource), "sound and settings controls are removed");
-assert(css.includes("height:calc(100dvh") && css.includes("max-width:none") && css.includes("overflow:hidden"), "full-screen no-scroll rules are present");
-assert(css.includes(".task-instruction{font-size:clamp(28px,3vw,42px)") && css.includes(".task-head h1{font:800 clamp(10px"), "question is larger than task title");
-assert(!/reconciliation|discrepancy|exception|corrective|allocation|investigate|compliance|inconsistency/i.test(html + gameSource + source), "player text avoids difficult terms");
-assert((html.match(/<i><\/i>/g)||[]).length >= 24 && css.includes("@keyframes snowfall"), "lightweight falling snow is present");
-assert(html.includes("holiday-corner gifts") && html.includes("holiday-corner tree") && html.includes("candy-cane"), "edge decorations are present");
-assert(gameSource.includes('this.playerName="";this.resetState();this.landing("")'), "play again clears the player and returns to entry");
-assert(!/SCANNER OFFLINE|PALLET DAMAGED|TRUCK ARRIVED EARLY|maybeIncident|incidentCount/.test(gameSource), "random interruption events are removed");
+assert(scoreStandard({correct:10,total:10,completed:true,timeRemaining:15,timeLimit:15})===100,"perfect fast standard result scores 100");
+assert(scoreStandard({correct:20,total:10,completed:true,timeRemaining:99,timeLimit:15})===100,"standard score cannot exceed cap");
+assert(scoreStandard({correct:0,total:10,mistakes:10})===0,"poor standard result cannot go below zero");
+assert(scoreClassification({selected:[],solution:["A","B"],universe:["A","B","C"]})===0,"doing nothing earns no classification points");
+assert(scoreClassification({selected:["A","B"],solution:["A","B"],universe:["A","B","C"],timeRemaining:10,timeLimit:10,max:200})===200,"perfect final classification respects custom cap");
+assert(sumScores(Object.fromEntries(GAME_CONFIGS.map(game=>[game.id,game.max])))===1000,"perfect full game is exactly 1,000");
+assert(sumScores({bad:5000})===1000,"full-game score is hard capped at 1,000");
 
-const memory = new Map();
-global.localStorage = { getItem: (key) => memory.get(key) ?? null, setItem: (key, value) => memory.set(key, value), removeItem: (key) => memory.delete(key) };
-const board = new LeaderboardManager();
-const run = (name, score, accuracy, averageResponseTime) => ({ name, normalizedName: normalizeName(name), score, accuracy, averageResponseTime, correctActions: 10, mistakes: 1, bestStreak: 4, roundsCompleted: 12, timestamp: new Date().toISOString() });
-board.saveRun(run("Daniel", 1000, 90, 8));
-board.saveRun(run("DANIEL", 1200, 80, 9));
-board.saveRun(run("Alex", 1200, 90, 10));
-board.saveRun(run("Marta", 1200, 90, 7));
-assert(board.getLeaderboard().length === 3, "repeated normalized player is deduplicated");
-assert(board.getLeaderboard()[0].name === "Marta", "leaderboard applies score, accuracy, then time tie breakers");
-assert(board.getPlayerHistory("daniel").length === 2, "run history is retained");
-board.clearLeaderboard();
-assert(board.getLeaderboard().length === 0, "leaderboard reset clears data");
-console.log("Storage validation passed: normalization, best-run selection, tie breakers, history, and reset.");
+let now=1000;const guard=new StageGuard(()=>now),token=guard.begin(15);
+assert(guard.remaining(token)===15,"stage timer starts at configured duration");
+now+=14900;assert(Math.round(guard.remaining(token)*10)/10===.1,"stage timer tracks remaining time");
+assert(guard.complete(token)&&!guard.complete(token),"stage can complete only once");
+const nextToken=guard.begin(20);assert(!guard.complete(token)&&guard.remaining(nextToken)===20,"stale callbacks cannot complete the next stage");
+guard.cancel();assert(guard.remaining(nextToken)===0,"cleanup invalidates active timer token");
+
+const memory=new Map();
+global.localStorage={getItem:key=>memory.get(key)??null,setItem:(key,value)=>memory.set(key,value),removeItem:key=>memory.delete(key)};
+const board=new LeaderboardManager();
+const makeRun=(name,score,accuracy,mistakes,timestamp)=>({name,normalizedName:normalizeName(name),score,accuracy,mistakes,timestamp,minigameScores:{}});
+board.saveRun(makeRun("Daniel",900,95,3,"2026-12-01T10:00:00Z"));
+board.saveRun(makeRun("DANIEL",920,90,4,"2026-12-01T11:00:00Z"));
+board.saveRun(makeRun("Alex",920,95,4,"2026-12-01T12:00:00Z"));
+board.saveRun(makeRun("Marta",920,95,2,"2026-12-01T13:00:00Z"));
+assert(board.getLeaderboard().length===3,"normalized players are deduplicated");
+assert(board.getLeaderboard()[0].name==="Marta","leaderboard uses score, accuracy, mistakes, then timestamp");
+assert(board.getPlayerHistory("daniel").length===2,"local history remains available");
+board.clearLeaderboard();assert(board.getLeaderboard().length===0,"leaderboard adapter clears local data");
+
+const html=readFileSync("index.html","utf8"),css=readFileSync("styles.css","utf8"),game=readFileSync("game.js","utf8"),minigames=readFileSync("minigames.js","utf8");
+assert(html.includes('src="logo.png"')&&html.includes("CEVA LOGISTICS"),"CEVA logo and brand remain");
+assert(html.includes("holiday-corner gifts")&&css.includes("@keyframes snowfall"),"Christmas decorations remain");
+assert(game.includes("COMPETITION REMAINING")&&game.includes("/ 1000"),"HUD shows global progress and accumulated score");
+assert(game.includes("finish:()=>this.completeGame(token)")&&!game.includes("lockGame(token)"),"accepted answers advance immediately without waiting for the timer");
+assert(game.includes('createRunSeed')&&game.includes('buildGameOrder'),"each run receives fresh task data and a shuffled pre-final order");
+assert(game.includes("LOCAL DEVICE LEADERBOARD")&&game.includes("not a centralized company leaderboard"),"leaderboard is honestly identified as local");
+assert(minigames.includes("pointerdown")&&minigames.includes("pointermove")&&minigames.includes("pointerup"),"conveyor boxes use pointer drag interactions");
+assert(minigames.includes("requestAnimationFrame(tick)")&&minigames.includes("!this.dragging&&!this.settling"),"conveyor movement pauses safely while dragging");
+assert(minigames.includes("elementFromPoint")&&minigames.includes("data-chute"),"conveyor drops resolve against visible carrier zones");
+assert(css.includes(".carrier-zone.drag-over")&&css.includes(".moving-box.dragging"),"dragged boxes and active carrier zones have clear states");
+assert(game.includes("<div class=\"countdown\">${value}</div>")&&game.includes("GO!</div>"),"countdown renders only 3-2-1 and GO");
+assert(!game.includes("COMPETITION STARTS IN"),"countdown has no overlapping helper text");
+assert(minigames.includes("LAST DELIVERY · LOAD FIRST")&&minigames.includes("FIRST DELIVERY · LOAD LAST"),"truck delivery order is explicitly explained");
+assert(minigames.includes("truck-slots")&&minigames.includes("rear-door"),"truck loading uses a visual cargo bay and rear entrance");
+assert(GAME_CONFIGS.every(config=>config.action&&config.instruction&&config.hint),"every minigame has action, objective, and correctness guidance");
+assert(minigames.includes("pallet-grid")&&minigames.includes("every(value=>!value)"),"packing grid prevents collisions");
+assert(minigames.includes("invalid-target")&&css.includes(".pallet-cell.invalid-target"),"packing drag previews valid and invalid positions");
+assert(minigames.includes("for(let dy=0;dy<box.h;dy++)for(let dx=0;dx<box.w;dx++)")&&minigames.includes("preview-edge"),"packing preview covers the complete box footprint");
+assert(css.includes(".quality-box.dented{clip-path:none")&&css.includes(".quality-box.selected"),"damaged quality boxes retain a full click target and visible selection");
+assert((minigames.match(/data-action="/g)||[]).length===1&&minigames.includes("CONFIRM · HOLD SHIPMENT"),"final dispatch has one confirmation action");
+assert(css.includes("height:calc(var(--h)*32px)")&&css.includes("width:calc(var(--w)*48px)"),"packing rack sizes reflect both grid dimensions");
+assert(css.includes("@keyframes panelReveal")&&css.includes("@keyframes selectedPulse"),"minigames include restrained entrance and selection animations");
+assert(!minigames.includes('"MATCH"')&&!minigames.includes('"WRONG"'),"WMS rows do not reveal correctness");
+assert(minigames.includes("setTimeout")||minigames.includes("this.timeout"),"memory reveal uses a managed timeout");
+assert(minigames.includes("this.cleanups")&&minigames.includes("cleanup()"),"minigames clean listeners and timers");
+assert(!/carrier\s*\([^)]*\)\s*\{/g.test(readFileSync("tasks.js","utf8")),"legacy duplicate carrier methods are removed");
+
+console.log(`Competition validation passed: ${checks.toLocaleString()} checks.`);
