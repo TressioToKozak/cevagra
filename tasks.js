@@ -111,6 +111,14 @@ export class TaskGenerator {
     task.mode="match";task.items=shuffle(items,this.rng);task.targets=targets;task.solution=items.map(item=>`${item.key}:${`TRUCK-${item.carrier}`}`);task.submitLabel="CHECK ALL TRUCKS";return task;
   }
 
+  carrier(d){
+    const count=Math.min(3+d.tier,6),carriers=shuffle(CARRIERS,this.rng).slice(0,count);
+    const items=carriers.map((carrier,index)=>({key:id("BOX",this.rng),carrier,destination:destinations[index%destinations.length]}));
+    const targets=shuffle(carriers,this.rng).map((carrier,index)=>({key:`TRUCK-${carrier}`,carrier,label:`BAY ${index+1} · ${carrier}`}));
+    const task=this.base("carrier","CARRIER SORTING","DRAG EVERY BOX TO THE TRUCK WITH THE SAME CARRIER",d);
+    task.mode="match";task.items=shuffle(items,this.rng);task.targets=targets;task.solution=items.map(item=>`${item.key}:${`TRUCK-${item.carrier}`}`);task.submitLabel="CHECK ALL TRUCKS";return task;
+  }
+
   orderTask(type,title,instruction,d,items,sorter){const task=this.base(type,title,instruction,d);task.mode="order";task.items=shuffle(items,this.rng);task.solution=[...items].sort(sorter).map(item=>item.key);task.submitLabel="CHECK ORDER";return task;}
 
   wms(d){
