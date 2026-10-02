@@ -13,6 +13,7 @@ for (let run = 0; run < 300; run++) {
       assert(task.solution.length > 0, `${type} has a solution`);
       assert(new Set(task.solution).size === task.solution.length, `${type} solution is unique`);
       if (task.mode === "order") assert(taskIsCorrect(task, [], task.solution), `${type} validates order`);
+      else if(task.mode === "match"){const matches=Object.fromEntries(task.solution.map(pair=>pair.split(":")));assert(taskIsCorrect(task,[],[],null,matches),`${type} validates every box-to-truck match`);}
       else assert(taskIsCorrect(task, task.solution), `${type} validates selection`);
       assert(!taskIsCorrect(task, [], []), `${type} rejects empty response`);
       assert(task.difficulty.time >= 8 && task.difficulty.time <= 18, `${type} has a safe complexity timer`);
@@ -53,7 +54,23 @@ assert(Math.min(...fullRunTimes)>=145&&Math.max(...fullRunTimes)<=240,"300 full 
 const instructions=new Set(Array.from({length:80},()=>new TaskGenerator().picking(DifficultyManager.forRound(2)).instruction));
 assert(instructions.size >= 3, "question wording varies between generated tasks");
 const carrierTask=new TaskGenerator().generate("carrier",DifficultyManager.forRound(6),6);
-assert(carrierTask.visual === "trucks" && carrierTask.solution[0].startsWith("TRUCK-"), "carrier routing matches shipments to moving trucks");
+assert(carrierTask.mode === "match" && carrierTask.items.length >= 3 && carrierTask.targets.length === carrierTask.items.length, "carrier task provides multiple boxes and matching trucks");
+const carrierMatches=Object.fromEntries(carrierTask.solution.map(pair=>pair.split(":")));
+assert(taskIsCorrect(carrierTask,[],[],null,carrierMatches), "carrier task requires every box to reach its truck");
+const palletTask=new TaskGenerator().pallet(DifficultyManager.forRound(6));
+const palletOrder=[...palletTask.items].sort((a,b)=>palletTask.solution.indexOf(a.key)-palletTask.solution.indexOf(b.key));
+assert(palletOrder[0].fragile && palletOrder.at(-1).weight > palletOrder[1].weight, "pallet visual order is fragile/light on top and heavy at bottom");
+assert(TASK_TYPES.length >= 12, "a shift has enough task types to avoid repeats");
+for(let run=0;run<200;run++){
+  const used=[];
+  for(let round=1;round<=12;round++){
+    const unused=TASK_TYPES.filter(type=>!used.includes(type));let pool=unused;
+    if(round<=3)pool=pool.filter(type=>!["pallet","loading","quality"].includes(type));
+    if(round>=10)pool=pool.filter(type=>!["packing","wms"].includes(type));
+    if(!pool.length)pool=unused;used.push(pool[Math.floor(Math.random()*pool.length)]);
+  }
+  assert(new Set(used).size===12,"a shift does not repeat task types");
+}
 assert(CARRIERS.join(",") === "DHL,UPS,TNT,TOF,KLG,BRINGCARGO", "only approved carrier names are used");
 const source = JSON.stringify(Array.from({length:50},()=>new TaskGenerator().labels(DifficultyManager.forRound(8))));
 assert(CARRIERS.some(carrier => source.includes(carrier)), "label tasks use approved carriers");
@@ -62,7 +79,8 @@ const css = readFileSync("styles.css", "utf8");
 const gameSource = readFileSync("game.js", "utf8");
 assert(html.includes('src="logo.png"') && html.includes("CEVA LOGISTICS"), "CEVA logo is used in the header");
 assert(!/data-move|USE ARROWS|order-controls/.test(gameSource), "box ordering no longer uses arrow controls");
-assert(gameSource.includes("draggable=\"true\"") && css.includes("truckIdle"), "drag ordering and animated trucks are present");
+assert(gameSource.includes("draggable=\"true\"") && gameSource.includes("assignBox"), "ordering and multi-box truck matching use drag interactions");
+assert(gameSource.includes('const correct=taskIsCorrect') && gameSource.includes('fastBonus=timeout?0'), "a correct answer at timeout still earns base points");
 assert(!/SOUND ON|SETTINGS/.test(html + gameSource), "sound and settings controls are removed");
 assert(css.includes("height:calc(100dvh") && css.includes("max-width:none") && css.includes("overflow:hidden"), "full-screen no-scroll rules are present");
 assert(css.includes(".task-instruction{font-size:clamp(28px,3vw,42px)") && css.includes(".task-head h1{font:800 clamp(10px"), "question is larger than task title");

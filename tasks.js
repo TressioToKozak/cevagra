@@ -37,7 +37,8 @@ export class TaskTimer {
       case "inventory": seconds=8+rows*.5+multi; break;
       case "serials": seconds=8+rows*.45+multi+similar; break;
       case "scanner": seconds=8+rows*.45+multi+similar; break;
-      case "carrier": seconds=10+task.difficulty.tier; break;
+      case "carrier": seconds=13+task.items.length; break;
+      case "temperature": case "priority": seconds=9+rows*.4+multi; break;
       case "pallet": case "loading": seconds=10+(task.items?.length||0)*.9; break;
       default: seconds=10;
     }
@@ -93,7 +94,7 @@ export class TaskGenerator {
 
   pallet(d){
     const items=Array.from({length:4+d.tier},(_,i)=>({key:`BOX ${i+1}`,weight:5+i*4,fragile:i===0}));
-    return this.orderTask("pallet","PALLET ORDER","PUT HEAVY BOXES AT THE BOTTOM. FRAGILE BOX ON TOP.",d,items,(a,b)=>a.fragile?1:b.fragile?-1:b.weight-a.weight);
+    return this.orderTask("pallet","PALLET STACK","BUILD FROM TOP TO BOTTOM: FRAGILE FIRST, THEN LIGHTEST TO HEAVIEST.",d,items,(a,b)=>a.fragile?-1:b.fragile?1:a.weight-b.weight);
   }
 
   loading(d){
@@ -102,13 +103,11 @@ export class TaskGenerator {
   }
 
   carrier(d){
-    const carrier=choice(CARRIERS,this.rng),destination=choice(destinations,this.rng),shipment=id("SHP",this.rng);
-    const shown=shuffle(CARRIERS,this.rng).slice(0,Math.min(3+d.tier,CARRIERS.length));
-    if(!shown.includes(carrier))shown[int(0,shown.length-1,this.rng)]=carrier;
-    const trucks=shuffle(shown,this.rng).map((name,index)=>({key:`TRUCK-${name}`,label:`BAY ${index+1} · ${name}`}));
-    const task=this.base("carrier","CARRIER ROUTING",prompt(this.rng,["SEND THE SHIPMENT TO THE RIGHT TRUCK","MATCH THE CARRIER TO ITS TRUCK","CHOOSE THE CORRECT LOADING BAY"]),d);
-    task.highlight={label:`${shipment} · ${destination}`,value:carrier};
-    task.panels=[list("TRUCKS ON THE MOVE",trucks,true)];task.solution=[`TRUCK-${carrier}`];task.selectable=trucks.map(truck=>truck.key);task.visual="trucks";return task;
+    const count=Math.min(3+d.tier,6),carriers=shuffle(CARRIERS,this.rng).slice(0,count);
+    const items=carriers.map((carrier,index)=>({key:id("BOX",this.rng),carrier,destination:destinations[index%destinations.length]}));
+    const targets=shuffle(carriers,this.rng).map((carrier,index)=>({key:`TRUCK-${carrier}`,carrier,label:`BAY ${index+1} · ${carrier}`}));
+    const task=this.base("carrier","CARRIER SORTING","DRAG EVERY BOX TO THE TRUCK WITH THE SAME CARRIER",d);
+    task.mode="match";task.items=shuffle(items,this.rng);task.targets=targets;task.solution=items.map(item=>`${item.key}:${`TRUCK-${item.carrier}`}`);task.submitLabel="CHECK ALL TRUCKS";return task;
   }
 
   orderTask(type,title,instruction,d,items,sorter){const task=this.base(type,title,instruction,d);task.mode="order";task.items=shuffle(items,this.rng);task.solution=[...items].sort(sorter).map(item=>item.key);task.submitLabel="CHECK ORDER";return task;}
@@ -123,6 +122,20 @@ export class TaskGenerator {
     const targets=uniqueValues(2+(d.tier>2?1:0),()=>sku(this.rng,d.tier)),scans=shuffle([...targets,...uniqueValues(d.rows-targets.length,()=>{let value;do{value=sku(this.rng,d.tier);}while(targets.includes(value));return value;})],this.rng);
     const task=this.base("scanner","SKU SCAN",prompt(this.rng,["SELECT ONLY THE ORDER SKUS","MARK EVERY SKU ON THE ORDER","WHICH SCANS BELONG TO THIS ORDER?"]),d);
     task.panels=[list("ORDER",targets),list("SCANNED ITEMS",scans.map((value,i)=>({key:`${i}:${value}`,label:value})),true)];task.solution=scans.map((value,i)=>targets.includes(value)?`${i}:${value}`:null).filter(Boolean);task.selectable=scans.map((value,i)=>`${i}:${value}`);return task;
+  }
+
+  temperature(d){
+    const limits={FROZEN:"-18°C",CHILLED:"2–8°C",AMBIENT:"15–25°C"},zones=Object.keys(limits),target=choice(zones,this.rng);
+    const items=shuffle(zones,this.rng).map(zone=>({key:zone,label:`${zone} · ${limits[zone]}`}));
+    const task=this.base("temperature","TEMPERATURE ZONE",prompt(this.rng,["CHOOSE THE SAFE STORAGE ZONE","WHERE SHOULD THIS SHIPMENT WAIT?","SELECT THE REQUIRED TEMPERATURE AREA"]),d);
+    task.highlight={label:"LABEL REQUIREMENT",value:limits[target]};task.panels=[list("WAREHOUSE ZONES",items,true)];task.solution=[target];task.selectable=zones;return task;
+  }
+
+  priority(d){
+    const rows=[],levels=["EXPRESS","STANDARD","ECONOMY"],target=choice(levels,this.rng);
+    for(let i=0;i<Math.min(d.rows,7);i++){const key=`ORDER-${digits(4,this.rng)}`,level=i===0?target:choice(levels.filter(value=>value!==target),this.rng);rows.push({key,cells:[key,choice(destinations,this.rng),level]});}
+    const task=this.base("priority","DISPATCH PRIORITY",prompt(this.rng,["FIND THE ORDER WITH THIS SERVICE","SELECT THE MATCHING DELIVERY PRIORITY","WHICH ORDER GOES IN THIS QUEUE?"]),d);
+    task.highlight={label:"SERVICE",value:target};task.panels=[table("READY ORDERS",["ORDER","TO","SERVICE"],shuffle(rows,this.rng),true)];task.solution=[rows[0].key];task.selectable=rows.map(row=>row.key);return task;
   }
 
   quality(d){
@@ -140,5 +153,9 @@ export class TaskGenerator {
   }
 }
 
-export const TASK_TYPES=["picking","inventory","serials","labels","packing","pallet","loading","wms","scanner","quality","carrier"];
-export const taskIsCorrect=(task,selected,order=[],action=null)=>{const answer=task.mode==="order"?order:selected;return answer.length===task.solution.length&&answer.every((value,index)=>task.mode==="order"?value===task.solution[index]:task.solution.includes(value))&&(!task.action||task.action===action);};
+export const TASK_TYPES=["picking","inventory","serials","labels","packing","pallet","loading","wms","scanner","quality","carrier","temperature","priority"];
+export const taskIsCorrect=(task,selected,order=[],action=null,matches={})=>{
+  if(task.mode==="match")return task.solution.every(pair=>{const [item,target]=pair.split(":");return matches[item]===target;})&&Object.keys(matches).length===task.solution.length;
+  const answer=task.mode==="order"?order:selected;
+  return answer.length===task.solution.length&&answer.every((value,index)=>task.mode==="order"?value===task.solution[index]:task.solution.includes(value))&&(!task.action||task.action===action);
+};
