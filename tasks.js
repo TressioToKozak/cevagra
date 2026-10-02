@@ -39,7 +39,7 @@ export function buildTask(type,rng){
   if(type==="quality"){const issues=rng.shuffle(["dented","wrong-label","missing","wrong-sku",null,null,null,null]),parcels=Array.from({length:8},(_,index)=>({id:`GIFT-${index+1}`,sku:sku(rng),carrier:rng.pick(CARRIERS),issue:issues[index]}));return {parcels:rng.shuffle(parcels),solution:parcels.filter(parcel=>parcel.issue).map(parcel=>parcel.id)};}
   if(type==="final"){
     const order={id:`SHP-${digits(rng)}`,sku:sku(rng),quantity:12,carrier:rng.pick(CARRIERS),serials:12};
-    const issuePool=rng.shuffle(["WRONG QUANTITY","WRONG CARRIER","WRONG SKU","MISSING SERIALS"]),solution=issuePool.slice(0,3);
+    const issuePool=rng.shuffle(["WRONG QUANTITY","WRONG CARRIER","WRONG SKU","MISSING SERIALS"]),solution=issuePool.slice(0,2);
     const actual={sku:solution.includes("WRONG SKU")?similarSkus(rng,order.sku,2).find(value=>value!==order.sku):order.sku,quantity:solution.includes("WRONG QUANTITY")?10:12,carrier:solution.includes("WRONG CARRIER")?rng.pick(CARRIERS.filter(item=>item!==order.carrier)):order.carrier,serials:solution.includes("MISSING SERIALS")?11:12};
     return {order,actual,options:issuePool,solution,action:"HOLD"};
   }

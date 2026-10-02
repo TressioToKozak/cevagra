@@ -40,7 +40,11 @@ assert(snapshotA.detective.solution.length===3,"WMS detective has equivalent dis
 assert(snapshotA.loading.solution.length===7,"truck loading has seven ordered pallets");
 assert(snapshotA.memory.shipment.length===5&&snapshotA.memory.options.length===8,"memory challenge has five targets and three decoys");
 assert(snapshotA.quality.solution.length===4,"quality control has four visual issues");
-assert(snapshotA.final.solution.length===3&&snapshotA.final.action==="HOLD","final has three discrepancies and requires hold");
+assert(snapshotA.final.solution.length===2&&snapshotA.final.action==="HOLD","final has two randomized discrepancies and requires hold");
+
+const finalCombos=new Set(Array.from({length:100},(_,index)=>{const game=buildCompetition(`FINAL-${index}`,new SeededRandom(`FINAL-${index}`));return [...game.final.solution].sort().join("+");}));
+assert(finalCombos.size>=5,"final discrepancy combinations vary substantially between runs");
+assert([...finalCombos].some(combo=>!combo.includes("WRONG CARRIER"))&&[...finalCombos].some(combo=>!combo.includes("MISSING SERIALS")),"carrier and serial issues are not forced into every final");
 const Conveyor=MINIGAME_CLASSES.conveyor,conveyor=new Conveyor();
 conveyor.init({root:{},data:{parcels:[{carrier:"DHL"}]},config:{time:20},remaining:()=>10,flash:()=>{},update:()=>{},finish:()=>{}});
 conveyor.active={carrier:"DHL"};conveyor.box={classList:{add:()=>{}}};conveyor.timeout=handler=>handler();conveyor.advance=()=>{};
@@ -51,7 +55,7 @@ const Loading=MINIGAME_CLASSES.loading,loading=new Loading();loading.init({root:
 for(let run=0;run<1000;run++){
   const data=buildCompetition(`SEED-${run}`,new SeededRandom(`SEED-${run}`));
   assert(data.detective.solution.every(id=>{const row=data.detective.rows.find(item=>item.id===id);return row.expected!==row.actual;}),"WMS solutions are genuine hidden mismatches");
-  assert(new Set(data.final.solution).size===3,"final discrepancies are unique");
+  assert(new Set(data.final.solution).size===2,"final discrepancies are unique");
   assert(new Set(data.loading.pallets.map(item=>item.id)).size===7,"pallet identifiers are unique");
 }
 
@@ -103,6 +107,9 @@ assert(minigames.includes("pallet-grid")&&minigames.includes("every(value=>!valu
 assert(minigames.includes("invalid-target")&&css.includes(".pallet-cell.invalid-target"),"packing drag previews valid and invalid positions");
 assert(minigames.includes("for(let dy=0;dy<box.h;dy++)for(let dx=0;dx<box.w;dx++)")&&minigames.includes("preview-edge"),"packing preview covers the complete box footprint");
 assert(css.includes(".quality-box.dented{clip-path:none")&&css.includes(".quality-box.selected"),"damaged quality boxes retain a full click target and visible selection");
+assert(css.includes(".quality-box .issue-mark")&&css.includes("font-size:12px!important"),"quality defects use large visual signals and readable labels");
+assert(minigames.includes("dragGhost=this.box.cloneNode")&&css.includes(".drag-proxy"),"conveyor drag uses a visible body-level cursor proxy");
+assert(minigames.includes("cell.classList.add(\"filled\")")&&!/BOX PACKED"\);this\.draw\(\)/.test(minigames),"packing placement updates cells without rerendering the whole minigame");
 assert((minigames.match(/data-action="/g)||[]).length===1&&minigames.includes("CONFIRM · HOLD SHIPMENT"),"final dispatch has one confirmation action");
 assert(css.includes("height:calc(var(--h)*32px)")&&css.includes("width:calc(var(--w)*48px)"),"packing rack sizes reflect both grid dimensions");
 assert(css.includes("@keyframes panelReveal")&&css.includes("@keyframes selectedPulse"),"minigames include restrained entrance and selection animations");
