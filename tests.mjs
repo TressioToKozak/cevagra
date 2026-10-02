@@ -15,7 +15,7 @@ for (let run = 0; run < 300; run++) {
       if (task.mode === "order") assert(taskIsCorrect(task, [], task.solution), `${type} validates order`);
       else assert(taskIsCorrect(task, task.solution), `${type} validates selection`);
       assert(!taskIsCorrect(task, [], []), `${type} rejects empty response`);
-      assert(task.difficulty.time >= 5 && task.difficulty.time <= 14, `${type} has a safe complexity timer`);
+      assert(task.difficulty.time >= 8 && task.difficulty.time <= 18, `${type} has a safe complexity timer`);
     }
   }
   const final = generator.generateFinal();
@@ -28,17 +28,17 @@ console.log(`Procedural validation passed: ${checks.toLocaleString()} checks acr
 const timerGenerator = new TaskGenerator();
 const early = Object.fromEntries(TASK_TYPES.map(type => [type,timerGenerator.generate(type,DifficultyManager.forRound(1),1).difficulty.time]));
 const late = Object.fromEntries(TASK_TYPES.map(type => [type,timerGenerator.generate(type,DifficultyManager.forRound(12),12).difficulty.time]));
-assert(early.wms === 5 && late.wms === 5, "yes/no tasks use five seconds");
-assert(early.picking >= 6 && early.picking <= 8, "small SKU search uses six to eight seconds");
-assert(early.packing >= 6 && early.packing <= 8 && late.packing <= 10, "box tasks use six to ten seconds");
-assert(early.serials >= 8 && late.serials >= 10 && late.serials <= 14, "serial time grows with list size");
-assert(early.pallet >= 10 && late.pallet <= 14 && early.loading >= 10 && late.loading <= 14, "ordering tasks include interaction time");
-assert(new TaskGenerator().generateFinal().difficulty.time === 18, "final task uses eighteen seconds");
+assert(early.wms === 8 && late.wms === 8, "yes/no tasks use eight seconds");
+assert(early.picking >= 8 && early.picking <= 11, "small SKU search gets enough reading time");
+assert(early.packing >= 9 && early.packing <= 11 && late.packing <= 11, "box tasks allow time for comparing limits");
+assert(early.serials >= 11 && late.serials >= 15 && late.serials <= 18, "serial time grows with list size");
+assert(early.pallet >= 14 && late.pallet <= 18 && early.loading >= 14 && late.loading <= 18, "ordering tasks include drag interaction time");
+assert(new TaskGenerator().generateFinal().difficulty.time === 24, "final task uses twenty-four seconds");
 const sameTask=timerGenerator.serials(DifficultyManager.forRound(9));
-assert(TaskTimer.calculate(sameTask,12) < TaskTimer.calculate(sameTask,1), "late-game modifier trims the same task timer");
+assert(TaskTimer.calculate(sameTask,12) === TaskTimer.calculate(sameTask,1), "the same task keeps a fair complexity-based timer");
 const fullRunTimes=[];
 for(let run=0;run<300;run++){
-  const generated=new TaskGenerator(),recent=[];let seconds=3+18+(13*.5);
+  const generated=new TaskGenerator(),recent=[];let seconds=3+24+(13*.5);
   for(let round=1;round<=12;round++){
     let pool=TASK_TYPES.filter(type=>!recent.slice(-3).includes(type));
     if(round<=3)pool=pool.filter(type=>!["pallet","loading","quality"].includes(type));
@@ -48,13 +48,21 @@ for(let run=0;run<300;run++){
   }
   fullRunTimes.push(seconds);
 }
-assert(Math.min(...fullRunTimes)>=110&&Math.max(...fullRunTimes)<=180,"300 full timer simulations stay near two to three minutes");
+assert(Math.min(...fullRunTimes)>=145&&Math.max(...fullRunTimes)<=240,"300 full timer simulations stay in a balanced play window");
+
+const instructions=new Set(Array.from({length:80},()=>new TaskGenerator().picking(DifficultyManager.forRound(2)).instruction));
+assert(instructions.size >= 3, "question wording varies between generated tasks");
+const carrierTask=new TaskGenerator().generate("carrier",DifficultyManager.forRound(6),6);
+assert(carrierTask.visual === "trucks" && carrierTask.solution[0].startsWith("TRUCK-"), "carrier routing matches shipments to moving trucks");
 assert(CARRIERS.join(",") === "DHL,UPS,TNT,TOF,KLG,BRINGCARGO", "only approved carrier names are used");
 const source = JSON.stringify(Array.from({length:50},()=>new TaskGenerator().labels(DifficultyManager.forRound(8))));
 assert(CARRIERS.some(carrier => source.includes(carrier)), "label tasks use approved carriers");
 const html = readFileSync("index.html", "utf8");
 const css = readFileSync("styles.css", "utf8");
 const gameSource = readFileSync("game.js", "utf8");
+assert(html.includes('src="logo.png"') && html.includes("CEVA LOGISTICS"), "CEVA logo is used in the header");
+assert(!/data-move|USE ARROWS|order-controls/.test(gameSource), "box ordering no longer uses arrow controls");
+assert(gameSource.includes("draggable=\"true\"") && css.includes("truckIdle"), "drag ordering and animated trucks are present");
 assert(!/SOUND ON|SETTINGS/.test(html + gameSource), "sound and settings controls are removed");
 assert(css.includes("height:calc(100dvh") && css.includes("max-width:none") && css.includes("overflow:hidden"), "full-screen no-scroll rules are present");
 assert(css.includes(".task-instruction{font-size:clamp(28px,3vw,42px)") && css.includes(".task-head h1{font:800 clamp(10px"), "question is larger than task title");
