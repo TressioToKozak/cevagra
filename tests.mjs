@@ -32,6 +32,13 @@ assert(snapshotA.loading.solution.length===7,"truck loading has seven ordered pa
 assert(snapshotA.memory.shipment.length===5&&snapshotA.memory.options.length===8,"memory challenge has five targets and three decoys");
 assert(snapshotA.quality.solution.length===4,"quality control has four visual issues");
 assert(snapshotA.final.solution.length===3&&snapshotA.final.action==="HOLD","final has three discrepancies and requires hold");
+const Conveyor=MINIGAME_CLASSES.conveyor,conveyor=new Conveyor();
+conveyor.init({root:{},data:{parcels:[{carrier:"DHL"}]},config:{time:20},remaining:()=>10,flash:()=>{},update:()=>{},finish:()=>{}});
+conveyor.active={carrier:"DHL"};conveyor.box={classList:{add:()=>{}}};conveyor.timeout=handler=>handler();conveyor.advance=()=>{};
+const zoneClass={add:()=>{},remove:()=>{}};
+conveyor.sort({dataset:{chute:"DHL"},classList:zoneClass});assert(conveyor.correct===1&&conveyor.mistakes===0,"correct conveyor drop scores once");
+conveyor.settling=false;conveyor.active={carrier:"UPS"};conveyor.sort({dataset:{chute:"TNT"},classList:zoneClass});assert(conveyor.mistakes===1,"wrong conveyor drop applies a penalty");
+const Loading=MINIGAME_CLASSES.loading,loading=new Loading();loading.init({root:{},data:snapshotA.loading,config:{time:20},remaining:()=>10,flash:()=>{},update:()=>{}});loading.slots=[...snapshotA.loading.solution];assert(loading.score()>85,"correct truck loading order receives accuracy and speed points");
 for(let run=0;run<1000;run++){
   const data=buildCompetition(`SEED-${run}`,new SeededRandom(`SEED-${run}`));
   assert(data.detective.solution.every(id=>{const row=data.detective.rows.find(item=>item.id===id);return row.expected!==row.actual;}),"WMS solutions are genuine hidden mismatches");
@@ -73,7 +80,15 @@ assert(html.includes("holiday-corner gifts")&&css.includes("@keyframes snowfall"
 assert(game.includes("COMPETITION REMAINING")&&game.includes("/ 1000"),"HUD shows global progress and accumulated score");
 assert(game.includes("lockGame(token)")&&game.includes("pendingResult||this.active.complete"),"early answers lock once while the allocated stage timer continues");
 assert(game.includes("LOCAL DEVICE LEADERBOARD")&&game.includes("not a centralized company leaderboard"),"leaderboard is honestly identified as local");
-assert(minigames.includes("animationend")&&css.includes("@keyframes parcelTravel"),"conveyor has animated parcels and miss handling");
+assert(minigames.includes("pointerdown")&&minigames.includes("pointermove")&&minigames.includes("pointerup"),"conveyor boxes use pointer drag interactions");
+assert(minigames.includes("requestAnimationFrame(tick)")&&minigames.includes("!this.dragging&&!this.settling"),"conveyor movement pauses safely while dragging");
+assert(minigames.includes("elementFromPoint")&&minigames.includes("data-chute"),"conveyor drops resolve against visible carrier zones");
+assert(css.includes(".carrier-zone.drag-over")&&css.includes(".moving-box.dragging"),"dragged boxes and active carrier zones have clear states");
+assert(game.includes("<div class=\"countdown\">${value}</div>")&&game.includes("GO!</div>"),"countdown renders only 3-2-1 and GO");
+assert(!game.includes("COMPETITION STARTS IN"),"countdown has no overlapping helper text");
+assert(minigames.includes("LAST DELIVERY · LOAD FIRST")&&minigames.includes("FIRST DELIVERY · LOAD LAST"),"truck delivery order is explicitly explained");
+assert(minigames.includes("truck-slots")&&minigames.includes("rear-door"),"truck loading uses a visual cargo bay and rear entrance");
+assert(GAME_CONFIGS.every(config=>config.action&&config.instruction&&config.hint),"every minigame has action, objective, and correctness guidance");
 assert(minigames.includes("pallet-grid")&&minigames.includes("every(value=>!value)"),"packing grid prevents collisions");
 assert(minigames.includes("invalid-target")&&css.includes(".pallet-cell.invalid-target"),"packing drag previews valid and invalid positions");
 assert(!minigames.includes('"MATCH"')&&!minigames.includes('"WRONG"'),"WMS rows do not reveal correctness");

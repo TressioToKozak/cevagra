@@ -1,15 +1,15 @@
 export const CARRIERS=["DHL","UPS","TNT","TOF","KLG","BRINGCARGO"];
 export const GIFTS=["TEDDY BEAR","TRAIN SET","SNOW GLOBE","PUZZLE","ROBOT","RED SLED","DRUM","DOLL","SKATES","BLOCKS"];
 export const GAME_CONFIGS=[
-  {id:"picking",name:"SPEED PICKING",time:15,max:100,instruction:"Find each gift SKU before the elves need it."},
-  {id:"conveyor",name:"CONVEYOR RUSH",time:20,max:100,instruction:"Send each moving gift to its carrier chute."},
-  {id:"barcode",name:"BARCODE HUNT",time:15,max:100,instruction:"Click the parcel matching Santa’s target SKU."},
-  {id:"packing",name:"PACKING TETRIS",time:25,max:100,instruction:"Pack every box into the pallet grid without overlaps."},
-  {id:"detective",name:"WMS DETECTIVE",time:15,max:100,instruction:"Select records where WMS and the actual scan differ."},
-  {id:"loading",name:"TRUCK LOADING",time:20,max:100,instruction:"Arrange pallets from the last delivery stop to the first."},
-  {id:"memory",name:"MEMORY CHALLENGE",time:15,max:100,instruction:"Memorize Santa’s shipment, then select its gifts."},
-  {id:"quality",name:"QUALITY CONTROL",time:15,max:100,instruction:"Select every parcel with a visible problem."},
-  {id:"final",name:"FINAL DISPATCH",time:25,max:200,instruction:"Find every mismatch, then HOLD or RELEASE the sleigh shipment."}
+  {id:"picking",name:"SPEED PICKING",time:15,max:100,action:"CLICK",instruction:"Find the requested product in the warehouse.",hint:"A correct SKU immediately brings the next pick."},
+  {id:"conveyor",name:"CONVEYOR RUSH",time:20,max:100,action:"DRAG",instruction:"Drag each moving box into its matching carrier zone.",hint:"Sort it before it leaves the conveyor."},
+  {id:"barcode",name:"BARCODE HUNT",time:15,max:100,action:"CLICK",instruction:"Find the box matching the displayed SKU.",hint:"Compare every digit before you click."},
+  {id:"packing",name:"PACKING TETRIS",time:25,max:100,action:"DRAG",instruction:"Place the boxes onto Santa’s pallet grid.",hint:"Fit every shape without overlaps; green fits, red does not."},
+  {id:"detective",name:"WMS DETECTIVE",time:15,max:100,action:"SELECT",instruction:"Compare WMS records with the actual scans.",hint:"Select every row that does not match, then lock your answer."},
+  {id:"loading",name:"TRUCK LOADING",time:20,max:100,action:"DRAG",instruction:"Load the pallets into the truck.",hint:"The LAST delivery goes deepest inside, so load it FIRST."},
+  {id:"memory",name:"MEMORY CHALLENGE",time:15,max:100,action:"MEMORIZE",instruction:"Remember the gifts before they disappear.",hint:"Then select only the gifts from Santa’s manifest."},
+  {id:"quality",name:"QUALITY CONTROL",time:15,max:100,action:"SELECT",instruction:"Inspect the parcels and find every visible problem.",hint:"Look for damage, bad labels, missing data and wrong SKUs."},
+  {id:"final",name:"FINAL DISPATCH",time:25,max:200,action:"CHECK",instruction:"Identify every shipment discrepancy.",hint:"Select all mismatches, then decide HOLD or RELEASE."}
 ];
 export const ACTIVE_SECONDS=GAME_CONFIGS.reduce((sum,game)=>sum+game.time,0);
 export const TRANSITION_SECONDS=1.5;
