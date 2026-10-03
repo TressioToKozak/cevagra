@@ -52,6 +52,7 @@ export function attachPointerDrag({
     if(completed.moved){element.dataset.dragged="true";setTimeout(()=>delete element.dataset.dragged,0);}
     clearTargets();
     element.classList.remove("drag-source");
+    globalThis.document?.documentElement?.classList.remove("is-pointer-dragging");
     try{element.releasePointerCapture?.(event.pointerId);}catch{}
     (cancelled?onCancel:onDrop)({...completed,target:completed.target,x:event.clientX,y:event.clientY});
     completed.ghost.remove();
@@ -68,6 +69,7 @@ export function attachPointerDrag({
     const targetRects=targetList().map(target=>{const rect=target.getBoundingClientRect();return {target,rect:{left:rect.left,right:rect.right,top:rect.top,bottom:rect.bottom,centerX:rect.left+rect.width/2,centerY:rect.top+rect.height/2}};});
     state={id:event.pointerId,ghost,target:null,targetRects,startX:event.clientX,startY:event.clientY,x:event.clientX,y:event.clientY,moved:false};
     element.classList.add("drag-source");
+    globalThis.document?.documentElement?.classList.add("is-pointer-dragging");
     targetList().forEach(target=>target.classList.add("drop-ready"));
     element.setPointerCapture?.(event.pointerId);
     onStart({...state});
@@ -85,6 +87,7 @@ export function attachPointerDrag({
     state?.ghost.remove();
     clearTargets();
     element.classList.remove("drag-source");
+    globalThis.document?.documentElement?.classList.remove("is-pointer-dragging");
     state=null;
     element.removeEventListener("pointerdown",down);
     element.removeEventListener("pointermove",move);
