@@ -118,4 +118,19 @@ assert(minigames.includes("setTimeout")||minigames.includes("this.timeout"),"mem
 assert(minigames.includes("this.cleanups")&&minigames.includes("cleanup()"),"minigames clean listeners and timers");
 assert(!/carrier\s*\([^)]*\)\s*\{/g.test(readFileSync("tasks.js","utf8")),"legacy duplicate carrier methods are removed");
 
+
+// Organizer utilities remain deterministic, local, and spreadsheet-safe.
+const { CompetitionSettings, leaderboardCsv } = await import("./storage.js");
+const settingsStore=new Map();
+const settings=new CompetitionSettings({getItem:key=>settingsStore.get(key)??null,setItem:(key,value)=>settingsStore.set(key,value)});
+assert(settings.getSeed()==="CEVA-CHRISTMAS-2026","competition settings provide one fixed default seed");
+assert(settings.setSeed(" event 2026! ")&&settings.getSeed()==="EVENT2026","organizer seed is sanitized and persisted locally");
+const csv=leaderboardCsv([{name:'Ana "Ace", Smith',score:999,accuracy:98,timestamp:"2026-12-01T10:00:00Z"}]);
+assert(csv.includes('"Ana ""Ace"", Smith"')&&csv.includes('"999"'),"CSV export safely quotes participant results");
+const interactions=readFileSync("interactions.js","utf8"),effects=readFileSync("effects.js","utf8");
+assert(interactions.includes("setPointerCapture")&&interactions.includes("pointercancel")&&interactions.includes("requestAnimationFrame"),"shared drag controller captures pointers, cancels safely, and paints on animation frames");
+assert(minigames.match(/attachPointerDrag/g).length>=3,"packing and truck loading use the shared pointer drag controller");
+assert(effects.includes("prefers-reduced-motion")&&css.includes("prefers-reduced-motion"),"arcade effects respect reduced-motion preferences in JS and CSS");
+assert(game.includes("Delete every local competition result?")&&game.includes("confirm("),"competition reset requires explicit confirmation");
+
 console.log(`Competition validation passed: ${checks.toLocaleString()} checks.`);
