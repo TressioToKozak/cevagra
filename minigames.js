@@ -16,6 +16,10 @@ export function offsetGridCoordinate(coordinate,anchor={x:0,y:0}){
   return `${x-anchor.x}:${y-anchor.y}`;
 }
 
+export function gridDragAnchor(rect,box,stepX,stepY,clientX,clientY){
+  return {x:Math.max(0,Math.min(box.w-1,Math.floor((clientX-rect.left)/stepX))),y:Math.max(0,Math.min(box.h-1,Math.floor((clientY-rect.top)/stepY)))};
+}
+
 export class BaseMinigame {
   init(context){this.ctx=context;this.root=context.root;this.data=context.data;this.mistakes=0;this.correct=0;this.cleanups=[];this.locked=false;return this;}
   render(){}
@@ -68,7 +72,7 @@ export class PackingTetris extends BaseMinigame {
   }
   bindShape(element,box){
     this.listen(element,"click",()=>{if(!element.dataset.dragged)this.selectShape(box.id);});
-    this.cleanups.push(attachPointerDrag({element,targets:()=>this.root.querySelectorAll("[data-cell]"),hitPadding:5,onStart:({startX,startY})=>{this.selectShape(box.id);this.root.classList.add("is-dragging");const rect=element.getBoundingClientRect(),styles=getComputedStyle(this.root),stepX=parseFloat(styles.getPropertyValue("--pack-step-x"))||rect.width/box.w,stepY=parseFloat(styles.getPropertyValue("--pack-step-y"))||rect.height/box.h;this.dragAnchor={x:Math.max(0,Math.min(box.w-1,Math.floor((startX-rect.left)/stepX))),y:Math.max(0,Math.min(box.h-1,Math.floor((startY-rect.top)/stepY)))};},onMove:({target})=>target?this.preview(box.id,offsetGridCoordinate(target.dataset.cell,this.dragAnchor)):this.clearPreview(),onDrop:({target})=>{this.root.classList.remove("is-dragging");this.clearPreview();if(target)this.place(box.id,offsetGridCoordinate(target.dataset.cell,this.dragAnchor));else this.flash("×","DROP ON THE PALLET");this.dragAnchor=null;},onCancel:()=>{this.root.classList.remove("is-dragging");this.clearPreview();this.dragAnchor=null;}}));
+    this.cleanups.push(attachPointerDrag({element,targets:()=>this.root.querySelectorAll("[data-cell]"),hitPadding:5,onStart:({startX,startY})=>{this.selectShape(box.id);this.root.classList.add("is-dragging");const rect=element.getBoundingClientRect(),styles=getComputedStyle(this.root),stepX=parseFloat(styles.getPropertyValue("--pack-step-x"))||rect.width/box.w,stepY=parseFloat(styles.getPropertyValue("--pack-step-y"))||rect.height/box.h;this.dragAnchor=gridDragAnchor(rect,box,stepX,stepY,startX,startY);this.dragCoordinate=null;},onMove:({target})=>{this.dragCoordinate=target?offsetGridCoordinate(target.dataset.cell,this.dragAnchor):null;this.dragCoordinate?this.preview(box.id,this.dragCoordinate):this.clearPreview();},onDrop:({target})=>{this.root.classList.remove("is-dragging");this.clearPreview();if(target&&this.dragCoordinate)this.place(box.id,this.dragCoordinate);else this.flash("×","DROP ON THE PALLET");this.dragAnchor=null;this.dragCoordinate=null;},onCancel:()=>{this.root.classList.remove("is-dragging");this.clearPreview();this.dragAnchor=null;this.dragCoordinate=null;}}));
   }
   syncGeometry(){
     const grid=this.root.querySelector(".pallet-grid"),first=grid?.querySelector('[data-cell="0:0"]'),next=grid?.querySelector('[data-cell="1:0"]'),below=grid?.querySelector('[data-cell="0:1"]');if(!first||!next||!below)return;

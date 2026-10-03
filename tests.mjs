@@ -4,7 +4,7 @@ import { ACTIVE_SECONDS, COMPETITION_SECONDS, GAME_CONFIGS, TRANSITION_SECONDS, 
 import { scoreClassification, scoreStandard, sumScores } from "./scoring.js";
 import { StageGuard } from "./lifecycle.js";
 import { LeaderboardManager, normalizeName } from "./storage.js";
-import { MINIGAME_CLASSES, BaseMinigame, offsetGridCoordinate, planPalletMove } from "./minigames.js";
+import { MINIGAME_CLASSES, BaseMinigame, gridDragAnchor, offsetGridCoordinate, planPalletMove } from "./minigames.js";
 import { attachPointerDrag } from "./interactions.js";
 
 let checks=0;
@@ -60,6 +60,8 @@ const swapped=planPalletMove(["A","B",null],"A",1),returned=planPalletMove(["A",
 assert(swapped.slots.join(",")==="B,A,"&&swapped.displacedTo===0,"moving onto an occupied truck slot swaps both pallets without loss");
 assert(returned.slots.join(",")==="B,,"&&returned.displacedTo==="yard","a yard pallet displaces an occupied pallet back to the waiting area");
 assert(offsetGridCoordinate("4:3",{x:1,y:2})==="3:1","packing drop coordinates preserve the cell grabbed inside a multi-cell box");
+assert(JSON.stringify(gridDragAnchor({left:10,top:20},{w:3,h:2},50.5,40.25,119,79))===JSON.stringify({x:2,y:1}),"packing drag anchors handle fractional grid steps and non-leading grab positions");
+assert(offsetGridCoordinate("7:4",gridDragAnchor({left:10,top:20},{w:3,h:2},50.5,40.25,119,79))==="5:3","packing edge drops use the same anchored coordinate as their preview");
 
 // Pointer tracking is tested without a browser: visual movement must happen in
 // the pointermove handler, while the more expensive hit test waits for a frame.
@@ -70,13 +72,15 @@ class FakeElement extends EventTarget{
   removeAttribute(){} setPointerCapture(){} releasePointerCapture(){} remove(){this.removed=true;}
 }
 const source=new FakeElement(),target=new FakeElement({left:200,top:100,width:100,height:80}),container={append:node=>{container.child=node;}},frames=[];
+const dragClasses=new Set();global.document={documentElement:{classList:{add:name=>dragClasses.add(name),remove:name=>dragClasses.delete(name)}}};
 global.requestAnimationFrame=callback=>(frames.push(callback),frames.length);global.cancelAnimationFrame=()=>{};
 const pointer=(type,x,y)=>{const event=new Event(type,{cancelable:true});Object.assign(event,{pointerId:7,button:0,clientX:x,clientY:y});return event;};
 let dropped=null;const detachDrag=attachPointerDrag({element:source,targets:[target],container,onDrop:event=>{dropped=event.target;}});
 source.dispatchEvent(pointer("pointerdown",30,30));source.dispatchEvent(pointer("pointermove",225,130));
+assert(dragClasses.has("is-pointer-dragging"),"shared pointer drags expose a document-level custom cursor state");
 assert(container.child.style.transform==="translate3d(195px,100px,0)","drag ghost follows the pointer synchronously while preserving its grab offset");
 frames.shift()?.(performance.now());assert(target.classes.has("drag-over"),"cached target detection highlights the carrier under the pointer");
-source.dispatchEvent(pointer("pointerup",225,130));assert(dropped===target&&container.child.removed,"drop resolves the cached target and removes its ghost");detachDrag();
+source.dispatchEvent(pointer("pointerup",225,130));assert(dropped===target&&container.child.removed,"drop resolves the cached target and removes its ghost");assert(!dragClasses.has("is-pointer-dragging"),"completed pointer drags clear the custom cursor state");source.dispatchEvent(pointer("pointerdown",30,30));source.dispatchEvent(pointer("pointercancel",30,30));assert(!dragClasses.has("is-pointer-dragging"),"cancelled pointer drags clear the custom cursor state");detachDrag();delete global.document;
 for(let run=0;run<1000;run++){
   const data=buildCompetition(`SEED-${run}`,new SeededRandom(`SEED-${run}`));
   assert(data.detective.solution.every(id=>{const row=data.detective.rows.find(item=>item.id===id);return row.expected!==row.actual;}),"WMS solutions are genuine hidden mismatches");
@@ -107,9 +111,12 @@ board.saveRun(makeRun("Daniel",900,95,3,"2026-12-01T10:00:00Z"));
 board.saveRun(makeRun("DANIEL",920,90,4,"2026-12-01T11:00:00Z"));
 board.saveRun(makeRun("Alex",920,95,4,"2026-12-01T12:00:00Z"));
 board.saveRun(makeRun("Marta",920,95,2,"2026-12-01T13:00:00Z"));
-assert(board.getLeaderboard().length===3,"normalized players are deduplicated");
+assert(board.getLeaderboard().length===4,"every completed run receives a separate leaderboard row");
 assert(board.getLeaderboard()[0].name==="Marta","leaderboard uses score, accuracy, mistakes, then timestamp");
 assert(board.getPlayerHistory("daniel").length===2,"local history remains available");
+assert(new Set(board.getLeaderboard().map(run=>run.id)).size===4,"saved leaderboard runs receive stable unique identifiers");
+memory.set("christmas-logistics-leaderboard-v1",JSON.stringify({version:2,players:[{name:"Legacy",normalizedName:"legacy",runs:[makeRun("Legacy",700,80,2,"2025-12-01T10:00:00Z"),makeRun("Legacy",650,75,3,"2025-12-02T10:00:00Z")]}]}));
+assert(board.getLeaderboard().length===2&&new Set(board.getLeaderboard().map(run=>run.id)).size===2,"legacy grouped player histories migrate into distinct stable run rows");
 board.clearLeaderboard();assert(board.getLeaderboard().length===0,"leaderboard adapter clears local data");
 
 const html=readFileSync("index.html","utf8"),css=readFileSync("styles.css","utf8"),game=readFileSync("game.js","utf8"),minigames=readFileSync("minigames.js","utf8"),interactions=readFileSync("interactions.js","utf8"),effects=readFileSync("effects.js","utf8");
@@ -120,10 +127,12 @@ assert(game.includes("finish:()=>this.completeGame(token)")&&!game.includes("loc
 assert(game.includes('createRunSeed')&&game.includes('buildGameOrder'),"each run receives fresh task data and a shuffled pre-final order");
 assert(!game.includes("LOCAL DEVICE LEADERBOARD")&&!game.includes("not a centralized company leaderboard"),"leaderboard omits the legacy local header and storage footer");
 assert(game.includes('class="leaderboard-scroll"')&&game.includes('assets/leaderboard/medal-${index+1}.png'),"leaderboard stays dynamic with a scrolling semantic table and ranked medal assets");
+assert(!game.includes("HIGHEST SCORE ON THIS DEVICE")&&game.includes("COMPETITION RECORD"),"competition record banner omits the removed device subtitle");
 assert(!css.includes('.podium-1 td:first-child:before')&&!css.includes('.podium-2 td:first-child:before')&&!css.includes('.podium-3 td:first-child:before'),"leaderboard podium cells render only their supplied medal image");
 assert(css.includes("height:auto;max-width:none;max-height:calc(100dvh - 32px)")&&css.includes("max-height:min(312px,calc(100dvh - 360px))"),"leaderboard height follows its content while the table alone has a viewport-safe scroll limit");
 assert(!css.includes('background:url("assets/leaderboard/panel-empty.png") center/100% 100%')&&css.includes('assets/leaderboard/christmas-corner.png'),"leaderboard decorations retain their aspect ratio instead of stretching the full panel artwork");
 assert(css.includes('input:hover,textarea:hover')&&css.includes('assets/cursor/clicker-click.png'),"editable fields use the Christmas clicker hover and pressed cursor states");
+assert(css.includes("html.is-pointer-dragging *")&&css.includes('cursor:url("assets/cursor/clicker-click.png") 18 5,pointer!important'),"all pointer-captured drags retain the Christmas pressed-hand cursor");
 assert(minigames.includes("attachPointerDrag({element:this.box"),"conveyor boxes use the shared pointer drag interaction");
 assert(minigames.includes("requestAnimationFrame(tick)")&&minigames.includes("!this.dragging&&!this.settling"),"conveyor movement pauses safely while dragging");
 assert(interactions.includes("getBoundingClientRect")&&minigames.includes("data-chute"),"conveyor drops resolve against forgiving carrier-zone bounds");
@@ -140,6 +149,7 @@ assert(css.includes(".quality-box.dented{clip-path:none")&&css.includes(".qualit
 assert(css.includes(".quality-box .issue-mark")&&css.includes("font-size:12px!important"),"quality defects use large visual signals and readable labels");
 assert(interactions.includes('ghost=element.cloneNode(true)')&&css.includes(".drag-ghost"),"all physical drags use a visible body-level cursor proxy");
 assert(minigames.includes('className="placed-box placed-pop"')&&!/BOX PACKED"\);this\.draw\(\)/.test(minigames),"packing placement creates only its persistent placed-box overlay without rerendering the minigame");
+assert(minigames.includes("if(target&&this.dragCoordinate)this.place(box.id,this.dragCoordinate)"),"packing preview and drop commit share one cached grid coordinate");
 assert(css.includes("grid-auto-flow:row")&&!css.includes("grid-auto-flow:dense")&&css.includes(".shape-box.packed-away{visibility:hidden")&&!minigames.includes("source?.remove(),180"),"packed inventory boxes retain permanent grid space without dense reflow");
 assert((minigames.match(/data-action="/g)||[]).length===1&&minigames.includes("CONFIRM · HOLD SHIPMENT"),"final dispatch has one confirmation action");
 assert(css.includes("var(--pack-cell-w)")&&css.includes("var(--pack-cell-h)")&&minigames.includes("ResizeObserver"),"packing rack and pallet share responsive measured cell dimensions");
@@ -156,8 +166,8 @@ const settingsStore=new Map();
 const settings=new CompetitionSettings({getItem:key=>settingsStore.get(key)??null,setItem:(key,value)=>settingsStore.set(key,value)});
 assert(settings.getSeed()==="CEVA-CHRISTMAS-2026","competition settings provide one fixed default seed");
 assert(settings.setSeed(" event 2026! ")&&settings.getSeed()==="EVENT2026","organizer seed is sanitized and persisted locally");
-const csv=leaderboardCsv([{name:'Ana "Ace", Smith',score:999,accuracy:98,timestamp:"2026-12-01T10:00:00Z"}]);
-assert(csv.includes('"Ana ""Ace"", Smith"')&&csv.includes('"999"'),"CSV export safely quotes participant results");
+const csv=leaderboardCsv([{id:"run-1",name:'Ana "Ace", Smith',score:999,accuracy:98,timestamp:"2026-12-01T10:00:00Z"},{id:"run-2",name:'Ana "Ace", Smith',score:850,accuracy:91,timestamp:"2026-12-02T10:00:00Z"}]);
+assert(csv.includes('"Ana ""Ace"", Smith"')&&csv.includes('"999"')&&csv.includes('"run-1"')&&csv.includes('"run-2"')&&csv.split("\r\n").length===3,"CSV export safely includes every individual run and its identifier");
 assert(interactions.includes("setPointerCapture")&&interactions.includes("pointercancel")&&interactions.includes("requestAnimationFrame"),"shared drag controller captures pointers, cancels safely, and paints on animation frames");
 assert(minigames.match(/attachPointerDrag/g).length>=3,"packing and truck loading use the shared pointer drag controller");
 assert(effects.includes("prefers-reduced-motion")&&css.includes("prefers-reduced-motion"),"arcade effects respect reduced-motion preferences in JS and CSS");

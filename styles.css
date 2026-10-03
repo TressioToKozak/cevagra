@@ -189,8 +189,9 @@ button:disabled,[aria-disabled="true"],.unavailable{cursor:url("assets/cursor/po
 input,textarea,[contenteditable="true"]{cursor:url("assets/cursor/clicker.png") 18 5,pointer}
 input:hover,textarea:hover,[contenteditable="true"]:hover,input:focus,textarea:focus,[contenteditable="true"]:focus{cursor:url("assets/cursor/clicker-hover.png") 18 5,pointer}
 input:active,textarea:active,[contenteditable="true"]:active{cursor:url("assets/cursor/clicker-click.png") 18 5,pointer}
-.parcel,.moving-box,.shape-box,.load-pallet,.order-item{cursor:grab}
-.parcel:active,.moving-box:active,.shape-box:active,.load-pallet:active,.order-item:active,.drag-ghost{cursor:grabbing}
+.parcel,.moving-box,.shape-box,.load-pallet,.order-item,.drag-source{cursor:url("assets/cursor/clicker-hover.png") 18 5,pointer}
+.parcel:active,.moving-box:active,.shape-box:active,.load-pallet:active,.order-item:active,.drag-ghost{cursor:url("assets/cursor/clicker-click.png") 18 5,pointer}
+html.is-pointer-dragging,html.is-pointer-dragging *{cursor:url("assets/cursor/clicker-click.png") 18 5,pointer!important}
 
 /* Christmas competition leaderboard; all rules are scoped away from organizer dialogs. */
 dialog.leaderboard-modal{width:min(1120px,calc(100vw - 48px));height:auto;max-width:none;max-height:calc(100dvh - 32px);border:1px solid #34516a;border-radius:14px;background:#03172a;box-shadow:0 22px 70px #000c,inset 0 0 60px #00101d;overflow:hidden}
@@ -210,7 +211,7 @@ dialog.leaderboard-modal::backdrop{background:#020a13b8;backdrop-filter:blur(5px
 .leaderboard-title img{width:clamp(145px,19vw,225px);height:64px;object-fit:contain}
 .record-banner{position:relative;flex:0 0 94px;display:grid;grid-template-columns:17% 1fr auto;align-items:center;margin:8px 0 16px;padding:0 30px 0 0;background:url("assets/leaderboard/record-plaque-empty.png") center/100% 100% no-repeat;color:#ffda66}
 .record-banner>img{justify-self:center;width:76px;height:76px;object-fit:contain;filter:drop-shadow(0 0 10px #f5a90080)}
-.record-banner div{display:flex;flex-direction:column;gap:7px}.record-banner strong{font-size:clamp(17px,2vw,28px);letter-spacing:.035em}.record-banner span{color:#b7c9dc;font:clamp(10px,1.2vw,16px) var(--mono);letter-spacing:.1em}
+.record-banner div{display:flex;align-items:center}.record-banner strong{font-size:clamp(17px,2vw,28px);letter-spacing:.035em}
 .record-banner>b{min-width:130px;padding:0 25px 0 15px;text-align:right;font-size:clamp(42px,5vw,62px);line-height:1;text-shadow:0 0 18px #ffbb2d}
 .leaderboard-scroll{min-height:0;max-height:min(312px,calc(100dvh - 360px));overflow:auto;scrollbar-color:#b98b2f #071728;scrollbar-width:thin}
 .leaderboard-modal .leaderboard{table-layout:fixed;margin:0;border-collapse:separate;border-spacing:0 3px;font-family:var(--mono);font-size:clamp(11px,1.15vw,16px)}
