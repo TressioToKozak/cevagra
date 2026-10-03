@@ -52,6 +52,9 @@ conveyor.active={carrier:"DHL"};conveyor.box={classList:{add:()=>{}}};conveyor.t
 const zoneClass={add:()=>{},remove:()=>{}};
 conveyor.sort({dataset:{chute:"DHL"},classList:zoneClass});assert(conveyor.correct===1&&conveyor.mistakes===0,"correct conveyor drop scores once");
 conveyor.settling=false;conveyor.active={carrier:"UPS"};conveyor.sort({dataset:{chute:"TNT"},classList:zoneClass});assert(conveyor.mistakes===1,"wrong conveyor drop applies a penalty");
+const immediateConveyor=new Conveyor(),feedbackClasses=new Set(),feedbackZone={dataset:{chute:"DHL"},classList:{add:name=>feedbackClasses.add(name),remove:(...names)=>names.forEach(name=>feedbackClasses.delete(name))}};
+immediateConveyor.init({root:{},data:{parcels:[{carrier:"DHL"},{carrier:"UPS"}]},config:{time:20},remaining:()=>10,flash:()=>{},update:()=>{},finish:()=>{}});immediateConveyor.active={carrier:"DHL"};immediateConveyor.box={remove(){this.removed=true;}};let advanced=0,feedbackTimeout=null;immediateConveyor.advance=()=>{advanced++;};immediateConveyor.timeout=handler=>(feedbackTimeout=handler);
+immediateConveyor.sort(feedbackZone);assert(immediateConveyor.box===null&&advanced===1,"a sorted conveyor parcel disappears and advances immediately");assert(feedbackClasses.has("accepted"),"carrier feedback remains visible while the next parcel advances");feedbackTimeout();assert(!feedbackClasses.has("accepted"),"carrier feedback clears independently without advancing a second time");
 const Loading=MINIGAME_CLASSES.loading,loading=new Loading();loading.init({root:{},data:snapshotA.loading,config:{time:20},remaining:()=>10,flash:()=>{},update:()=>{}});loading.slots=[...snapshotA.loading.solution];assert(loading.score()>85,"correct truck loading order receives accuracy and speed points");
 const swapped=planPalletMove(["A","B",null],"A",1),returned=planPalletMove(["A",null,null],"B",0);
 assert(swapped.slots.join(",")==="B,A,"&&swapped.displacedTo===0,"moving onto an occupied truck slot swaps both pallets without loss");
@@ -117,6 +120,7 @@ assert(game.includes("finish:()=>this.completeGame(token)")&&!game.includes("loc
 assert(game.includes('createRunSeed')&&game.includes('buildGameOrder'),"each run receives fresh task data and a shuffled pre-final order");
 assert(!game.includes("LOCAL DEVICE LEADERBOARD")&&!game.includes("not a centralized company leaderboard"),"leaderboard omits the legacy local header and storage footer");
 assert(game.includes('class="leaderboard-scroll"')&&game.includes('assets/leaderboard/medal-${index+1}.png'),"leaderboard stays dynamic with a scrolling semantic table and ranked medal assets");
+assert(!css.includes('.podium-1 td:first-child:before')&&!css.includes('.podium-2 td:first-child:before')&&!css.includes('.podium-3 td:first-child:before'),"leaderboard podium cells render only their supplied medal image");
 assert(css.includes("height:auto;max-width:none;max-height:calc(100dvh - 32px)")&&css.includes("max-height:min(312px,calc(100dvh - 360px))"),"leaderboard height follows its content while the table alone has a viewport-safe scroll limit");
 assert(!css.includes('background:url("assets/leaderboard/panel-empty.png") center/100% 100%')&&css.includes('assets/leaderboard/christmas-corner.png'),"leaderboard decorations retain their aspect ratio instead of stretching the full panel artwork");
 assert(css.includes('input:hover,textarea:hover')&&css.includes('assets/cursor/clicker-click.png'),"editable fields use the Christmas clicker hover and pressed cursor states");
@@ -136,6 +140,7 @@ assert(css.includes(".quality-box.dented{clip-path:none")&&css.includes(".qualit
 assert(css.includes(".quality-box .issue-mark")&&css.includes("font-size:12px!important"),"quality defects use large visual signals and readable labels");
 assert(interactions.includes('ghost=element.cloneNode(true)')&&css.includes(".drag-ghost"),"all physical drags use a visible body-level cursor proxy");
 assert(minigames.includes('className="placed-box placed-pop"')&&!/BOX PACKED"\);this\.draw\(\)/.test(minigames),"packing placement creates only its persistent placed-box overlay without rerendering the minigame");
+assert(css.includes("grid-auto-flow:row")&&!css.includes("grid-auto-flow:dense")&&css.includes(".shape-box.packed-away{visibility:hidden")&&!minigames.includes("source?.remove(),180"),"packed inventory boxes retain permanent grid space without dense reflow");
 assert((minigames.match(/data-action="/g)||[]).length===1&&minigames.includes("CONFIRM · HOLD SHIPMENT"),"final dispatch has one confirmation action");
 assert(css.includes("var(--pack-cell-w)")&&css.includes("var(--pack-cell-h)")&&minigames.includes("ResizeObserver"),"packing rack and pallet share responsive measured cell dimensions");
 assert(css.includes("@keyframes panelReveal")&&css.includes("@keyframes selectedPulse"),"minigames include restrained entrance and selection animations");
