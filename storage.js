@@ -31,3 +31,11 @@ export class LeaderboardManager {
   clearLeaderboard(){return this.store.clear();}
   static compareRuns(a,b){return b.score-a.score||b.accuracy-a.accuracy||a.mistakes-b.mistakes||String(a.timestamp).localeCompare(String(b.timestamp));}
 }
+
+const SETTINGS_KEY = "christmas-logistics-settings-v1";
+export class CompetitionSettings {
+  constructor(store=globalThis.localStorage){this.store=store;}
+  getSeed(){try{return this.store?.getItem(SETTINGS_KEY)||"CEVA-CHRISTMAS-2026";}catch{return "CEVA-CHRISTMAS-2026";}}
+  setSeed(seed){const clean=String(seed).trim().toUpperCase().replace(/[^A-Z0-9_-]/g,"").slice(0,40);if(!clean)return false;try{this.store?.setItem(SETTINGS_KEY,clean);return true;}catch{return false;}}
+}
+export function leaderboardCsv(rows){const quote=value=>`"${String(value??"").replaceAll('"','""')}"`;return ["Rank,Participant,Best score,Accuracy,Date and time",...rows.map((row,index)=>[index+1,row.name,row.score,`${row.accuracy}%`,row.timestamp].map(quote).join(","))].join("\r\n");}
