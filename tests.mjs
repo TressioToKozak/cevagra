@@ -5,6 +5,7 @@ import { scoreClassification, scoreStandard, sumScores } from "./scoring.js";
 import { StageGuard } from "./lifecycle.js";
 import { LeaderboardManager, normalizeName } from "./storage.js";
 import { MINIGAME_CLASSES, BaseMinigame, planPalletMove } from "./minigames.js";
+import { attachPointerDrag } from "./interactions.js";
 
 let checks=0;
 const assert=(condition,message)=>{checks++;if(!condition)throw new Error(message);};
@@ -55,6 +56,23 @@ const Loading=MINIGAME_CLASSES.loading,loading=new Loading();loading.init({root:
 const swapped=planPalletMove(["A","B",null],"A",1),returned=planPalletMove(["A",null,null],"B",0);
 assert(swapped.slots.join(",")==="B,A,"&&swapped.displacedTo===0,"moving onto an occupied truck slot swaps both pallets without loss");
 assert(returned.slots.join(",")==="B,,"&&returned.displacedTo==="yard","a yard pallet displaces an occupied pallet back to the waiting area");
+
+// Pointer tracking is tested without a browser: visual movement must happen in
+// the pointermove handler, while the more expensive hit test waits for a frame.
+class FakeElement extends EventTarget{
+  constructor(rect={left:10,top:20,width:80,height:40}){super();this.rect=rect;this.style={};this.dataset={};this.classes=new Set();this.classList={add:(...names)=>names.forEach(name=>this.classes.add(name)),remove:(...names)=>names.forEach(name=>this.classes.delete(name))};}
+  getBoundingClientRect(){return {...this.rect,right:this.rect.left+this.rect.width,bottom:this.rect.top+this.rect.height};}
+  cloneNode(){return new FakeElement(this.rect);}
+  removeAttribute(){} setPointerCapture(){} releasePointerCapture(){} remove(){this.removed=true;}
+}
+const source=new FakeElement(),target=new FakeElement({left:200,top:100,width:100,height:80}),container={append:node=>{container.child=node;}},frames=[];
+global.requestAnimationFrame=callback=>(frames.push(callback),frames.length);global.cancelAnimationFrame=()=>{};
+const pointer=(type,x,y)=>{const event=new Event(type,{cancelable:true});Object.assign(event,{pointerId:7,button:0,clientX:x,clientY:y});return event;};
+let dropped=null;const detachDrag=attachPointerDrag({element:source,targets:[target],container,onDrop:event=>{dropped=event.target;}});
+source.dispatchEvent(pointer("pointerdown",30,30));source.dispatchEvent(pointer("pointermove",225,130));
+assert(container.child.style.transform==="translate3d(195px,100px,0)","drag ghost follows the pointer synchronously while preserving its grab offset");
+frames.shift()?.(performance.now());assert(target.classes.has("drag-over"),"cached target detection highlights the carrier under the pointer");
+source.dispatchEvent(pointer("pointerup",225,130));assert(dropped===target&&container.child.removed,"drop resolves the cached target and removes its ghost");detachDrag();
 for(let run=0;run<1000;run++){
   const data=buildCompetition(`SEED-${run}`,new SeededRandom(`SEED-${run}`));
   assert(data.detective.solution.every(id=>{const row=data.detective.rows.find(item=>item.id===id);return row.expected!==row.actual;}),"WMS solutions are genuine hidden mismatches");
@@ -100,7 +118,7 @@ assert(game.includes("LOCAL DEVICE LEADERBOARD")&&game.includes("not a centraliz
 assert(minigames.includes("attachPointerDrag({element:this.box"),"conveyor boxes use the shared pointer drag interaction");
 assert(minigames.includes("requestAnimationFrame(tick)")&&minigames.includes("!this.dragging&&!this.settling"),"conveyor movement pauses safely while dragging");
 assert(interactions.includes("getBoundingClientRect")&&minigames.includes("data-chute"),"conveyor drops resolve against forgiving carrier-zone bounds");
-assert(css.includes(".carrier-zone.drag-over")&&css.includes(".moving-box.dragging"),"dragged boxes and active carrier zones have clear states");
+assert(css.includes(".carrier-zone.drag-over")&&css.includes(".drag-ghost.moving-box"),"dragged boxes and active carrier zones have clear states");
 assert(game.includes("<div class=\"countdown\">${value}</div>")&&game.includes("GO!</div>"),"countdown renders only 3-2-1 and GO");
 assert(!game.includes("COMPETITION STARTS IN"),"countdown has no overlapping helper text");
 assert(minigames.includes("LAST DELIVERY · LOAD FIRST")&&minigames.includes("FIRST DELIVERY · LOAD LAST"),"truck delivery order is explicitly explained");
@@ -142,4 +160,10 @@ assert(!minigames.includes("this.data.solution.includes(row.dataset.row)"),"WMS 
 assert(effects.includes("arcade-effect-layer")&&minigames.includes("CORRECT SKU")&&minigames.includes("WRONG BARCODE"),"immediate games use persistent unmistakable success and failure feedback");
 assert(!/\.shape-box[^\n]*!important/.test(css)&&!/\.load-pallet[^\n]*!important/.test(css),"core packing and loading styles no longer rely on important overrides");
 
+assert(!interactions.includes('ghost.classList.add("drag-ghost","dragging")')&&interactions.includes("Cursor-following is deliberately synchronous"),"drag ghosts are not blocked by the legacy dragging transform override and track pointers synchronously");
+assert(interactions.includes("targetRects=targetList().map")&&!interactions.includes("matches.sort"),"drag target geometry is cached once instead of measured and sorted on every pointer move");
+assert(minigames.includes('if(key===this.previewKey)return')&&minigames.includes("this.previewCells.forEach"),"packing previews skip unchanged targets and clear only affected cells");
+assert(!/this\.flash\([^\n]*(PALLET LOADED|PALLETS SWAPPED)/.test(minigames)&&minigames.includes("slot-feedback"),"truck loading uses localized routine feedback rather than the global answer overlay");
+assert(css.includes("barcode-parcel:not(.choice-correct):not(.choice-wrong):hover")&&css.includes("stock-card:not(.choice-correct):not(.choice-wrong):hover"),"barcode and speed-picking cards retain visible hover states separate from result states");
+assert(!css.includes(".brand-logo{background:#fff")&&css.includes(".brand-logo{width:clamp(118px"),"the transparent CEVA logo is no longer forced into a white plaque");
 console.log(`Competition validation passed: ${checks.toLocaleString()} checks.`);
