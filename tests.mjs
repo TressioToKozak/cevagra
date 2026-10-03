@@ -4,7 +4,7 @@ import { ACTIVE_SECONDS, COMPETITION_SECONDS, GAME_CONFIGS, TRANSITION_SECONDS, 
 import { scoreClassification, scoreStandard, sumScores } from "./scoring.js";
 import { StageGuard } from "./lifecycle.js";
 import { LeaderboardManager, normalizeName } from "./storage.js";
-import { MINIGAME_CLASSES, BaseMinigame, planPalletMove } from "./minigames.js";
+import { MINIGAME_CLASSES, BaseMinigame, offsetGridCoordinate, planPalletMove } from "./minigames.js";
 import { attachPointerDrag } from "./interactions.js";
 
 let checks=0;
@@ -56,6 +56,7 @@ const Loading=MINIGAME_CLASSES.loading,loading=new Loading();loading.init({root:
 const swapped=planPalletMove(["A","B",null],"A",1),returned=planPalletMove(["A",null,null],"B",0);
 assert(swapped.slots.join(",")==="B,A,"&&swapped.displacedTo===0,"moving onto an occupied truck slot swaps both pallets without loss");
 assert(returned.slots.join(",")==="B,,"&&returned.displacedTo==="yard","a yard pallet displaces an occupied pallet back to the waiting area");
+assert(offsetGridCoordinate("4:3",{x:1,y:2})==="3:1","packing drop coordinates preserve the cell grabbed inside a multi-cell box");
 
 // Pointer tracking is tested without a browser: visual movement must happen in
 // the pointermove handler, while the more expensive hit test waits for a frame.
@@ -166,4 +167,6 @@ assert(minigames.includes('if(key===this.previewKey)return')&&minigames.includes
 assert(!/this\.flash\([^\n]*(PALLET LOADED|PALLETS SWAPPED)/.test(minigames)&&minigames.includes("slot-feedback"),"truck loading uses localized routine feedback rather than the global answer overlay");
 assert(css.includes("barcode-parcel:not(.choice-correct):not(.choice-wrong):hover")&&css.includes("stock-card:not(.choice-correct):not(.choice-wrong):hover"),"barcode and speed-picking cards retain visible hover states separate from result states");
 assert(!css.includes(".brand-logo{background:#fff")&&css.includes(".brand-logo{width:clamp(118px"),"the transparent CEVA logo is no longer forced into a white plaque");
+assert(minigames.includes("offsetGridCoordinate(target.dataset.cell,this.dragAnchor)")&&minigames.includes("x>=0&&y>=0"),"packing ghost, footprint preview, and placement share the pointer grab anchor with safe grid bounds");
+assert(css.includes(".drag-source{opacity:0}"),"the moving source is hidden while its fully visible drag ghost is active");
 console.log(`Competition validation passed: ${checks.toLocaleString()} checks.`);

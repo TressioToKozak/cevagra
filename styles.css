@@ -87,7 +87,7 @@ button,.shape-box,.load-pallet,.moving-box{-webkit-tap-highlight-color:transpare
 .minigame-root{position:relative;isolation:isolate}
 .shape-box,.load-pallet,.moving-box{touch-action:none;user-select:none}
 .stock-card:hover,.barcode-parcel:hover,.shape-box:hover,.quality-box:hover,.load-pallet:hover,.moving-box:hover{filter:brightness(1.08);box-shadow:0 5px 14px #0006}
-.drag-source{opacity:.28}
+.drag-source{opacity:0}
 .drag-ghost{z-index:10000;pointer-events:none;cursor:grabbing;will-change:transform;filter:drop-shadow(0 16px 18px #000a);transition:none}
 .drag-proxy{position:fixed;z-index:9999;pointer-events:none;visibility:visible;opacity:1;filter:drop-shadow(0 14px 16px #0009)}
 

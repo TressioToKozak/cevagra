@@ -11,6 +11,11 @@ export function planPalletMove(slots,id,targetIndex){
   return {slots:next,sourceIndex,occupant:occupant===id?null:occupant,displacedTo:occupant?(sourceIndex>=0?sourceIndex:"yard"):null};
 }
 
+export function offsetGridCoordinate(coordinate,anchor={x:0,y:0}){
+  const [x,y]=coordinate.split(":").map(Number);
+  return `${x-anchor.x}:${y-anchor.y}`;
+}
+
 export class BaseMinigame {
   init(context){this.ctx=context;this.root=context.root;this.data=context.data;this.mistakes=0;this.correct=0;this.cleanups=[];this.locked=false;return this;}
   render(){}
@@ -63,7 +68,7 @@ export class PackingTetris extends BaseMinigame {
   }
   bindShape(element,box){
     this.listen(element,"click",()=>{if(!element.dataset.dragged)this.selectShape(box.id);});
-    this.cleanups.push(attachPointerDrag({element,targets:()=>this.root.querySelectorAll("[data-cell]"),hitPadding:5,onStart:()=>{this.selectShape(box.id);this.root.classList.add("is-dragging");},onMove:({target})=>target?this.preview(box.id,target.dataset.cell):this.clearPreview(),onDrop:({target})=>{this.root.classList.remove("is-dragging");this.clearPreview();if(target)this.place(box.id,target.dataset.cell);else this.flash("×","DROP ON THE PALLET");},onCancel:()=>{this.root.classList.remove("is-dragging");this.clearPreview();}}));
+    this.cleanups.push(attachPointerDrag({element,targets:()=>this.root.querySelectorAll("[data-cell]"),hitPadding:5,onStart:({startX,startY})=>{this.selectShape(box.id);this.root.classList.add("is-dragging");const rect=element.getBoundingClientRect(),styles=getComputedStyle(this.root),stepX=parseFloat(styles.getPropertyValue("--pack-step-x"))||rect.width/box.w,stepY=parseFloat(styles.getPropertyValue("--pack-step-y"))||rect.height/box.h;this.dragAnchor={x:Math.max(0,Math.min(box.w-1,Math.floor((startX-rect.left)/stepX))),y:Math.max(0,Math.min(box.h-1,Math.floor((startY-rect.top)/stepY)))};},onMove:({target})=>target?this.preview(box.id,offsetGridCoordinate(target.dataset.cell,this.dragAnchor)):this.clearPreview(),onDrop:({target})=>{this.root.classList.remove("is-dragging");this.clearPreview();if(target)this.place(box.id,offsetGridCoordinate(target.dataset.cell,this.dragAnchor));else this.flash("×","DROP ON THE PALLET");this.dragAnchor=null;},onCancel:()=>{this.root.classList.remove("is-dragging");this.clearPreview();this.dragAnchor=null;}}));
   }
   syncGeometry(){
     const grid=this.root.querySelector(".pallet-grid"),first=grid?.querySelector('[data-cell="0:0"]'),next=grid?.querySelector('[data-cell="1:0"]'),below=grid?.querySelector('[data-cell="0:1"]');if(!first||!next||!below)return;
@@ -73,7 +78,7 @@ export class PackingTetris extends BaseMinigame {
   }
   positionPlaced(id){const placement=this.placed[id],box=this.data.boxes.find(item=>item.id===id),block=this.root.querySelector(`[data-placed="${id}"]`),cell=this.root.querySelector(`[data-cell="${placement?.x}:${placement?.y}"]`),grid=this.root.querySelector(".pallet-grid");if(!placement||!block||!cell||!grid)return;const cr=cell.getBoundingClientRect(),gr=grid.getBoundingClientRect(),styles=getComputedStyle(this.root),stepX=parseFloat(styles.getPropertyValue("--pack-step-x")),stepY=parseFloat(styles.getPropertyValue("--pack-step-y")),cellW=parseFloat(styles.getPropertyValue("--pack-cell-w")),cellH=parseFloat(styles.getPropertyValue("--pack-cell-h"));Object.assign(block.style,{left:`${cr.left-gr.left}px`,top:`${cr.top-gr.top}px`,width:`${cellW+(box.w-1)*stepX}px`,height:`${cellH+(box.h-1)*stepY}px`});}
   selectShape(id){this.selected=id;this.root.querySelectorAll("[data-shape]").forEach(box=>box.classList.toggle("picked",box.dataset.shape===id));}
-  canPlace(id,coordinate){if(!id||this.placed[id])return false;const box=this.data.boxes.find(item=>item.id===id),[x,y]=coordinate.split(":").map(Number);return x+box.w<=this.data.cols&&y+box.h<=this.data.rows&&Array.from({length:box.h},(_,dy)=>Array.from({length:box.w},(_,dx)=>this.cells[y+dy][x+dx])).flat().every(value=>!value);}
+  canPlace(id,coordinate){if(!id||this.placed[id])return false;const box=this.data.boxes.find(item=>item.id===id),[x,y]=coordinate.split(":").map(Number);return x>=0&&y>=0&&x+box.w<=this.data.cols&&y+box.h<=this.data.rows&&Array.from({length:box.h},(_,dy)=>Array.from({length:box.w},(_,dx)=>this.cells[y+dy][x+dx])).flat().every(value=>!value);}
   clearPreview(){if(!this.previewCells.length)return;this.previewCells.forEach(cell=>cell.classList.remove("valid-target","invalid-target","preview-edge"));this.previewCells=[];this.previewKey="";}
   preview(id,coordinate){if(!id)return this.clearPreview();const valid=this.canPlace(id,coordinate),key=`${id}:${coordinate}:${valid}`;if(key===this.previewKey)return;this.clearPreview();this.previewKey=key;const box=this.data.boxes.find(item=>item.id===id),[x,y]=coordinate.split(":").map(Number);for(let dy=0;dy<box.h;dy++)for(let dx=0;dx<box.w;dx++){const cell=this.root.querySelector(`[data-cell="${x+dx}:${y+dy}"]`);if(cell){cell.classList.add(valid?"valid-target":"invalid-target","preview-edge");this.previewCells.push(cell);}}}
   place(id,coordinate){
