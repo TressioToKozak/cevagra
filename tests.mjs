@@ -117,6 +117,9 @@ assert(game.includes("finish:()=>this.completeGame(token)")&&!game.includes("loc
 assert(game.includes('createRunSeed')&&game.includes('buildGameOrder'),"each run receives fresh task data and a shuffled pre-final order");
 assert(!game.includes("LOCAL DEVICE LEADERBOARD")&&!game.includes("not a centralized company leaderboard"),"leaderboard omits the legacy local header and storage footer");
 assert(game.includes('class="leaderboard-scroll"')&&game.includes('assets/leaderboard/medal-${index+1}.png'),"leaderboard stays dynamic with a scrolling semantic table and ranked medal assets");
+assert(css.includes("height:auto;max-width:none;max-height:calc(100dvh - 32px)")&&css.includes("max-height:min(312px,calc(100dvh - 360px))"),"leaderboard height follows its content while the table alone has a viewport-safe scroll limit");
+assert(!css.includes('background:url("assets/leaderboard/panel-empty.png") center/100% 100%')&&css.includes('assets/leaderboard/christmas-corner.png'),"leaderboard decorations retain their aspect ratio instead of stretching the full panel artwork");
+assert(css.includes('input:hover,textarea:hover')&&css.includes('assets/cursor/clicker-click.png'),"editable fields use the Christmas clicker hover and pressed cursor states");
 assert(minigames.includes("attachPointerDrag({element:this.box"),"conveyor boxes use the shared pointer drag interaction");
 assert(minigames.includes("requestAnimationFrame(tick)")&&minigames.includes("!this.dragging&&!this.settling"),"conveyor movement pauses safely while dragging");
 assert(interactions.includes("getBoundingClientRect")&&minigames.includes("data-chute"),"conveyor drops resolve against forgiving carrier-zone bounds");
