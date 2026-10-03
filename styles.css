@@ -177,20 +177,43 @@ button,.shape-box,.load-pallet,.moving-box{-webkit-tap-highlight-color:transpare
 .slot-feedback{position:absolute;z-index:5;right:5px;bottom:5px;padding:3px 5px;border-radius:3px;background:#174c37;color:#aaffcc;font:900 7px var(--mono);box-shadow:0 2px 7px #0008;pointer-events:none;animation:slotNote .36s ease-out forwards}
 @keyframes slotNote{0%{opacity:0;transform:translateY(4px)}25%,75%{opacity:1;transform:none}100%{opacity:0}}
 
-/* Finished-game start screen */
+/* Header logo used during the competition. */
 .brand-logo{width:clamp(118px,10vw,154px);height:68px;padding:0;background:transparent;border:0;border-radius:0;box-shadow:none;object-fit:contain;object-position:left center}
-.landing{position:relative;grid-template-columns:minmax(0,1.3fr) minmax(360px,.7fr);gap:clamp(40px,6vw,96px);padding:clamp(22px,4vh,48px) clamp(2rem,6vw,7rem);isolation:isolate}
-.landing:before{content:"";position:absolute;z-index:-1;inset:5% 1%;background:linear-gradient(90deg,#0d171ed9 0 52%,transparent 75%),repeating-linear-gradient(90deg,transparent 0 78px,#49606a12 78px 80px),repeating-linear-gradient(0deg,transparent 0 78px,#49606a10 78px 80px);border:1px solid #33475255;clip-path:polygon(0 0,96% 0,100% 9%,100% 100%,4% 100%,0 91%)}
-.landing-hero{position:relative;max-width:850px}
-.event-chip{display:inline-flex;align-items:center;gap:8px;margin-bottom:clamp(16px,3vh,30px);padding:7px 11px;border:1px solid #416154;background:#14251f;color:#a9d9bf;font:800 9px var(--mono);letter-spacing:.12em}.event-chip i,.panel-heading i{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green)}
-.time-emblem{position:absolute;right:3%;top:0;width:128px;height:128px;display:flex;flex-direction:column;align-items:center;justify-content:center;border:2px solid #bf3e44;border-radius:50%;background:radial-gradient(circle,#271b20 0 54%,#111b21 55%);box-shadow:0 0 0 7px #111b21,0 0 0 8px #704047;transform:rotate(4deg)}.time-emblem small,.time-emblem span{font:800 8px var(--mono);letter-spacing:.12em;color:#d7b8ba}.time-emblem strong{font:900 28px var(--mono);color:#fff;margin:4px 0}
-.landing h1{max-width:720px;margin:0 0 22px;font-size:clamp(48px,6.2vw,88px);line-height:.86;letter-spacing:-.065em;text-shadow:0 5px 20px #0008}.landing h1 span{display:block;color:#d44147;text-shadow:0 0 28px #a1272d33}.landing .lede{max-width:680px;margin:0;color:#bfccd1;font-size:clamp(15px,1.15vw,18px);line-height:1.6}
-.landing-specs{display:flex;gap:1px;margin-top:clamp(20px,3vh,32px);max-width:670px;background:#33434c;border:1px solid #33434c}.landing-specs span{flex:1;padding:11px 13px;background:#111d24;color:#91a3ad;font:800 8px var(--mono);letter-spacing:.08em}.landing-specs b{display:block;margin-bottom:3px;color:#fff;font:900 18px var(--mono)}
-.landing .process{margin-top:18px;color:#81939c}.landing .process span{display:flex;align-items:center;gap:8px}.landing .process span:after{content:"→";color:#a53a3f}.landing .process span:last-child:after{content:"✓";color:var(--green)}
-.landing .start-panel{position:relative;width:100%;max-width:460px;padding:clamp(22px,3vh,34px);border:1px solid #40535e;border-top:4px solid #c83d43;border-radius:3px;background:linear-gradient(160deg,#18262f,#101a21 70%);box-shadow:14px 16px 0 #071015aa,0 24px 55px #0007}.landing .start-panel:before{content:"";position:absolute;right:18px;top:17px;width:32px;height:8px;background:repeating-linear-gradient(90deg,#c83d43 0 6px,transparent 6px 10px);opacity:.6}
-.landing .panel-heading{color:#aab8be;border-bottom-color:#3a4c56}.landing .panel-heading span:last-child{display:flex;align-items:center;gap:7px;color:#81bd9d}.start-callout{margin:4px 0 22px}.start-callout small{display:block;color:#82949d;font:800 8px var(--mono);letter-spacing:.13em}.start-callout strong{display:block;margin-top:5px;color:#fff;font:900 21px var(--sans)}
-.landing .field-label{color:#c2cdd1}.landing .name-input{height:54px;border:2px solid #40545f;background:#081218;font-size:18px}.landing .name-input:focus{border-color:#e6b350;box-shadow:0 0 0 3px #e6b35022}.landing .error-text{margin-bottom:5px}
-.start-button{display:flex;align-items:center;justify-content:space-between;min-height:60px;padding:10px 15px;background:linear-gradient(135deg,#d73f45,#ac292f);color:#fff;box-shadow:inset 0 -4px #791e23,0 7px 18px #0006;text-align:left}.start-button:hover{background:linear-gradient(135deg,#e64b51,#bc3036);transform:translateY(-2px);box-shadow:inset 0 -4px #791e23,0 10px 22px #0008}.start-button span{font:900 15px var(--mono)}.start-button small{font:800 8px var(--mono);color:#ffdadd}.board-button{min-height:43px;border-color:#536872;color:#d2dcdf;background:#142129}.board-button:hover{border-color:#d5ad53;background:#1d2d36}
-.fair-play{display:flex;align-items:center;gap:8px;margin-top:15px;padding:9px 10px;border-left:3px solid var(--green);background:#13251f;color:#9eb3aa;font:8px var(--mono)}.fair-play i{color:#8fe1b2;font-style:normal;font-size:13px}.landing .organizer-link{margin-top:12px}
-@media(max-height:760px){.landing{padding-top:14px;padding-bottom:14px}.event-chip{margin-bottom:14px}.landing h1{font-size:clamp(43px,5.5vw,72px);margin-bottom:14px}.landing-specs{margin-top:14px}.landing .process{margin-top:10px}.landing .start-panel{padding:20px 25px}.start-callout{margin-bottom:12px}.landing .field-label{margin-top:10px}.fair-play{margin-top:9px}}
-@media(max-width:900px){.landing{grid-template-columns:1fr;padding:18px;overflow:auto}.landing-hero{padding-top:10px}.time-emblem{display:none}.landing .start-panel{max-width:none;justify-self:stretch;margin-top:0}.landing-specs{max-width:none}}
+
+/* Interactive start menu: scoped so gameplay and results retain their existing UI. */
+.visually-hidden{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+body.menu-active{background:#061426}
+body.menu-active .site-header,
+body.menu-active .snow,
+body.menu-active .holiday-corner,
+body.menu-active .candy-cane{display:none}
+body.menu-active #app{height:100dvh;padding:0;overflow:hidden}
+.menu-screen{position:relative;width:100%;height:100%;overflow:hidden;background:#07172a url("assets/menu/background.png") center center/cover no-repeat;color:#f7f8fb}
+.menu-screen:after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(90deg,transparent 46%,#06172b0a 58%,#06172b30 100%)}
+.menu-content{position:absolute;z-index:1;top:7.3%;left:55%;width:min(29vw,520px);display:flex;flex-direction:column;align-items:center;text-align:center}
+.menu-logo{display:block;width:100%;height:18.3vh;margin:0 0 -1.2vh;object-fit:contain}
+.menu-content h1{margin:0;color:#f5f6f8;font-family:"Arial Narrow","Roboto Condensed",Impact,Haettenschweiler,sans-serif;font-weight:900;line-height:.98;text-transform:uppercase;text-shadow:0 3px 10px #0008}
+.menu-content h1 span,.menu-content h1 strong{display:block;white-space:nowrap}
+.menu-content h1 span{font-size:clamp(34px,3.35vw,64px);letter-spacing:.015em}
+.menu-content h1 strong{margin-top:.5vh;color:#f20b25;font-size:clamp(27px,2.65vw,51px);letter-spacing:.018em}
+.menu-details{margin:2.3vh 0 0;color:#a6afc2;font:500 clamp(11px,1.05vw,20px)/1.2 "Arial Narrow","Roboto Condensed",Arial,sans-serif;letter-spacing:.18em;white-space:nowrap;text-shadow:0 2px 5px #000}
+.menu-details i{padding:0 .55em;color:#ec1730;font-style:normal}
+.menu-form{position:relative;width:100%;margin-top:5.1vh}
+.menu-input-wrap{position:relative;width:100%;height:8.1vh;min-height:54px;max-height:88px}
+.menu-input-wrap input{width:100%;height:100%;padding:0 4.7vw;border:2px solid #3983ae;border-radius:12px;outline:none;background:linear-gradient(180deg,#071a30b8,#06162aca);box-shadow:inset 0 0 18px #03101f99,0 2px 7px #0007;color:#fff;font-size:clamp(17px,1.55vw,30px);letter-spacing:.01em;transition:border-color .16s,box-shadow .16s,background .16s}
+.menu-input-wrap input:focus{border-color:#72b8df;background:#071c33e8;box-shadow:0 0 0 3px #3997cb30,inset 0 0 18px #03101f99}
+.menu-input-wrap>span{position:absolute;z-index:2;left:2.6vw;top:31%;width:1.05vw;height:1.05vw;min-width:14px;min-height:14px;border:3px solid #6486aa;border-radius:50%;transform:translateX(-50%);pointer-events:none}
+.menu-input-wrap>span:after{content:"";position:absolute;left:50%;top:118%;width:1.7vw;height:.75vw;min-width:23px;min-height:10px;border:3px solid #6486aa;border-top-left-radius:18px;border-top-right-radius:18px;transform:translateX(-50%)}
+.menu-error{height:3vh;min-height:21px;padding-top:.55vh;color:#ff9ca6;font-size:clamp(11px,.85vw,16px);text-align:left}
+.menu-start,.menu-leaderboard{font-family:"Arial Narrow","Roboto Condensed",Arial,sans-serif;cursor:pointer}
+.menu-start{position:relative;width:100%;height:10.35vh;min-height:68px;max-height:112px;display:flex;align-items:center;justify-content:center;gap:1.6vw;border:2px solid #ff5362;border-radius:14px;background:linear-gradient(180deg,#ff1833 0%,#ee0825 45%,#d90020 100%);box-shadow:inset 0 2px 0 #ff8790,inset 0 -5px 0 #ae001a,0 8px 17px #0209168c;color:#fff;font-size:clamp(23px,1.9vw,36px);font-weight:900;letter-spacing:.02em;text-shadow:0 2px 2px #8c0015;transition:transform .14s,filter .14s,box-shadow .14s}
+.menu-start i{width:0;height:0;border-top:.75em solid transparent;border-bottom:.75em solid transparent;border-left:1.08em solid #fff;filter:drop-shadow(0 2px 1px #940016)}
+.menu-start:hover{filter:brightness(1.08);transform:translateY(-2px);box-shadow:inset 0 2px 0 #ff9ba2,inset 0 -5px 0 #ae001a,0 11px 21px #020916a8}
+.menu-start:active{transform:translateY(2px);box-shadow:inset 0 2px 0 #ff6875,inset 0 -2px 0 #a50018,0 4px 9px #02091699}
+.menu-leaderboard{width:78%;height:7vh;min-height:48px;max-height:76px;margin-top:3vh;border:2px solid #71829a;border-radius:11px;background:linear-gradient(180deg,#0b192ba8,#071425d6);box-shadow:inset 0 0 12px #8291a20a,0 5px 12px #0109166b;color:#d8dde7;font-size:clamp(14px,1.08vw,21px);font-weight:800;letter-spacing:.075em;transition:border-color .16s,background .16s,transform .16s,color .16s}
+.menu-leaderboard span{margin-right:1em;filter:grayscale(1) brightness(1.8)}
+.menu-leaderboard:hover{border-color:#b9c5d6;background:#10233aeb;color:#fff;transform:translateY(-1px)}
+.menu-leaderboard:active{transform:translateY(1px)}
+@media(max-height:800px){.menu-content{top:5.4%}.menu-form{margin-top:3.5vh}.menu-details{margin-top:1.7vh}.menu-leaderboard{margin-top:2vh}}
+@media(max-width:1000px){.menu-content{left:51%;width:43%}}
+@media(max-aspect-ratio:1.55/1){.menu-screen{background-position:45% center}.menu-content{left:49%;width:43%}}
