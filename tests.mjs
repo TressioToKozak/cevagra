@@ -115,7 +115,8 @@ assert(html.includes("holiday-corner gifts")&&css.includes("@keyframes snowfall"
 assert(game.includes("COMPETITION REMAINING")&&game.includes("/ 1000"),"HUD shows global progress and accumulated score");
 assert(game.includes("finish:()=>this.completeGame(token)")&&!game.includes("lockGame(token)"),"accepted answers advance immediately without waiting for the timer");
 assert(game.includes('createRunSeed')&&game.includes('buildGameOrder'),"each run receives fresh task data and a shuffled pre-final order");
-assert(game.includes("LOCAL DEVICE LEADERBOARD")&&game.includes("not a centralized company leaderboard"),"leaderboard is honestly identified as local");
+assert(!game.includes("LOCAL DEVICE LEADERBOARD")&&!game.includes("not a centralized company leaderboard"),"leaderboard omits the legacy local header and storage footer");
+assert(game.includes('class="leaderboard-scroll"')&&game.includes('assets/leaderboard/medal-${index+1}.png'),"leaderboard stays dynamic with a scrolling semantic table and ranked medal assets");
 assert(minigames.includes("attachPointerDrag({element:this.box"),"conveyor boxes use the shared pointer drag interaction");
 assert(minigames.includes("requestAnimationFrame(tick)")&&minigames.includes("!this.dragging&&!this.settling"),"conveyor movement pauses safely while dragging");
 assert(interactions.includes("getBoundingClientRect")&&minigames.includes("data-chute"),"conveyor drops resolve against forgiving carrier-zone bounds");
