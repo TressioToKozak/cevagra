@@ -11,6 +11,7 @@ export function attachPointerDrag({
   onDrop=()=>{},
   onCancel=()=>{},
   hitPadding=10,
+  createGhost=null,
 }) {
   let state=null;
   let frame=0;
@@ -61,10 +62,12 @@ export function attachPointerDrag({
     if(destroyed||state||event.button!==0)return;
     event.preventDefault();
     const rect=element.getBoundingClientRect();
-    const ghost=element.cloneNode(true);
+    const customGhost=createGhost?.({element,rect,event});
+    const ghost=customGhost?.node||customGhost||element.cloneNode(true);
+    const ghostRect=customGhost?.rect||rect;
     ghost.removeAttribute("id");
     ghost.classList.add("drag-ghost");
-    Object.assign(ghost.style,{position:"fixed",left:`${rect.left}px`,top:`${rect.top}px`,width:`${rect.width}px`,height:`${rect.height}px`,margin:"0"});
+    Object.assign(ghost.style,{position:"fixed",left:`${ghostRect.left}px`,top:`${ghostRect.top}px`,width:`${ghostRect.width}px`,height:`${ghostRect.height}px`,margin:"0"});
     container.append(ghost);
     const targetRects=targetList().map(target=>{const rect=target.getBoundingClientRect();return {target,rect:{left:rect.left,right:rect.right,top:rect.top,bottom:rect.bottom,centerX:rect.left+rect.width/2,centerY:rect.top+rect.height/2}};});
     state={id:event.pointerId,ghost,target:null,targetRects,startX:event.clientX,startY:event.clientY,x:event.clientX,y:event.clientY,moved:false};

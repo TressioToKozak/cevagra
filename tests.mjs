@@ -4,7 +4,7 @@ import { ACTIVE_SECONDS, COMPETITION_SECONDS, GAME_CONFIGS, TRANSITION_SECONDS, 
 import { scoreClassification, scoreStandard, sumScores } from "./scoring.js";
 import { StageGuard } from "./lifecycle.js";
 import { LeaderboardManager, normalizeName } from "./storage.js";
-import { MINIGAME_CLASSES, BaseMinigame, gridDragAnchor, offsetGridCoordinate, packingBoxAsset, planPalletMove } from "./minigames.js";
+import { MINIGAME_CLASSES, BaseMinigame, gridDragAnchor, offsetGridCoordinate, packingBoxAsset, packingInventoryLayout, planPalletMove } from "./minigames.js";
 import { attachPointerDrag } from "./interactions.js";
 
 let checks=0;
@@ -65,6 +65,8 @@ assert(offsetGridCoordinate("7:4",gridDragAnchor({left:10,top:20},{w:3,h:2},50.5
 const packingDimensions=[[3,2],[2,2],[3,1],[1,3],[2,1],[1,2],[1,1]];
 assert(packingDimensions.every(([w,h])=>packingBoxAsset({w,h}).includes(`box-${w}x${h}`)),"every predefined packing dimension resolves to proportion-compatible artwork");
 assert(new Set(snapshotA.packing.boxes.map(box=>box.id)).size===10&&snapshotA.packing.boxes.every((box,index)=>box.id===`BOX-${index+1}`),"all ten shuffled boxes retain sequential generated identifiers");
+const inventoryLayout=packingInventoryLayout(snapshotA.packing.boxes),inventoryCells=new Set();
+for(const box of snapshotA.packing.boxes){const {x,y}=inventoryLayout[box.id];assert(x>=0&&y>=0&&x+box.w<=8&&y+box.h<=5,`${box.id} fits the inventory unit grid`);for(let dy=0;dy<box.h;dy++)for(let dx=0;dx<box.w;dx++){const key=`${x+dx}:${y+dy}`;assert(!inventoryCells.has(key),`${box.id} does not overlap another inventory box`);inventoryCells.add(key);}}
 
 // Pointer tracking is tested without a browser: visual movement must happen in
 // the pointermove handler, while the more expensive hit test waits for a frame.
@@ -123,8 +125,8 @@ assert(board.getLeaderboard().length===2&&new Set(board.getLeaderboard().map(run
 board.clearLeaderboard();assert(board.getLeaderboard().length===0,"leaderboard adapter clears local data");
 
 const html=readFileSync("index.html","utf8"),css=readFileSync("styles.css","utf8"),game=readFileSync("game.js","utf8"),minigames=readFileSync("minigames.js","utf8"),interactions=readFileSync("interactions.js","utf8"),effects=readFileSync("effects.js","utf8");
-assert(html.includes('src="logo.png"')&&html.includes("CEVA LOGISTICS"),"CEVA logo and brand remain");
-assert(html.includes("holiday-corner gifts")&&css.includes("@keyframes snowfall"),"Christmas decorations remain");
+assert(game.includes('assets/menu/logo-light.png')&&game.includes("CHRISTMAS</span><strong>LOGISTICS CHALLENGE"),"CEVA logo and brand remain");
+assert(game.includes("CHRISTMAS</span><strong>LOGISTICS CHALLENGE")&&css.includes("menu-screen"),"Christmas presentation remains");
 assert(game.includes("COMPETITION REMAINING")&&game.includes("/ 1000"),"HUD shows global progress and accumulated score");
 assert(game.includes("finish:()=>this.completeGame(token)")&&!game.includes("lockGame(token)"),"accepted answers advance immediately without waiting for the timer");
 assert(game.includes('createRunSeed')&&game.includes('buildGameOrder'),"each run receives fresh task data and a shuffled pre-final order");
@@ -150,9 +152,10 @@ assert(minigames.includes("invalid-target")&&css.includes(".pallet-cell.invalid-
 assert(minigames.includes("for(let dy=0;dy<box.h;dy++)for(let dx=0;dx<box.w;dx++)")&&minigames.includes("preview-edge"),"packing preview covers the complete box footprint");
 assert(css.includes(".quality-box.dented{clip-path:none")&&css.includes(".quality-box.selected"),"damaged quality boxes retain a full click target and visible selection");
 assert(css.includes(".quality-box .issue-mark")&&css.includes("font-size:12px!important"),"quality defects use large visual signals and readable labels");
-assert(interactions.includes('ghost=element.cloneNode(true)')&&css.includes(".drag-ghost"),"all physical drags use a visible body-level cursor proxy");
+assert(interactions.includes('element.cloneNode(true)')&&interactions.includes("container.append(ghost)")&&css.includes(".drag-ghost"),"all physical drags use a visible body-level cursor proxy");
 assert(minigames.includes('className="placed-box placed-pop"')&&!/BOX PACKED"\);this\.draw\(\)/.test(minigames),"packing placement creates only its persistent placed-box overlay without rerendering the minigame");
 assert(minigames.includes('className="shape-slot"')&&minigames.includes("source?.classList.add(\"packed-away\")")&&!minigames.includes('querySelector(".shape-rack").innerHTML'),"packing inventory slots remain stable when a box is placed");
+assert(minigames.includes('className="packing-drag-ghost"')&&interactions.includes("createGhost")&&css.includes(".packing-drag-ghost"),"packing uses a dedicated transparent artwork ghost instead of cloning an inventory slot");
 assert(minigames.includes("if(target&&this.dragCoordinate)this.place(box.id,this.dragCoordinate)"),"packing preview and drop commit share one cached grid coordinate");
 assert(css.includes("grid-auto-flow:row")&&!css.includes("grid-auto-flow:dense")&&css.includes(".shape-box.packed-away{visibility:hidden")&&!minigames.includes("source?.remove(),180"),"packed inventory boxes retain permanent grid space without dense reflow");
 assert((minigames.match(/data-action="/g)||[]).length===1&&minigames.includes("CONFIRM · HOLD SHIPMENT"),"final dispatch has one confirmation action");
@@ -189,7 +192,7 @@ assert(interactions.includes("targetRects=targetList().map")&&!interactions.incl
 assert(minigames.includes('if(key===this.previewKey)return')&&minigames.includes("this.previewCells.forEach"),"packing previews skip unchanged targets and clear only affected cells");
 assert(!/this\.flash\([^\n]*(PALLET LOADED|PALLETS SWAPPED)/.test(minigames)&&minigames.includes("slot-feedback"),"truck loading uses localized routine feedback rather than the global answer overlay");
 assert(css.includes("barcode-parcel:not(.choice-correct):not(.choice-wrong):hover")&&css.includes("stock-card:not(.choice-correct):not(.choice-wrong):hover"),"barcode and speed-picking cards retain visible hover states separate from result states");
-assert(!css.includes(".brand-logo{background:#fff")&&css.includes(".brand-logo{width:clamp(118px"),"the transparent CEVA logo is no longer forced into a white plaque");
+assert(!css.includes(".brand-logo{background:#fff")&&css.includes(".menu-logo{"),"the transparent CEVA logo is no longer forced into a white plaque");
 assert(minigames.includes("offsetGridCoordinate(target.dataset.cell,this.dragAnchor)")&&minigames.includes("x>=0&&y>=0"),"packing ghost, footprint preview, and placement share the pointer grab anchor with safe grid bounds");
 assert(css.includes(".drag-source{opacity:0}"),"the moving source is hidden while its fully visible drag ghost is active");
 console.log(`Competition validation passed: ${checks.toLocaleString()} checks.`);
