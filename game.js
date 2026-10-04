@@ -16,7 +16,7 @@ const GAMEPLAY_BACKGROUNDS={
   picking:"assets/speed-picking/background-speed-picking.png",
   conveyor:"assets/backgrounds/02_conveyor_rush.png",
   barcode:"assets/backgrounds/03_barcode_hunt.png",
-  packing:"assets/backgrounds/04_packing_tetris.png",
+  packing:"assets/packing-tetris/background-packing-tetris.png",
   detective:"assets/backgrounds/05_wms_detective.png",
   loading:"assets/backgrounds/06_truck_loading.png",
   memory:"assets/backgrounds/07_memory_challenge.png",
