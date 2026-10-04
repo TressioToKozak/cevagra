@@ -4,7 +4,7 @@ import { ACTIVE_SECONDS, COMPETITION_SECONDS, GAME_CONFIGS, TRANSITION_SECONDS, 
 import { scoreClassification, scoreStandard, sumScores } from "./scoring.js";
 import { StageGuard } from "./lifecycle.js";
 import { LeaderboardManager, normalizeName } from "./storage.js";
-import { MINIGAME_CLASSES, BaseMinigame, gridDragAnchor, offsetGridCoordinate, planPalletMove } from "./minigames.js";
+import { MINIGAME_CLASSES, BaseMinigame, gridDragAnchor, offsetGridCoordinate, packingBoxAsset, planPalletMove } from "./minigames.js";
 import { attachPointerDrag } from "./interactions.js";
 
 let checks=0;
@@ -62,6 +62,9 @@ assert(returned.slots.join(",")==="B,,"&&returned.displacedTo==="yard","a yard p
 assert(offsetGridCoordinate("4:3",{x:1,y:2})==="3:1","packing drop coordinates preserve the cell grabbed inside a multi-cell box");
 assert(JSON.stringify(gridDragAnchor({left:10,top:20},{w:3,h:2},50.5,40.25,119,79))===JSON.stringify({x:2,y:1}),"packing drag anchors handle fractional grid steps and non-leading grab positions");
 assert(offsetGridCoordinate("7:4",gridDragAnchor({left:10,top:20},{w:3,h:2},50.5,40.25,119,79))==="5:3","packing edge drops use the same anchored coordinate as their preview");
+const packingDimensions=[[3,2],[2,2],[3,1],[1,3],[2,1],[1,2],[1,1]];
+assert(packingDimensions.every(([w,h])=>packingBoxAsset({w,h}).includes(`box-${w}x${h}`)),"every predefined packing dimension resolves to proportion-compatible artwork");
+assert(new Set(snapshotA.packing.boxes.map(box=>box.id)).size===10&&snapshotA.packing.boxes.every((box,index)=>box.id===`BOX-${index+1}`),"all ten shuffled boxes retain sequential generated identifiers");
 
 // Pointer tracking is tested without a browser: visual movement must happen in
 // the pointermove handler, while the more expensive hit test waits for a frame.
@@ -149,6 +152,7 @@ assert(css.includes(".quality-box.dented{clip-path:none")&&css.includes(".qualit
 assert(css.includes(".quality-box .issue-mark")&&css.includes("font-size:12px!important"),"quality defects use large visual signals and readable labels");
 assert(interactions.includes('ghost=element.cloneNode(true)')&&css.includes(".drag-ghost"),"all physical drags use a visible body-level cursor proxy");
 assert(minigames.includes('className="placed-box placed-pop"')&&!/BOX PACKED"\);this\.draw\(\)/.test(minigames),"packing placement creates only its persistent placed-box overlay without rerendering the minigame");
+assert(minigames.includes('className="shape-slot"')&&minigames.includes("source?.classList.add(\"packed-away\")")&&!minigames.includes('querySelector(".shape-rack").innerHTML'),"packing inventory slots remain stable when a box is placed");
 assert(minigames.includes("if(target&&this.dragCoordinate)this.place(box.id,this.dragCoordinate)"),"packing preview and drop commit share one cached grid coordinate");
 assert(css.includes("grid-auto-flow:row")&&!css.includes("grid-auto-flow:dense")&&css.includes(".shape-box.packed-away{visibility:hidden")&&!minigames.includes("source?.remove(),180"),"packed inventory boxes retain permanent grid space without dense reflow");
 assert((minigames.match(/data-action="/g)||[]).length===1&&minigames.includes("CONFIRM · HOLD SHIPMENT"),"final dispatch has one confirmation action");
