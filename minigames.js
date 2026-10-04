@@ -42,7 +42,23 @@ class RapidFind extends BaseMinigame {
   complete(){const result=super.complete(),missed=Math.max(0,10-this.correct);return {...result,correct:this.correct,mistakes:this.mistakes+missed,attempts:10+this.mistakes,score:this.score()};}
 }
 
-export class SpeedPicking extends RapidFind{constructor(){super("picking");}}
+const SPEED_PICKING_LOCATIONS=[
+  "location-01-natural-wood-pallet.png",
+  "location-02-blue-pallet.png",
+  "location-03-red-pallet.png",
+  "location-04-yellow-pallet.png",
+  "location-05-green-pallet.png",
+  "location-06-purple-pallet.png"
+];
+
+export class SpeedPicking extends RapidFind{
+  constructor(){super("picking");}
+  draw(){
+    const round=this.data.rounds[this.index%this.data.rounds.length];this.current=round;
+    this.root.innerHTML=`<div class="picking-target" aria-live="polite"><span>TARGET SKU</span><strong>${round.target}</strong></div><div class="picking-locations">${round.options.map((value,index)=>`<button class="picking-card" data-sku="${value}" aria-label="Location ${index+1}, ${value}"><span class="picking-photo"><img src="assets/speed-picking/locations/${SPEED_PICKING_LOCATIONS[index%SPEED_PICKING_LOCATIONS.length]}" alt="" draggable="false"><span class="picking-location">LOC ${String(index+1).padStart(2,"0")}</span><i class="picking-frame" aria-hidden="true"></i></span><span class="picking-card-footer"><strong>${value}</strong><i aria-hidden="true"></i></span></button>`).join("")}</div>`;
+    this.root.querySelectorAll("[data-sku]").forEach(button=>this.listen(button,"click",()=>this.choose(button)));
+  }
+}
 export class BarcodeHunt extends RapidFind{constructor(){super("barcode");}}
 
 export class ConveyorRush extends BaseMinigame {
