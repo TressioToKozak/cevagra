@@ -20,6 +20,39 @@ export function gridDragAnchor(rect,box,stepX,stepY,clientX,clientY){
   return {x:Math.max(0,Math.min(box.w-1,Math.floor((clientX-rect.left)/stepX))),y:Math.max(0,Math.min(box.h-1,Math.floor((clientY-rect.top)/stepY)))};
 }
 
+const PACKING_BOX_ASSETS={
+  "1x1":["box-1x1-a.png","box-1x1-b.png"],"1x2":["box-1x2.png"],"1x3":["box-1x3.png"],
+  "2x1":["box-2x1-a.png","box-2x1-b.png"],"2x2":["box-2x2-a.png","box-2x2-b.png"],
+  "3x1":["box-3x1-a.png","box-3x1-b.png"],"3x2":["box-3x2.png"]
+};
+
+/** Resolve artwork by collision dimensions, never by the shuffled BOX number. */
+export function packingBoxAsset(box,variant=0){
+  const assets=PACKING_BOX_ASSETS[`${box.w}x${box.h}`];
+  if(!assets)throw new Error(`No Packing Tetris artwork for ${box.w}x${box.h}`);
+  return `assets/packing-tetris/boxes/${assets[variant%assets.length]}`;
+}
+
+/** Pack the inventory onto a fixed 8 x 5 unit rack without changing piece scale. */
+export function packingInventoryLayout(boxes,cols=8,rows=5){
+  const occupied=Array.from({length:rows},()=>Array(cols).fill(false)),positions={};
+  const ordered=[...boxes].sort((a,b)=>b.w*b.h-a.w*a.h||b.h-a.h||b.w-a.w);
+  const search=index=>{
+    if(index===ordered.length)return true;
+    const box=ordered[index];
+    for(let y=0;y<=rows-box.h;y++)for(let x=0;x<=cols-box.w;x++){
+      let open=true;for(let dy=0;dy<box.h&&open;dy++)for(let dx=0;dx<box.w;dx++)if(occupied[y+dy][x+dx]){open=false;break;}
+      if(!open)continue;
+      for(let dy=0;dy<box.h;dy++)for(let dx=0;dx<box.w;dx++)occupied[y+dy][x+dx]=true;
+      positions[box.id]={x,y};if(search(index+1))return true;
+      delete positions[box.id];for(let dy=0;dy<box.h;dy++)for(let dx=0;dx<box.w;dx++)occupied[y+dy][x+dx]=false;
+    }
+    return false;
+  };
+  if(!search(0))throw new Error("Packing inventory does not fit its unit rack");
+  return positions;
+}
+
 export class BaseMinigame {
   init(context){this.ctx=context;this.root=context.root;this.data=context.data;this.mistakes=0;this.correct=0;this.cleanups=[];this.locked=false;return this;}
   render(){}
@@ -77,23 +110,26 @@ export class PackingTetris extends BaseMinigame {
   render(){
     this.cells=Array.from({length:this.data.rows},()=>Array(this.data.cols).fill(null));
     this.placed={};this.selected=null;this.previewCells=[];this.previewKey="";
-    this.root.innerHTML=`<div class="packing-layout"><section class="box-bank"><div class="data-title">AVAILABLE BOXES · TRUE GRID SIZE</div><div class="shape-rack"></div></section><section class="pallet-panel"><div class="data-title">PALLET · ${this.data.cols} × ${this.data.rows} CELLS</div><div class="pallet-grid-wrap"><div class="pallet-grid">${this.cells.flatMap((row,y)=>row.map((_,x)=>`<button class="pallet-cell" data-cell="${x}:${y}" aria-label="Pallet cell ${x+1}, ${y+1}"></button>`)).join("")}<div class="placed-layer" aria-hidden="true"></div></div></div><div class="packing-key"><span><i class="key-valid"></i> FITS HERE</span><span><i class="key-invalid"></i> DOES NOT FIT</span></div></section></div>`;
-    const rack=this.root.querySelector(".shape-rack");
-    this.data.boxes.forEach(box=>{const button=document.createElement("button");button.className="shape-box";button.dataset.shape=box.id;button.style.setProperty("--w",box.w);button.style.setProperty("--h",box.h);button.innerHTML=`<strong>${box.id}</strong><span>${box.w} × ${box.h}</span>`;rack.append(button);this.bindShape(button,box);});
+    this.root.innerHTML=`<div class="packing-layout"><section class="box-bank"><div class="data-title">AVAILABLE BOXES</div><div class="shape-rack" role="list"></div></section><section class="pallet-panel"><div class="data-title">PALLET <span>•</span> ${this.data.cols} × ${this.data.rows} CELLS</div><div class="pallet-grid-wrap"><div class="pallet-board"><div class="pallet-grid">${this.cells.flatMap((row,y)=>row.map((_,x)=>`<button class="pallet-cell" data-cell="${x}:${y}" aria-label="Pallet cell ${x+1}, ${y+1}"></button>`)).join("")}<div class="placed-layer" aria-hidden="true"></div></div></div></div><div class="packing-key"><span><i class="key-valid"></i> FITS HERE</span><span><i class="key-invalid"></i> DOES NOT FIT</span></div></section></div>`;
+    const rack=this.root.querySelector(".shape-rack"),layout=packingInventoryLayout(this.data.boxes,this.data.cols,this.data.rows);
+    this.data.boxes.forEach((box,index)=>{const position=layout[box.id],slot=document.createElement("div");slot.className="shape-slot";slot.setAttribute("role","listitem");Object.assign(slot.style,{gridColumn:`${position.x+1} / span ${box.w}`,gridRow:`${position.y+1} / span ${box.h}`});const button=document.createElement("button");button.className="shape-box";button.dataset.shape=box.id;button.style.setProperty("--w",box.w);button.style.setProperty("--h",box.h);button.innerHTML=this.boxMarkup(box,packingBoxAsset(box,index));slot.append(button);rack.append(slot);this.bindShape(button,box);});
     this.root.querySelectorAll("[data-cell]").forEach(cell=>this.listen(cell,"click",()=>this.place(this.selected,cell.dataset.cell)));
     const grid=this.root.querySelector(".pallet-grid");
     this.resizeObserver=globalThis.ResizeObserver?new ResizeObserver(()=>this.syncGeometry()):null;
     this.resizeObserver?.observe(grid);this.cleanups.push(()=>this.resizeObserver?.disconnect());
     requestAnimationFrame(()=>this.syncGeometry());
   }
+  boxMarkup(box,asset){return `<span class="shape-art"><img src="${asset}" alt="" draggable="false"></span><span class="shape-copy"><strong>${box.id}</strong><small>${box.w} × ${box.h}</small></span>`;}
   bindShape(element,box){
     this.listen(element,"click",()=>{if(!element.dataset.dragged)this.selectShape(box.id);});
-    this.cleanups.push(attachPointerDrag({element,targets:()=>this.root.querySelectorAll("[data-cell]"),hitPadding:5,onStart:({startX,startY})=>{this.selectShape(box.id);this.root.classList.add("is-dragging");const rect=element.getBoundingClientRect(),styles=getComputedStyle(this.root),stepX=parseFloat(styles.getPropertyValue("--pack-step-x"))||rect.width/box.w,stepY=parseFloat(styles.getPropertyValue("--pack-step-y"))||rect.height/box.h;this.dragAnchor=gridDragAnchor(rect,box,stepX,stepY,startX,startY);this.dragCoordinate=null;},onMove:({target})=>{this.dragCoordinate=target?offsetGridCoordinate(target.dataset.cell,this.dragAnchor):null;this.dragCoordinate?this.preview(box.id,this.dragCoordinate):this.clearPreview();},onDrop:({target})=>{this.root.classList.remove("is-dragging");this.clearPreview();if(target&&this.dragCoordinate)this.place(box.id,this.dragCoordinate);else this.flash("×","DROP ON THE PALLET");this.dragAnchor=null;this.dragCoordinate=null;},onCancel:()=>{this.root.classList.remove("is-dragging");this.clearPreview();this.dragAnchor=null;this.dragCoordinate=null;}}));
+    this.cleanups.push(attachPointerDrag({element,targets:()=>this.root.querySelectorAll("[data-cell]"),hitPadding:5,createGhost:({rect,event})=>{const geometry=this.boxGeometry(box),xRatio=(event.clientX-rect.left)/rect.width,yRatio=(event.clientY-rect.top)/rect.height,node=document.createElement("div");node.className="packing-drag-ghost";node.innerHTML=this.boxMarkup(box,element.querySelector("img").getAttribute("src"));return {node,rect:{left:event.clientX-xRatio*geometry.width,top:event.clientY-yRatio*geometry.height,...geometry}};},onStart:({startX,startY})=>{this.selectShape(box.id);this.root.classList.add("is-dragging");const rect=element.getBoundingClientRect(),styles=getComputedStyle(this.root),stepX=parseFloat(styles.getPropertyValue("--pack-step-x")),stepY=parseFloat(styles.getPropertyValue("--pack-step-y"));this.dragAnchor=gridDragAnchor(rect,box,stepX,stepY,startX,startY);this.dragCoordinate=null;},onMove:({target})=>{this.dragCoordinate=target?offsetGridCoordinate(target.dataset.cell,this.dragAnchor):null;this.dragCoordinate?this.preview(box.id,this.dragCoordinate):this.clearPreview();},onDrop:({target})=>{this.root.classList.remove("is-dragging");this.clearPreview();if(target&&this.dragCoordinate)this.place(box.id,this.dragCoordinate);else this.flash("×","DROP ON THE PALLET");this.dragAnchor=null;this.dragCoordinate=null;},onCancel:()=>{this.root.classList.remove("is-dragging");this.clearPreview();this.dragAnchor=null;this.dragCoordinate=null;}}));
   }
+  boxGeometry(box){const styles=getComputedStyle(this.root),stepX=parseFloat(styles.getPropertyValue("--pack-step-x")),stepY=parseFloat(styles.getPropertyValue("--pack-step-y")),cellW=parseFloat(styles.getPropertyValue("--pack-cell-w")),cellH=parseFloat(styles.getPropertyValue("--pack-cell-h"));return {width:cellW+(box.w-1)*stepX,height:cellH+(box.h-1)*stepY};}
   syncGeometry(){
     const grid=this.root.querySelector(".pallet-grid"),first=grid?.querySelector('[data-cell="0:0"]'),next=grid?.querySelector('[data-cell="1:0"]'),below=grid?.querySelector('[data-cell="0:1"]');if(!first||!next||!below)return;
     const a=first.getBoundingClientRect(),b=next.getBoundingClientRect(),c=below.getBoundingClientRect();
     this.root.style.setProperty("--pack-cell-w",`${a.width}px`);this.root.style.setProperty("--pack-cell-h",`${a.height}px`);this.root.style.setProperty("--pack-step-x",`${b.left-a.left}px`);this.root.style.setProperty("--pack-step-y",`${c.top-a.top}px`);
+    this.root.style.setProperty("--pack-gap-x",`${b.left-a.right}px`);this.root.style.setProperty("--pack-gap-y",`${c.top-a.bottom}px`);
     Object.keys(this.placed).forEach(id=>this.positionPlaced(id));
   }
   positionPlaced(id){const placement=this.placed[id],box=this.data.boxes.find(item=>item.id===id),block=this.root.querySelector(`[data-placed="${id}"]`),cell=this.root.querySelector(`[data-cell="${placement?.x}:${placement?.y}"]`),grid=this.root.querySelector(".pallet-grid");if(!placement||!block||!cell||!grid)return;const cr=cell.getBoundingClientRect(),gr=grid.getBoundingClientRect(),styles=getComputedStyle(this.root),stepX=parseFloat(styles.getPropertyValue("--pack-step-x")),stepY=parseFloat(styles.getPropertyValue("--pack-step-y")),cellW=parseFloat(styles.getPropertyValue("--pack-cell-w")),cellH=parseFloat(styles.getPropertyValue("--pack-cell-h"));Object.assign(block.style,{left:`${cr.left-gr.left}px`,top:`${cr.top-gr.top}px`,width:`${cellW+(box.w-1)*stepX}px`,height:`${cellH+(box.h-1)*stepY}px`});}
@@ -107,9 +143,9 @@ export class PackingTetris extends BaseMinigame {
     for(let dy=0;dy<box.h;dy++)for(let dx=0;dx<box.w;dx++)this.cells[y+dy][x+dx]=id;
     this.placed[id]={x,y};this.correct++;this.selected=null;
     const source=this.root.querySelector(`[data-shape="${id}"]`);source?.classList.add("packed-away");
-    const block=document.createElement("div");block.className="placed-box placed-pop";block.dataset.placed=id;block.innerHTML=`<b>${id}</b><span>${box.w} × ${box.h}</span>`;this.root.querySelector(".placed-layer").append(block);this.positionPlaced(id);
+    const block=document.createElement("div");block.className="placed-box placed-pop";block.dataset.placed=id;block.innerHTML=`<img src="${source?.querySelector("img")?.src||packingBoxAsset(box)}" alt=""><span><b>${id}</b><small>${box.w} × ${box.h}</small></span>`;this.root.querySelector(".placed-layer").append(block);this.positionPlaced(id);
     this.clearPreview();this.flash("✓","BOX PACKED");
-    if(this.correct===this.data.boxes.length){this.timeout(()=>{this.root.querySelector(".shape-rack").innerHTML='<div class="all-sorted">✓ PALLET FULLY PACKED</div>';this.ctx.finish();},250);}
+    if(this.correct===this.data.boxes.length)this.timeout(()=>this.ctx.finish(),250);
   }
   score(){const occupied=this.cells.flat().filter(Boolean).length,total=this.data.boxes.reduce((sum,box)=>sum+box.w*box.h,0);return scoreStandard({correct:occupied,total,mistakes:this.mistakes,completed:this.correct===this.data.boxes.length,timeRemaining:this.remaining,timeLimit:this.ctx.config.time});}
   complete(){const result=super.complete(),missed=this.data.boxes.length-this.correct;return {...result,mistakes:this.mistakes+missed,attempts:this.data.boxes.length+this.mistakes,score:this.score()};}
