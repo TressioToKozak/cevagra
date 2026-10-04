@@ -13,7 +13,7 @@ const settings=new CompetitionSettings();
 const createRunSeed=()=>`CEVA-${Date.now().toString(36).toUpperCase()}-${crypto.getRandomValues(new Uint32Array(1))[0].toString(36).toUpperCase()}`;
 const app=$("#app"),modal=$("#modal"),modalContent=$("#modal-content"),leaderboard=new LeaderboardManager();
 const GAMEPLAY_BACKGROUNDS={
-  picking:"assets/backgrounds/01_speed_picking.png",
+  picking:"assets/speed-picking/background-speed-picking.png",
   conveyor:"assets/backgrounds/02_conveyor_rush.png",
   barcode:"assets/backgrounds/03_barcode_hunt.png",
   packing:"assets/backgrounds/04_packing_tetris.png",
