@@ -37,6 +37,8 @@ assert(snapshotA.barcode.rounds.map(round=>round.options.length).join(",")==="6,
 const encoded=code128Values("SKU-12345");
 assert(encoded[0]===104&&encoded.at(-1)===106&&encoded.at(-2)===(104+[..."SKU-12345"].reduce((sum,char,index)=>sum+(char.charCodeAt(0)-32)*(index+1),0))%103,"Code 128-B output has the correct start, checksum, and stop symbols");
 assert((code128Svg("SKU-12345").match(/<rect /g)||[]).length>20&&code128Svg("SKU-12345").includes(">SKU-12345</text>"),"barcode SVG contains encoded bars and its matching human-readable SKU");
+const barcodeExamples=["SKU-28918","SKU-28919","SKU-26918","SKU-28718"].map(code128Svg);
+assert(new Set(barcodeExamples).size===4&&barcodeExamples.every((svg,index)=>svg.includes(`>${["SKU-28918","SKU-28919","SKU-26918","SKU-28718"][index]}</text>`)),"similar SKUs produce distinct Code 128 data with exactly matching captions");
 assert(snapshotA.conveyor.parcels.length===12,"conveyor has a finite parcel set");
 assert(new Set(snapshotA.conveyor.parcels.map(parcel=>parcel.carrier)).size>1,"conveyor uses multiple carriers");
 assert(snapshotA.packing.boxes.every(box=>box.w>0&&box.h>0),"packing pieces have real dimensions");

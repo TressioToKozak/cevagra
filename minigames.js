@@ -98,9 +98,9 @@ export function code128Values(value){
 /** Crisp, dependency-free barcode artwork; the SKU caption remains inside the label. */
 export function code128Svg(value){
   const patterns=code128Values(value).map(symbol=>CODE128_PATTERNS[symbol]),quiet=10,total=patterns.reduce((sum,pattern)=>sum+[...pattern].reduce((a,n)=>a+Number(n),0),0)+quiet*2;let x=quiet,bars="";
-  for(const pattern of patterns)for(let index=0;index<pattern.length;index++){const width=Number(pattern[index]);if(index%2===0)bars+=`<rect x="${x}" y="2" width="${width}" height="30"/>`;x+=width;}
+  for(const pattern of patterns)for(let index=0;index<pattern.length;index++){const width=Number(pattern[index]);if(index%2===0)bars+=`<rect x="${x}" y="1" width="${width}" height="38"/>`;x+=width;}
   const caption=String(value).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
-  return `<svg class="carton-barcode" viewBox="0 0 ${total} 43" role="img" aria-label="Barcode for ${caption}" shape-rendering="crispEdges"><g fill="#07101a">${bars}</g><text x="${total/2}" y="41" text-anchor="middle" fill="#07101a">${caption}</text></svg>`;
+  return `<svg class="carton-barcode" viewBox="0 0 ${total} 55" role="img" aria-label="Barcode for ${caption}" shape-rendering="crispEdges"><g fill="#03080e">${bars}</g><text x="${total/2}" y="52" text-anchor="middle" fill="#061426">${caption}</text></svg>`;
 }
 
 const BARCODE_CARTONS=[
