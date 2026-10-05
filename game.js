@@ -15,7 +15,7 @@ const app=$("#app"),modal=$("#modal"),modalContent=$("#modal-content"),leaderboa
 const GAMEPLAY_BACKGROUNDS={
   picking:"assets/speed-picking/background-speed-picking.png",
   conveyor:"assets/backgrounds/02_conveyor_rush.png",
-  barcode:"assets/backgrounds/03_barcode_hunt.png",
+  barcode:"assets/barcode-hunt/background/background-barcode-hunt.png",
   packing:"assets/packing-tetris/background-packing-tetris.png",
   detective:"assets/backgrounds/05_wms_detective.png",
   loading:"assets/backgrounds/06_truck_loading.png",
