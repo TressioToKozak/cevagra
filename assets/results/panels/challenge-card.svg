@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="470" height="118" viewBox="0 0 470 118">
+    <defs>
+      <linearGradient id="navy" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#071a33" stop-opacity="0.96"/><stop offset="1" stop-color="#04101f" stop-opacity="0.94"/></linearGradient>
+      <linearGradient id="blueEdge" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#4cc3ff"/><stop offset="0.5" stop-color="#6da5d8"/><stop offset="1" stop-color="#ffbf43"/></linearGradient>
+      <linearGradient id="red" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#ff1738"/><stop offset="1" stop-color="#b50929"/></linearGradient>
+      <linearGradient id="gold" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#ffb52e"/><stop offset="1" stop-color="#ffe29a"/></linearGradient>
+      <filter id="shadow"><feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#000" flood-opacity="0.55"/></filter>
+      <filter id="glow"><feDropShadow dx="0" dy="0" stdDeviation="5" flood-color="#40b7ff" flood-opacity="0.55"/></filter>
+    </defs>
+<g filter="url(#shadow)"><rect x="5" y="5" width="460" height="108" rx="13" fill="url(#navy)" stroke="#4f96d6" stroke-width="2"/>
+<rect x="24" y="90" width="420" height="8" rx="4" fill="#173d5d"/>
+<rect x="24" y="90" width="3" height="8" rx="4" fill="#46cfff"/></g></svg>
