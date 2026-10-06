@@ -1,0 +1,55 @@
+{
+  "root": "assets/conveyor-rush/",
+  "oneFilePerElement": true,
+  "carrierCodes": [
+    "DHL",
+    "UPS",
+    "TNT",
+    "TOF",
+    "KLG",
+    "BRINGCARGO"
+  ],
+  "recommendedMapping": {
+    "conveyor": {
+      "base": "belt/belt-base.png",
+      "frontTrim": "belt/belt-front-trim.png",
+      "leftEnd": "belt/belt-end-left.png",
+      "rightEnd": "belt/belt-end-right.png"
+    },
+    "parcelVariants": [
+      "boxes/parcel-front.png",
+      "boxes/parcel-angle-left.png",
+      "boxes/parcel-angle-right.png"
+    ],
+    "badges": {
+      "DHL": "carriers/badge-dhl.png",
+      "UPS": "carriers/badge-ups.png",
+      "TNT": "carriers/badge-tnt.png",
+      "TOF": "carriers/badge-tof.png",
+      "KLG": "carriers/badge-klg.png",
+      "BRINGCARGO": "carriers/badge-bringcargo.png"
+    },
+    "zones": {
+      "DHL": "zones/zone-dhl.png",
+      "UPS": "zones/zone-ups.png",
+      "TNT": "zones/zone-tnt.png",
+      "TOF": "zones/zone-tof.png",
+      "KLG": "zones/zone-klg.png",
+      "BRINGCARGO": "zones/zone-bringcargo.png"
+    },
+    "feedback": {
+      "dragOver": "states/drop-valid.png",
+      "accepted": "states/drop-valid-check.png",
+      "invalid": "states/drop-invalid.png",
+      "rejected": "states/drop-rejected.png",
+      "dropArrow": "states/drop-arrow.png"
+    }
+  },
+  "implementationNotes": [
+    "Keep existing .carrier-zone DOM nodes as hit targets and layer zone PNGs inside them.",
+    "Keep carrier matching based on data-chute; images are presentation only.",
+    "Keep GIFT id, gift name, and carrier value dynamic HTML text over the parcel art.",
+    "Do not bake scores/timers/game state into images.",
+    "All files are RGBA PNGs with transparent backgrounds."
+  ]
+}
