@@ -201,4 +201,50 @@ assert(css.includes("barcode-parcel:not(.choice-correct):not(.choice-wrong):hove
 assert(!css.includes(".brand-logo{background:#fff")&&css.includes(".menu-logo{"),"the transparent CEVA logo is no longer forced into a white plaque");
 assert(minigames.includes("offsetGridCoordinate(target.dataset.cell,this.dragAnchor)")&&minigames.includes("x>=0&&y>=0"),"packing ghost, footprint preview, and placement share the pointer grab anchor with safe grid bounds");
 assert(css.includes(".drag-source{opacity:0}"),"the moving source is hidden while its fully visible drag ghost is active");
+// Conveyor artwork remains presentation; exercise its DOM contract and lifecycle.
+const conveyorRoot={innerHTML:"",querySelector:()=>null};
+const visualConveyor=new Conveyor().init({root:conveyorRoot,data:snapshotA.conveyor,config:GAME_CONFIGS[1],remaining:()=>10,flash:()=>{},update:()=>{}});
+visualConveyor.render();
+assert((conveyorRoot.innerHTML.match(/data-chute=/g)||[]).length===6,"Conveyor renders all six logical carrier hit targets");
+for(const carrier of ["DHL","UPS","TNT","TOF","KLG","BRINGCARGO"]){
+  assert(conveyorRoot.innerHTML.includes(`data-chute="${carrier}"`)&&conveyorRoot.innerHTML.includes(`zones/zone-${carrier.toLowerCase()}.png`),`${carrier} retains its matching chute and artwork`);
+}
+for(const asset of [...conveyorRoot.innerHTML.matchAll(/src="([^"]+)"/g)].map(match=>match[1]))assert(readFileSync(asset).length>0,`Conveyor asset exists: ${asset}`);
+assert(conveyorRoot.innerHTML.includes("belt/belt-base.png")&&conveyorRoot.innerHTML.includes("belt/belt-front-trim.png")&&conveyorRoot.innerHTML.includes("states/drop-valid-check.png")&&conveyorRoot.innerHTML.includes("states/drop-invalid.png"),"belt layers and success/error overlays use supplied assets");
+let advancedParcel=0,detachedParcel=0,finishedConveyor=0;
+visualConveyor.spawn=()=>{advancedParcel++;};visualConveyor.ctx.finish=()=>{finishedConveyor++;};visualConveyor.boxDragCleanup=()=>{detachedParcel++;};visualConveyor.active=snapshotA.conveyor.parcels[0];visualConveyor.miss();
+assert(visualConveyor.mistakes===1&&visualConveyor.index===1&&advancedParcel===1&&detachedParcel===1,"missed parcel adds one mistake, detaches drag, and advances exactly once");
+visualConveyor.index=snapshotA.conveyor.parcels.length-1;visualConveyor.active=snapshotA.conveyor.parcels.at(-1);visualConveyor.advance();
+assert(finishedConveyor===1&&advancedParcel===1&&visualConveyor.active===null,"last parcel finishes the minigame without spawning another parcel");
+visualConveyor.box={style:{}};visualConveyor.x=125;visualConveyor.position();
+assert(visualConveyor.box.style.transform==="translate3d(125px,0,0)","belt motion updates the parcel transform without rebuilding DOM");
+visualConveyor.cleanup();assert(visualConveyor.locked&&visualConveyor.cleanups.length===0,"Conveyor cleanup drains registered artwork and interaction cleanup functions");
+// Use the real shared controller on spawned parcels, including cleanup mid-drag.
+const parcelHost={markup:"",get firstElementChild(){return this.node;},set innerHTML(value){this.markup=value;this.node=new FakeElement();}};
+const carrierTargets=["DHL","UPS","TNT","TOF","KLG","BRINGCARGO"].map((carrier,index)=>{const node=new FakeElement({left:200+index*120,top:100,width:100,height:80});node.dataset.chute=carrier;return node;});
+const motion={remove(){this.removed=true;}};
+const liveRoot={innerHTML:"",querySelector:selector=>selector==="#moving-parcel"?parcelHost:selector===".conveyor-motion"?motion:{clientWidth:1000},querySelectorAll:()=>carrierTargets};
+const liveContainer={append:node=>{liveContainer.child=node;}};
+global.document={body:liveContainer,documentElement:{classList:{add:name=>dragClasses.add(name),remove:name=>dragClasses.delete(name)}}};
+const liveConveyor=new Conveyor().init({root:liveRoot,data:{parcels:[{id:"GIFT-1",carrier:"DHL",gift:"TEDDY BEAR"},{id:"GIFT-2",carrier:"UPS",gift:"TRAIN SET"},{id:"GIFT-3",carrier:"BRINGCARGO",gift:"SNOW GLOBE"}]},config:GAME_CONFIGS[1],remaining:()=>10,flash:()=>{},update:()=>{},finish:()=>{}});
+liveConveyor.render();liveConveyor.start();
+assert(parcelHost.markup.includes("boxes/parcel-front.png")&&parcelHost.markup.includes("labels/shipping-label-front.png")&&parcelHost.markup.includes("<b>DHL</b>")&&parcelHost.markup.includes("GIFT-1")&&parcelHost.markup.includes("TEDDY BEAR"),"spawn layers supplied carton and label assets under dynamic HTML data");
+const firstParcel=liveConveyor.box;
+firstParcel.dispatchEvent(pointer("pointerdown",30,30));
+assert(liveConveyor.dragging&&liveContainer.child.style.transform==="none","spawned parcel uses attachPointerDrag and clears belt translation on its ghost");
+firstParcel.dispatchEvent(pointer("pointercancel",30,30));
+assert(!liveConveyor.dragging&&liveContainer.child.removed&&liveConveyor.index===0,"cancel restores the original moving parcel without consuming it");
+firstParcel.dispatchEvent(pointer("pointerdown",30,30));firstParcel.dispatchEvent(pointer("pointermove",225,130));firstParcel.dispatchEvent(pointer("pointerup",225,130));
+assert(liveConveyor.correct===1&&liveConveyor.mistakes===0&&liveConveyor.index===1&&parcelHost.markup.includes("parcel-angle-left.png"),"correct pointer drop scores once and spawns the next visual variant");
+const secondParcel=liveConveyor.box;
+secondParcel.dispatchEvent(pointer("pointerdown",30,30));secondParcel.dispatchEvent(pointer("pointermove",225,130));secondParcel.dispatchEvent(pointer("pointerup",225,130));
+assert(liveConveyor.correct===1&&liveConveyor.mistakes===1&&liveConveyor.index===2&&parcelHost.markup.includes("parcel-angle-right.png"),"wrong pointer drop penalizes once and advances to the right-angle carton");
+const lastParcel=liveConveyor.box;lastParcel.dispatchEvent(pointer("pointerdown",30,30));
+const conveyorFrame=liveConveyor.raf;let cancelledFrame=null;
+const savedCancel=global.cancelAnimationFrame;global.cancelAnimationFrame=id=>{cancelledFrame=id;};
+liveConveyor.cleanup();global.cancelAnimationFrame=savedCancel;
+assert(cancelledFrame===conveyorFrame&&motion.removed&&liveContainer.child.removed&&!dragClasses.has("is-pointer-dragging"),"cleanup cancels conveyor RAF, removes belt animation and active ghost, and clears pointer state");
+liveContainer.child=null;lastParcel.dispatchEvent(pointer("pointerdown",30,30));
+assert(liveContainer.child===null,"cleanup removes pointer listeners from the active parcel");
+delete global.document;
 console.log(`Competition validation passed: ${checks.toLocaleString()} checks.`);

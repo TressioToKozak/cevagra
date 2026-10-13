@@ -421,3 +421,61 @@ body.results-active #app{padding:clamp(8px,1.5vh,16px) clamp(14px,3vw,52px)}
 .results-screen.new-record .results-final-score{filter:drop-shadow(0 0 15px #eab04466)}
 @media(max-width:1450px){.results-screen{width:min(100%,1210px)}.results-score-stats{grid-template-columns:minmax(0,1.35fr) minmax(390px,1fr)}.results-rank{padding-left:5%}.results-record-badge{right:1%}}
 @media(max-height:820px){.results-screen{grid-template-rows:minmax(45px,8.5vh) minmax(64px,11vh) minmax(76px,12.5vh) minmax(0,1fr) minmax(43px,7.5vh);gap:5px}.results-game-card{padding-top:3px;padding-bottom:3px}.results-record-badge{top:82%;right:2%;transform:none}}
+
+/* Conveyor Rush: artwork is separate from the full-size logical drop targets.
+   Keep the shared HUD, stage timing and cached pointer hit testing unchanged. */
+.competition-shell[data-game="conveyor"] .conveyor{border:0;background:transparent;isolation:isolate}
+.competition-shell[data-game="conveyor"] .conveyor:before,.competition-shell[data-game="conveyor"] .conveyor:after{content:none}
+.conveyor-base{position:absolute;bottom:0;left:0;width:100%;height:auto;pointer-events:none;filter:drop-shadow(0 9px 8px #0009)}
+.conveyor-trim{position:absolute;bottom:3%;left:3%;width:94%;height:auto;pointer-events:none;z-index:5}
+.conveyor-motion{position:absolute;left:9%;right:9%;bottom:36%;height:12%;overflow:hidden;opacity:.22;pointer-events:none}
+.conveyor-motion>div{width:calc(100% + 80px);height:100%;background:repeating-linear-gradient(90deg,transparent 0 76px,#f0cf7e 77px 79px,transparent 80px);animation:conveyorRoll 1s linear infinite;will-change:transform}
+@keyframes conveyorRoll{to{transform:translate3d(80px,0,0)}}
+.competition-shell[data-game="conveyor"] #moving-parcel{inset:0 13px}
+/* These rules also apply to the cloned ghost outside the competition shell. */
+.moving-box.conveyor-parcel{position:absolute;left:0;top:auto;bottom:34%;width:min(clamp(220px,21vw,310px),110cqh);height:auto;aspect-ratio:750/431;padding:0;border:0;background:transparent;box-shadow:none;color:#15212b;will-change:transform;filter:drop-shadow(0 9px 6px #0009);isolation:isolate}
+.moving-box.conveyor-parcel:before{content:none}
+.moving-box.conveyor-parcel.parcel-angle-left{aspect-ratio:687/483}
+.moving-box.conveyor-parcel.parcel-angle-right{aspect-ratio:685/497}
+.moving-box.conveyor-parcel>.parcel-art{position:absolute;inset:0;display:block;width:100%;height:100%;object-fit:contain;pointer-events:none}
+.moving-box.conveyor-parcel>.parcel-label{position:absolute;left:22%;top:24%;width:56%;aspect-ratio:663/479;pointer-events:none}
+.parcel-label>img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
+.parcel-copy{position:absolute;left:6%;right:6%;top:32%;bottom:28%;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:2px;text-align:center}
+.parcel-copy b{font:900 clamp(16px,1.45vw,22px)/1 var(--sans);letter-spacing:-.035em;white-space:nowrap}
+.parcel-copy span{font:900 clamp(9px,.8vw,12px)/1.1 var(--mono);white-space:nowrap}
+.parcel-copy small{font:800 clamp(8px,.68vw,10px)/1.1 var(--mono);white-space:nowrap}
+.moving-box.conveyor-parcel.parcel-angle-left>.parcel-label{left:36%;top:27%;width:51%;aspect-ratio:642/471}
+.parcel-angle-left .parcel-copy{left:8%;right:6%;transform:rotate(-8deg) skewX(-7deg)}
+.moving-box.conveyor-parcel.parcel-angle-right>.parcel-label{left:12%;top:27%;width:51%;aspect-ratio:568/525}
+.parcel-angle-right .parcel-copy{left:7%;right:7%;transform:rotate(8deg) skewX(5deg)}
+.moving-box.conveyor-parcel:hover{box-shadow:none;filter:brightness(1.08) drop-shadow(0 9px 6px #0009)}
+.drag-ghost.moving-box.conveyor-parcel{bottom:auto;box-shadow:none;filter:drop-shadow(0 15px 12px #000b)}
+.competition-shell[data-game="conveyor"] .chutes{grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr))}
+.competition-shell[data-game="conveyor"] .carrier-zone{position:relative;min-width:0;min-height:0;display:grid;grid-template-columns:44% 56%;align-items:center;place-content:normal;overflow:hidden;padding:0 10px;border:2px solid #66839885;border-radius:10px;background:linear-gradient(135deg,#071626e8,#0b2036d9);box-shadow:0 8px 16px #0005;animation:none;transition:border-color .12s,box-shadow .12s,background .12s}
+.chute-art{position:relative;width:100%;height:100%;min-height:0;pointer-events:none}
+.chute-image{position:absolute;inset:3%;width:94%;height:94%;object-fit:contain;filter:drop-shadow(0 4px 4px #0008)}
+.chute-state{position:absolute;left:0;bottom:8%;width:100%;height:54%;object-fit:contain;opacity:0;transition:opacity .1s}
+.chute-copy{position:relative;min-width:0;display:flex;flex-direction:column;align-items:center;gap:5px;pointer-events:none}
+.carrier-badge{width:min(100%,225px);height:auto;max-height:70px;object-fit:contain;filter:drop-shadow(0 3px 5px #0008)}
+.competition-shell[data-game="conveyor"] .carrier-name{color:#f5f8fc;font:900 clamp(16px,1.4vw,23px)/1.1 var(--sans);white-space:nowrap;letter-spacing:.01em}
+.competition-shell[data-game="conveyor"] .chute-copy small{margin:0;color:#bccbd7;font:800 clamp(7px,.6vw,9px) var(--mono);white-space:nowrap}
+.chute-status{height:12px;color:#ffda77;font:900 10px/1 var(--mono);letter-spacing:.08em}
+.competition-shell[data-game="conveyor"] .carrier-zone.drop-ready{border-color:#a5b8c9}
+.competition-shell[data-game="conveyor"] .carrier-zone.drag-over{border-color:#f1c45d;box-shadow:inset 0 0 0 2px #efbc5144,0 0 18px #efbc5144;filter:none}
+.carrier-zone.drag-over .chute-hover{opacity:1}
+.carrier-zone.drag-over .chute-status:before{content:"DROP HERE"}
+.competition-shell[data-game="conveyor"] .carrier-zone.accepted{border-color:#45e793;background:#092b27e8;animation:none;box-shadow:inset 0 0 22px #45e79340}
+.carrier-zone.accepted .chute-success{opacity:1}
+.carrier-zone.accepted .chute-status:before{content:"✓ ACCEPTED";color:#60f2a4}
+.competition-shell[data-game="conveyor"] .carrier-zone.rejected{border-color:#ff4262;background:#391528e8;animation:none;box-shadow:inset 0 0 22px #ff426240}
+.carrier-zone.rejected .chute-error{opacity:1;animation:conveyorReject .24s ease-in-out}
+.carrier-zone.rejected .chute-status:before{content:"× REJECTED";color:#ff7890}
+@keyframes conveyorReject{25%,75%{transform:translateX(-3px)}50%{transform:translateX(3px)}}
+@media(max-height:750px){.carrier-badge{max-height:48px}.chute-copy{gap:2px}.moving-box.conveyor-parcel{width:min(clamp(180px,18vw,250px),110cqh)}.parcel-copy b{font-size:clamp(13px,1.25vw,18px)}.parcel-copy span{font-size:9px}.parcel-copy small{font-size:8px}}
+@media(max-width:900px){.competition-shell[data-game="conveyor"] .carrier-zone{padding:0 4px;grid-template-columns:38% 62%}.carrier-badge{max-height:45px}.competition-shell[data-game="conveyor"] .carrier-name{font-size:14px}.competition-shell[data-game="conveyor"] .chute-copy small{font-size:6px}.chute-status{font-size:8px}}
+@media(max-width:600px){.competition-shell[data-game="conveyor"] .chutes{grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(3,minmax(0,1fr));height:58%;gap:5px}.competition-shell[data-game="conveyor"] .conveyor{height:37%}.competition-shell[data-game="conveyor"] .carrier-zone{grid-template-columns:37% 63%}.chute-copy{gap:2px}.carrier-badge{max-height:35px}.competition-shell[data-game="conveyor"] .carrier-name{font-size:12px}.moving-box.conveyor-parcel{width:min(210px,115cqh)}.parcel-copy b{font-size:16px}.parcel-copy span{font-size:9px}.parcel-copy small{font-size:8px}.conveyor-motion{bottom:18%;height:6%}.moving-box.conveyor-parcel{bottom:8%}}
+@media(prefers-reduced-motion:reduce){.conveyor-motion>div,.carrier-zone.rejected .chute-error{animation:none}.chute-state{transition:none}}
+/* Cap parcel size by available belt height on short event displays. */
+.competition-shell[data-game="conveyor"] .conveyor{container-type:size}
+.moving-box.conveyor-parcel.parcel-angle-left,.moving-box.conveyor-parcel.parcel-angle-right{width:min(clamp(210px,19vw,280px),90cqh)}
+@media(max-width:600px){.moving-box.conveyor-parcel.parcel-angle-left,.moving-box.conveyor-parcel.parcel-angle-right{width:min(210px,110cqh)}}

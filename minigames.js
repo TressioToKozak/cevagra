@@ -128,11 +128,35 @@ export class BarcodeHunt extends RapidFind{
 }
 
 export class ConveyorRush extends BaseMinigame {
-  render(){this.index=0;this.active=null;this.dragging=false;this.settling=false;this.root.innerHTML=`<div class="conveyor"><div class="belt-lines"></div><div id="moving-parcel"></div></div><div class="chutes">${CARRIERS.map(carrier=>`<div class="carrier-zone" data-chute="${carrier}"><span>${carrier}</span><small>DROP MATCHING BOX HERE</small></div>`).join("")}</div>`;}
+  render(){
+    this.index=0;this.active=null;this.dragging=false;this.settling=false;
+    const art="assets/conveyor-rush/";
+    this.root.innerHTML=`<div class="conveyor"><img class="conveyor-base" src="${art}belt/belt-base.png" alt="" draggable="false"><div class="conveyor-motion" aria-hidden="true"><div></div></div><img class="conveyor-trim" src="${art}belt/belt-front-trim.png" alt="" draggable="false"><div id="moving-parcel"></div></div><div class="chutes" aria-label="Carrier sorting zones">${CARRIERS.map(carrier=>`<div class="carrier-zone" data-chute="${carrier}" role="group" aria-label="${carrier}, drop matching parcel here"><div class="chute-art" aria-hidden="true"><img class="chute-image" src="${art}zones/zone-${carrier.toLowerCase()}.png" alt="" draggable="false"><img class="chute-state chute-hover" src="${art}states/drop-valid.png" alt="" draggable="false"><img class="chute-state chute-success" src="${art}states/drop-valid-check.png" alt="" draggable="false"><img class="chute-state chute-error" src="${art}states/drop-invalid.png" alt="" draggable="false"></div><div class="chute-copy"><img class="carrier-badge" src="${art}carriers/badge-${carrier.toLowerCase()}.png" alt="" draggable="false"><span class="carrier-name">${carrier}</span><small>DROP MATCHING BOX HERE</small><b class="chute-status" aria-hidden="true"></b></div></div>`).join("")}</div>`;
+    this.cleanups.push(()=>this.root.querySelector(".conveyor-motion")?.remove());
+  }
   start(){this.spawn();this.lastFrame=performance.now();const tick=now=>{if(this.locked)return;const seconds=(now-this.lastFrame)/1000;this.lastFrame=now;if(this.active&&!this.dragging&&!this.settling){this.x+=this.speed*seconds;this.position();const belt=this.root.querySelector(".conveyor");if(this.box&&belt&&this.x>belt.clientWidth)this.miss();}this.raf=requestAnimationFrame(tick);};this.raf=requestAnimationFrame(tick);this.cleanups.push(()=>cancelAnimationFrame(this.raf));}
-  spawn(){if(this.locked||this.index>=this.data.parcels.length)return;this.active=this.data.parcels[this.index];this.x=-145;this.speed=95+this.index*9;const host=this.root.querySelector("#moving-parcel");host.innerHTML=`<div class="moving-box" data-moving-box><i aria-hidden="true">⠿</i><b>${this.active.carrier}</b><span>${this.active.id}</span><small>${this.active.gift}</small></div>`;this.box=host.firstElementChild;this.position();this.boxDragCleanup=attachPointerDrag({element:this.box,targets:()=>this.root.querySelectorAll("[data-chute]"),hitPadding:12,onStart:()=>{this.dragging=true;},onDrop:({target})=>{this.dragging=false;if(target)this.sort(target);},onCancel:()=>{this.dragging=false;this.position();}});this.cleanups.push(this.boxDragCleanup);}
-  position(){if(this.box&&!this.dragging)this.box.style.left=`${this.x}px`;}
-  sort(zone){if(!this.active||this.settling)return;this.settling=true;const correct=zone.dataset.chute===this.active.carrier;zone.classList.add(correct?"accepted":"rejected");if(correct){this.correct++;this.flash("✓","PERFECT SORT");}else{this.mistakes++;this.flash("×","WRONG CARRIER");}this.box?.remove?.();this.box=null;this.advance();this.timeout(()=>zone.classList.remove("accepted","rejected"),240);}
+  spawn(){
+    if(this.locked||this.index>=this.data.parcels.length)return;
+    this.active=this.data.parcels[this.index];this.x=-145;this.speed=95+this.index*9;
+    // Variant selection is presentation only; never consume the gameplay RNG.
+    const variant=["front","angle-left","angle-right"][this.index%3],art="assets/conveyor-rush/";
+    const host=this.root.querySelector("#moving-parcel");
+    host.innerHTML=`<div class="moving-box conveyor-parcel parcel-${variant}" data-moving-box role="group" aria-label="${this.active.carrier}, ${this.active.id}, ${this.active.gift}"><img class="parcel-art" src="${art}boxes/parcel-${variant}.png" alt="" draggable="false"><div class="parcel-label"><img src="${art}labels/shipping-label-${variant}.png" alt="" draggable="false"><div class="parcel-copy"><b>${this.active.carrier}</b><span>${this.active.id}</span><small>${this.active.gift}</small></div></div></div>`;
+    this.box=host.firstElementChild;this.position();
+    this.boxDragCleanup=attachPointerDrag({element:this.box,targets:()=>this.root.querySelectorAll("[data-chute]"),hitPadding:12,createGhost:({element})=>{const node=element.cloneNode(true);node.style.transform="none";return node;},onStart:()=>{this.dragging=true;},onDrop:({target})=>{this.dragging=false;if(target)this.sort(target);},onCancel:()=>{this.dragging=false;this.position();}});
+    this.cleanups.push(this.boxDragCleanup);
+  }
+  position(){if(this.box&&!this.dragging)this.box.style.transform=`translate3d(${this.x}px,0,0)`;}
+  sort(zone){
+    if(!this.active||this.settling)return;
+    this.settling=true;const correct=zone.dataset.chute===this.active.carrier;
+    zone.classList.add(correct?"accepted":"rejected");
+    // Routine sort feedback stays on the chute instead of shaking all hit targets.
+    if(correct){this.correct++;this.ctx.flash("✓","PERFECT SORT");}
+    else{this.mistakes++;this.ctx.flash("×","WRONG CARRIER");}
+    this.ctx.update();this.box?.remove?.();this.box=null;this.advance();
+    this.timeout(()=>zone.classList.remove("accepted","rejected"),240);
+  }
   advance(){this.boxDragCleanup?.();this.boxDragCleanup=null;this.index++;this.active=null;this.settling=false;if(this.index>=this.data.parcels.length)return this.ctx.finish();this.spawn();}
   miss(){if(!this.active||this.settling)return;this.mistakes++;this.flash("×","MISSED BOX");this.advance();}
   score(){return scoreStandard({correct:this.correct,total:this.data.parcels.length,mistakes:this.mistakes,completed:this.correct===this.data.parcels.length,timeRemaining:this.remaining,timeLimit:this.ctx.config.time});}
