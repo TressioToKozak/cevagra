@@ -1,0 +1,42 @@
+{
+  "package": "Memory Challenge Codex Ready v2",
+  "notes": [
+    "All production graphics are separate transparent PNGs.",
+    "No screenshot composites are included in the asset folders.",
+    "Keep gameplay text/timer/HUD values dynamic in code.",
+    "Use phase1 assets for memorize screen and phase2 assets for selection screen."
+  ],
+  "folders": {
+    "scene": [
+      "memory_conveyor_platform.png"
+    ],
+    "ui": [
+      "checkbox_checked.png",
+      "checkbox_unchecked.png",
+      "confirm_selection_button.png",
+      "gifts_to_remember_label.png",
+      "gifts_to_select_label.png",
+      "info_icon.png",
+      "memory_info_bar.png",
+      "memory_progress_bar.png",
+      "phase1_instruction_banner.png",
+      "phase2_instruction_banner.png",
+      "phase_1_2_pill.png",
+      "phase_2_2_pill.png",
+      "selected_counter.png",
+      "selection_card_slot.png"
+    ],
+    "gifts": [
+      "gift_blue_snowflakes.png",
+      "gift_blue_stars.png",
+      "gift_gold_stripes.png",
+      "gift_green_red_ribbon.png",
+      "gift_green_trees.png",
+      "gift_purple_diagonal.png",
+      "gift_red_snowflake.png",
+      "gift_red_tartan.png",
+      "gift_white_gold_stars.png",
+      "gift_white_red_dots.png"
+    ]
+  }
+}
