@@ -156,8 +156,8 @@ assert(GAME_CONFIGS.every(config=>config.action&&config.instruction&&config.hint
 assert(minigames.includes("pallet-grid")&&minigames.includes("every(value=>!value)"),"packing grid prevents collisions");
 assert(minigames.includes("invalid-target")&&css.includes(".pallet-cell.invalid-target"),"packing drag previews valid and invalid positions");
 assert(minigames.includes("for(let dy=0;dy<box.h;dy++)for(let dx=0;dx<box.w;dx++)")&&minigames.includes("preview-edge"),"packing preview covers the complete box footprint");
-assert(css.includes(".quality-box.dented{clip-path:none")&&css.includes(".quality-box.selected"),"damaged quality boxes retain a full click target and visible selection");
-assert(css.includes(".quality-box .issue-mark")&&css.includes("font-size:12px!important"),"quality defects use large visual signals and readable labels");
+assert(css.includes(".quality-box.qc-card")&&css.includes("clip-path:none")&&css.includes(".quality-box.qc-card.selected"),"damaged quality boxes retain a full click target and visible selection");
+assert(css.includes(".qc-issue")&&css.includes(".qc-label-copy")&&css.includes("11cqw"),"quality defects use small artwork markers and responsive HTML labels");
 assert(interactions.includes('element.cloneNode(true)')&&interactions.includes("container.append(ghost)")&&css.includes(".drag-ghost"),"all physical drags use a visible body-level cursor proxy");
 assert(minigames.includes('className="placed-box placed-pop"')&&!/BOX PACKED"\);this\.draw\(\)/.test(minigames),"packing placement creates only its persistent placed-box overlay without rerendering the minigame");
 assert(minigames.includes('className="shape-slot"')&&minigames.includes("source?.classList.add(\"packed-away\")")&&!minigames.includes('querySelector(".shape-rack").innerHTML'),"packing inventory slots remain stable when a box is placed");
@@ -247,4 +247,35 @@ assert(cancelledFrame===conveyorFrame&&motion.removed&&liveContainer.child.remov
 liveContainer.child=null;lastParcel.dispatchEvent(pointer("pointerdown",30,30));
 assert(liveContainer.child===null,"cleanup removes pointer listeners from the active parcel");
 delete global.document;
+// Quality Control: layered assets and neutral selection preserve classification.
+const qualityData=snapshotA.quality,qualityButtons=qualityData.parcels.map(parcel=>{
+  const button=new FakeElement();button.dataset.quality=parcel.id;button.attributes={};
+  button.setAttribute=(name,value)=>{button.attributes[name]=value;};
+  button.classList.toggle=name=>{button.classes.has(name)?button.classes.delete(name):button.classes.add(name);};
+  return button;
+}),qualityLock=new FakeElement();let qualityFinishes=0;
+const qualityRoot={innerHTML:"",querySelector:()=>qualityLock,querySelectorAll:()=>qualityButtons};
+const qualityGame=new MINIGAME_CLASSES.quality().init({root:qualityRoot,data:qualityData,config:GAME_CONFIGS.find(game=>game.id==="quality"),remaining:()=>10,finish:()=>{qualityFinishes++;}});
+qualityGame.render();
+assert((qualityRoot.innerHTML.match(/data-quality=/g)||[]).length===8,"Quality renders all eight parcel buttons together");
+assert((qualityRoot.innerHTML.match(/aria-pressed="false"/g)||[]).length===8,"every Quality parcel starts with accessible unselected state");
+for(const asset of [...qualityRoot.innerHTML.matchAll(/src="([^"]+)"/g)].map(match=>match[1]))assert(readFileSync(asset).length>0,`Quality asset exists: ${asset}`);
+for(const parcel of qualityData.parcels){
+  const carrier=parcel.issue==="wrong-label"?"OTHER":parcel.carrier,sku=parcel.issue==="missing"?"SKU ———":parcel.issue==="wrong-sku"?"SKU-ERROR":parcel.sku;
+  assert(qualityRoot.innerHTML.includes(`aria-label="${parcel.id}, ${carrier}, ${sku}"`),`${parcel.id} displays its generated identity and existing issue presentation`);
+}
+qualityButtons[0].dispatchEvent(new Event("click"));
+assert(qualityGame.selected.has(qualityData.parcels[0].id)&&qualityButtons[0].classes.has("selected")&&qualityButtons[0].attributes["aria-pressed"]==="true","Quality click toggles the original selection set and accessible selected state");
+qualityButtons[0].dispatchEvent(new Event("click"));
+assert(qualityGame.selected.size===0&&!qualityButtons[0].classes.has("selected")&&qualityButtons[0].attributes["aria-pressed"]==="false","a second click deselects without confirming the parcel");
+for(let mask=0;mask<256;mask++){
+  qualityGame.selected=new Set(qualityData.parcels.filter((_,index)=>mask&(1<<index)).map(parcel=>parcel.id));
+  const expected=scoreClassification({selected:[...qualityGame.selected],solution:qualityData.solution,universe:qualityData.parcels.map(parcel=>parcel.id),timeRemaining:10,timeLimit:15});
+  assert(qualityGame.score()===expected,`Quality selection ${mask} preserves classification scoring`);
+}
+qualityGame.selected=new Set(qualityData.solution);const qualityResult=qualityGame.complete();
+assert(qualityResult.correct===8&&qualityResult.mistakes===0&&qualityResult.attempts===8&&qualityResult.score===95,"perfect Quality selection preserves accuracy, attempts and speed score");
+qualityLock.dispatchEvent(new Event("click"));assert(qualityFinishes===1,"LOCK QUALITY CHECK calls the original stage finish callback");
+qualityGame.cleanup();qualityLock.dispatchEvent(new Event("click"));assert(qualityFinishes===1&&qualityGame.cleanups.length===0,"Quality cleanup detaches lock and parcel listeners");
+assert(!qualityRoot.innerHTML.includes("box_success")&&!qualityRoot.innerHTML.includes("box_error"),"Quality does not reveal selection correctness before lock");
 console.log(`Competition validation passed: ${checks.toLocaleString()} checks.`);

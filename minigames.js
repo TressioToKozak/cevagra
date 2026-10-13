@@ -258,7 +258,20 @@ export class MemoryChallenge extends BaseMinigame {
 }
 
 export class QualityControl extends BaseMinigame {
-  render(){this.selected=new Set();this.root.innerHTML=`<div class="quality-legend"><span>EXPECTED: VALID CARRIER LABEL</span><span>COMPLETE SKU</span><span>UNDAMAGED BOX</span></div><div class="quality-grid">${this.data.parcels.map(parcel=>`<button class="quality-box ${parcel.issue||""}" data-quality="${parcel.id}"><i class="issue-mark" aria-hidden="true"></i><b>${parcel.id}</b><span>${parcel.issue==="wrong-label"?"OTHER":parcel.carrier}</span><small>${parcel.issue==="missing"?"SKU ———":parcel.issue==="wrong-sku"?"SKU-ERROR":parcel.sku}</small></button>`).join("")}</div><button class="lock-answer" id="lock-quality">LOCK QUALITY CHECK</button>`;this.listen(this.root.querySelector("#lock-quality"),"click",()=>this.ctx.finish());this.root.querySelectorAll("[data-quality]").forEach(box=>this.listen(box,"click",()=>{this.selected.has(box.dataset.quality)?this.selected.delete(box.dataset.quality):this.selected.add(box.dataset.quality);box.classList.toggle("selected");}));}
+  render(){
+    this.selected=new Set();const art="assets/quality_control/";
+    this.root.innerHTML=`<div class="quality-inspection"><div class="quality-legend"><span>EXPECTED: VALID CARRIER LABEL</span><span>COMPLETE SKU</span><span>UNDAMAGED BOX</span></div><div class="quality-grid">${this.data.parcels.map((parcel,index)=>{
+      // Artwork variants never consume the task RNG or change the parcel data.
+      const variant=["front","left","right"][index%3],carrier=parcel.issue==="wrong-label"?"OTHER":parcel.carrier,sku=parcel.issue==="missing"?"SKU ———":parcel.issue==="wrong-sku"?"SKU-ERROR":parcel.sku;
+      const issueAsset={dented:"issue_damage",missing:"issue_missing_data","wrong-label":"issue_wrong_carrier","wrong-sku":"issue_wrong_sku"}[parcel.issue];
+      return `<button class="quality-box qc-card ${parcel.issue||""}" data-quality="${parcel.id}" aria-pressed="false" aria-label="${parcel.id}, ${carrier}, ${sku}"><span class="qc-parcel qc-parcel-${variant}"><img class="qc-box-art" src="${art}boxes/box_${variant}.png" alt="" draggable="false">${parcel.issue==="dented"?`<img class="qc-damage" src="${art}damage/damage_crush.png" alt="" draggable="false">`:""}<img class="qc-sticker" src="${art}decor/${["sticker_tree","sticker_gift","sticker_holly","sticker_snowflake"][index%4]}.png" alt="" draggable="false"><span class="qc-label"><img src="${art}labels/label_base.png" alt="" draggable="false"><span class="qc-label-copy"><span class="qc-carrier">${carrier}</span><b class="qc-gift">${parcel.id}</b><small class="qc-sku">${sku}</small></span></span>${issueAsset?`<img class="qc-issue" src="${art}issues/${issueAsset}.png" alt="" draggable="false">`:""}</span><span class="qc-selection" aria-hidden="true">SELECTED</span><span class="qc-state" aria-hidden="true"></span></button>`;
+    }).join("")}</div><div class="quality-footer"><button class="lock-answer" id="lock-quality"><span aria-hidden="true">▣</span> LOCK QUALITY CHECK</button></div></div>`;
+    this.listen(this.root.querySelector("#lock-quality"),"click",()=>this.ctx.finish());
+    this.root.querySelectorAll("[data-quality]").forEach(box=>this.listen(box,"click",()=>{
+      const id=box.dataset.quality;this.selected.has(id)?this.selected.delete(id):this.selected.add(id);
+      box.classList.toggle("selected");box.setAttribute("aria-pressed",String(this.selected.has(id)));
+    }));
+  }
   score(){return scoreClassification({selected:[...this.selected],solution:this.data.solution,universe:this.data.parcels.map(parcel=>parcel.id),timeRemaining:this.remaining,timeLimit:this.ctx.config.time});}
   complete(){const result=super.complete(),answers=new Set(this.data.solution),correct=this.data.parcels.filter(parcel=>this.selected.has(parcel.id)===answers.has(parcel.id)).length;return {...result,correct,mistakes:this.data.parcels.length-correct,attempts:this.data.parcels.length,score:this.score()};}
 }
