@@ -431,23 +431,23 @@ body.results-active #app{padding:clamp(8px,1.5vh,16px) clamp(14px,3vw,52px)}
 .conveyor-motion{position:absolute;left:9%;right:9%;bottom:36%;height:12%;overflow:hidden;opacity:.22;pointer-events:none}
 .conveyor-motion>div{width:calc(100% + 80px);height:100%;background:repeating-linear-gradient(90deg,transparent 0 76px,#f0cf7e 77px 79px,transparent 80px);animation:conveyorRoll 1s linear infinite;will-change:transform}
 @keyframes conveyorRoll{to{transform:translate3d(80px,0,0)}}
-.competition-shell[data-game="conveyor"] #moving-parcel{inset:0 13px}
+.competition-shell[data-game="conveyor"] #moving-parcel{inset:0}
 /* These rules also apply to the cloned ghost outside the competition shell. */
-.moving-box.conveyor-parcel{position:absolute;left:0;top:auto;bottom:34%;width:min(clamp(220px,21vw,310px),110cqh);height:auto;aspect-ratio:750/431;padding:0;border:0;background:transparent;box-shadow:none;color:#15212b;will-change:transform;filter:drop-shadow(0 9px 6px #0009);isolation:isolate}
+.moving-box.conveyor-parcel{position:absolute;left:0;top:0;bottom:auto;width:min(clamp(220px,21vw,310px),110cqh);height:auto;aspect-ratio:750/431;padding:0;border:0;background:transparent;box-shadow:none;color:#15212b;will-change:transform;filter:drop-shadow(0 9px 6px #0009);isolation:isolate}
 .moving-box.conveyor-parcel:before{content:none}
 .moving-box.conveyor-parcel.parcel-angle-left{aspect-ratio:687/483}
 .moving-box.conveyor-parcel.parcel-angle-right{aspect-ratio:685/497}
 .moving-box.conveyor-parcel>.parcel-art{position:absolute;inset:0;display:block;width:100%;height:100%;object-fit:contain;pointer-events:none}
-.moving-box.conveyor-parcel>.parcel-label{position:absolute;left:22%;top:24%;width:56%;aspect-ratio:663/479;pointer-events:none}
+.moving-box.conveyor-parcel>.parcel-label{position:absolute;left:18%;top:21%;width:66%;aspect-ratio:663/479;pointer-events:none;container-type:inline-size}
 .parcel-label>img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
-.parcel-copy{position:absolute;left:6%;right:6%;top:32%;bottom:28%;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:2px;text-align:center}
-.parcel-copy b{font:900 clamp(16px,1.45vw,22px)/1 var(--sans);letter-spacing:-.035em;white-space:nowrap}
-.parcel-copy span{font:900 clamp(9px,.8vw,12px)/1.1 var(--mono);white-space:nowrap}
-.parcel-copy small{font:800 clamp(8px,.68vw,10px)/1.1 var(--mono);white-space:nowrap}
-.moving-box.conveyor-parcel.parcel-angle-left>.parcel-label{left:36%;top:27%;width:51%;aspect-ratio:642/471}
-.parcel-angle-left .parcel-copy{left:8%;right:6%;transform:rotate(-8deg) skewX(-7deg)}
-.moving-box.conveyor-parcel.parcel-angle-right>.parcel-label{left:12%;top:27%;width:51%;aspect-ratio:568/525}
-.parcel-angle-right .parcel-copy{left:7%;right:7%;transform:rotate(8deg) skewX(5deg)}
+.parcel-copy{position:absolute;left:6%;right:6%;top:31%;bottom:26%;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:2px;text-align:center}
+.parcel-copy b{font:900 clamp(18px,14cqw,30px)/1 var(--sans);letter-spacing:-.035em;white-space:nowrap}
+.parcel-copy span{font:900 clamp(11px,8cqw,16px)/1.1 var(--mono);white-space:nowrap}
+.parcel-copy small{font:800 clamp(9px,7cqw,13px)/1.1 var(--mono);white-space:nowrap}
+.moving-box.conveyor-parcel.parcel-angle-left>.parcel-label{left:32%;top:23%;width:65%;aspect-ratio:642/471}
+.parcel-angle-left .parcel-copy{left:8%;right:6%;transform:rotate(-4deg)}
+.moving-box.conveyor-parcel.parcel-angle-right>.parcel-label{left:6%;top:23%;width:65%;aspect-ratio:568/525}
+.parcel-angle-right .parcel-copy{left:7%;right:7%;transform:rotate(4deg)}
 .moving-box.conveyor-parcel:hover{box-shadow:none;filter:brightness(1.08) drop-shadow(0 9px 6px #0009)}
 .drag-ghost.moving-box.conveyor-parcel{bottom:auto;box-shadow:none;filter:drop-shadow(0 15px 12px #000b)}
 .competition-shell[data-game="conveyor"] .chutes{grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr))}
@@ -471,9 +471,9 @@ body.results-active #app{padding:clamp(8px,1.5vh,16px) clamp(14px,3vw,52px)}
 .carrier-zone.rejected .chute-error{opacity:1;animation:conveyorReject .24s ease-in-out}
 .carrier-zone.rejected .chute-status:before{content:"× REJECTED";color:#ff7890}
 @keyframes conveyorReject{25%,75%{transform:translateX(-3px)}50%{transform:translateX(3px)}}
-@media(max-height:750px){.carrier-badge{max-height:48px}.chute-copy{gap:2px}.moving-box.conveyor-parcel{width:min(clamp(180px,18vw,250px),110cqh)}.parcel-copy b{font-size:clamp(13px,1.25vw,18px)}.parcel-copy span{font-size:9px}.parcel-copy small{font-size:8px}}
+@media(max-height:750px){.carrier-badge{max-height:48px}.chute-copy{gap:2px}.moving-box.conveyor-parcel{width:min(clamp(180px,18vw,250px),110cqh)}}
 @media(max-width:900px){.competition-shell[data-game="conveyor"] .carrier-zone{padding:0 4px;grid-template-columns:38% 62%}.carrier-badge{max-height:45px}.competition-shell[data-game="conveyor"] .carrier-name{font-size:14px}.competition-shell[data-game="conveyor"] .chute-copy small{font-size:6px}.chute-status{font-size:8px}}
-@media(max-width:600px){.competition-shell[data-game="conveyor"] .chutes{grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(3,minmax(0,1fr));height:58%;gap:5px}.competition-shell[data-game="conveyor"] .conveyor{height:37%}.competition-shell[data-game="conveyor"] .carrier-zone{grid-template-columns:37% 63%}.chute-copy{gap:2px}.carrier-badge{max-height:35px}.competition-shell[data-game="conveyor"] .carrier-name{font-size:12px}.moving-box.conveyor-parcel{width:min(210px,115cqh)}.parcel-copy b{font-size:16px}.parcel-copy span{font-size:9px}.parcel-copy small{font-size:8px}.conveyor-motion{bottom:18%;height:6%}.moving-box.conveyor-parcel{bottom:8%}}
+@media(max-width:600px){.competition-shell[data-game="conveyor"] .chutes{grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(3,minmax(0,1fr));height:58%;gap:5px}.competition-shell[data-game="conveyor"] .conveyor{height:37%}.competition-shell[data-game="conveyor"] .carrier-zone{grid-template-columns:37% 63%}.chute-copy{gap:2px}.carrier-badge{max-height:35px}.competition-shell[data-game="conveyor"] .carrier-name{font-size:12px}.moving-box.conveyor-parcel{width:min(210px,115cqh)}.conveyor-motion{bottom:18%;height:6%}}
 @media(prefers-reduced-motion:reduce){.conveyor-motion>div,.carrier-zone.rejected .chute-error{animation:none}.chute-state{transition:none}}
 /* Cap parcel size by available belt height on short event displays. */
 .competition-shell[data-game="conveyor"] .conveyor{container-type:size}
@@ -492,17 +492,17 @@ body.results-active #app{padding:clamp(8px,1.5vh,16px) clamp(14px,3vw,52px)}
 .competition-shell[data-game="quality"] .qc-parcel{position:relative;display:block;width:min(100%,130cqh,370px);height:auto;margin:0;aspect-ratio:153/108;pointer-events:none;filter:drop-shadow(0 8px 4px #0009)}
 .competition-shell[data-game="quality"] .qc-parcel-left,.competition-shell[data-game="quality"] .qc-parcel-right{width:min(100%,94cqh,290px);aspect-ratio:118/113}
 .qc-box-art{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;pointer-events:none}
-.competition-shell[data-game="quality"] .qc-label{position:absolute;left:42%;top:26%;width:51%;aspect-ratio:154/106;margin:0;display:block;pointer-events:none;container-type:inline-size}
+.competition-shell[data-game="quality"] .qc-label{position:absolute;left:30%;top:21%;width:64%;aspect-ratio:154/106;margin:0;display:block;pointer-events:none;container-type:inline-size}
 .qc-label>img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
-.competition-shell[data-game="quality"] .qc-label-copy{position:absolute;left:6%;right:6%;top:6%;height:49%;margin:0;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:2px;transform:none}
-.competition-shell[data-game="quality"] .qc-carrier{margin:0;padding:0;background:transparent;color:#101c27;font:900 clamp(7px,11cqw,21px)/1 var(--sans);letter-spacing:-.025em;white-space:nowrap}
-.competition-shell[data-game="quality"] .qc-gift{font:900 clamp(7px,8cqw,14px)/1.1 var(--mono);white-space:nowrap}
-.competition-shell[data-game="quality"] .quality-box .qc-sku{font:800 clamp(7px,7cqw,12px)/1.1 var(--mono);white-space:nowrap}
-.competition-shell[data-game="quality"] .qc-parcel-left .qc-label{left:29%;top:30%;width:61%;transform:rotate(-2deg) skewY(-2deg)}
-.competition-shell[data-game="quality"] .qc-parcel-right .qc-label{left:8%;top:30%;width:62%;transform:rotate(2deg) skewY(2deg)}
-.qc-damage{position:absolute;left:3%;top:14%;width:26%;height:55%;object-fit:contain;mix-blend-mode:multiply;mask-image:radial-gradient(ellipse at center,#000 50%,transparent 74%);pointer-events:none}
+.competition-shell[data-game="quality"] .qc-label-copy{position:absolute;left:6%;right:6%;top:5%;height:53%;margin:0;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:2px;transform:none}
+.competition-shell[data-game="quality"] .qc-carrier{margin:0;padding:0;background:transparent;color:#101c27;font:900 clamp(9px,11cqw,26px)/1 var(--sans);letter-spacing:-.025em;white-space:nowrap}
+.competition-shell[data-game="quality"] .qc-gift{font:900 clamp(9px,8cqw,18px)/1.1 var(--mono);white-space:nowrap}
+.competition-shell[data-game="quality"] .quality-box .qc-sku{font:800 clamp(9px,8cqw,18px)/1.1 var(--mono);white-space:nowrap}
+.competition-shell[data-game="quality"] .qc-parcel-left .qc-label{left:23%;top:26%;width:73%;transform:rotate(-2deg) skewY(-2deg)}
+.competition-shell[data-game="quality"] .qc-parcel-right .qc-label{left:4%;top:26%;width:73%;transform:rotate(2deg) skewY(2deg)}
+.qc-damage{position:absolute;left:2%;top:12%;width:52%;height:84%;object-fit:cover;mask-image:linear-gradient(90deg,#000 88%,transparent);pointer-events:none}
 .qc-sticker{position:absolute;left:9%;bottom:12%;width:11%;height:18%;object-fit:contain;pointer-events:none}
-.qc-issue{position:absolute;right:6%;top:10%;width:clamp(16px,2vw,28px);height:clamp(18px,2.2vw,30px);object-fit:contain;pointer-events:none}
+.qc-issue{position:absolute;right:6%;top:10%;width:clamp(30px,3vw,45px);height:clamp(32px,3.2vw,45px);object-fit:contain;pointer-events:none}
 .competition-shell[data-game="quality"] .wrong-sku .qc-sku,.competition-shell[data-game="quality"] .missing .qc-sku{color:#a91c30}
 .competition-shell[data-game="quality"] .quality-box.qc-card:hover{filter:none;transform:none;border-color:#ffd165;box-shadow:0 0 12px #ffd1654d,0 7px 14px #0005}
 .competition-shell[data-game="quality"] .qc-state{position:absolute;inset:0;display:block;margin:0;border:7px solid transparent;border-image:url("assets/quality_control/states/box_highlight.png") 13 stretch;opacity:0;pointer-events:none}
@@ -520,3 +520,16 @@ body.results-active #app{padding:clamp(8px,1.5vh,16px) clamp(14px,3vw,52px)}
 @media(max-height:760px){.competition-shell[data-game="quality"] .quality-inspection{gap:5px}.competition-shell[data-game="quality"] .quality-legend{padding:4px 8px}.competition-shell[data-game="quality"] #lock-quality{min-height:40px}.competition-shell[data-game="quality"] .quality-box.qc-card{padding-bottom:10px}.competition-shell[data-game="quality"] .qc-label-copy{gap:1px}}
 @media(max-width:760px){.competition-shell[data-game="quality"] .quality-grid{grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(4,minmax(0,1fr));background:none;gap:5px}.competition-shell[data-game="quality"] .quality-legend{width:auto;gap:6px;justify-content:space-between;font-size:6px}.competition-shell[data-game="quality"] .qc-parcel{width:min(100%,132cqh,170px)}.competition-shell[data-game="quality"] .qc-parcel-left,.competition-shell[data-game="quality"] .qc-parcel-right{width:min(100%,94cqh,140px)}.competition-shell[data-game="quality"] .qc-carrier{font-size:clamp(7px,11cqw,12px)}.competition-shell[data-game="quality"] .qc-gift{font-size:clamp(7px,8cqw,10px)}.competition-shell[data-game="quality"] .quality-box .qc-sku{font-size:clamp(6px,7cqw,9px)}.qc-issue{width:15px;height:16px}.competition-shell[data-game="quality"] .quality-box.qc-card{padding:3px 2px 11px}.competition-shell[data-game="quality"] .qc-selection{font-size:7px;padding:2px 4px;bottom:2px}.competition-shell[data-game="quality"] .qc-label-copy{gap:0}.competition-shell[data-game="quality"] #lock-quality{min-width:220px;min-height:36px}}
 @media(prefers-reduced-motion:reduce){.competition-shell[data-game="quality"] .quality-box.qc-card{animation:none;transition:none}}
+
+/* Larger shipping data, with typography kept sharp in every carton perspective. */
+.parcel-long-carrier .parcel-copy b{font-size:clamp(16px,11.5cqw,26px)}
+.competition-shell[data-game="quality"] .wrong-label .qc-carrier{display:block;align-self:stretch;padding:3px 5px;border:1px dashed #f6dab0;border-radius:2px;background:#833126;color:#fff;letter-spacing:.06em}
+.competition-shell[data-game="quality"] .wrong-sku .qc-sku{padding:2px 3px;background:#fff0e9;color:#8d1429;font-size:clamp(10px,9cqw,20px);font-weight:900}
+.competition-shell[data-game="quality"] .qc-sku-missing{display:flex;align-items:center;gap:5px;width:100%;color:#26343c}
+.qc-empty-field{display:inline-block;flex:1;min-width:3ch;height:1.1em;border:2px dashed #9b6746;border-radius:2px;background:#fffaf0}
+@media(max-width:760px){.qc-issue{width:23px;height:25px}.competition-shell[data-game="quality"] .wrong-label .qc-carrier{padding:1px 2px}.qc-empty-field{border-width:1px}.competition-shell[data-game="quality"] .wrong-sku .qc-sku{font-size:clamp(7px,9cqw,12px);padding:1px}}
+
+/* A torn corner adds a high-contrast physical clue beside the larger crush layer. */
+.qc-damage-tear{left:3%;top:13%;width:42%;height:53%;mask-image:linear-gradient(90deg,#000 90%,transparent)}
+.qc-parcel-left .qc-damage-tear{left:2%;width:34%}
+.qc-parcel-right .qc-damage-tear{left:57%;top:12%;width:40%;height:50%;mask-image:linear-gradient(90deg,transparent,#000 12%)}

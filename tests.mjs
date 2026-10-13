@@ -220,10 +220,12 @@ visualConveyor.box={style:{}};visualConveyor.x=125;visualConveyor.position();
 assert(visualConveyor.box.style.transform==="translate3d(125px,0,0)","belt motion updates the parcel transform without rebuilding DOM");
 visualConveyor.cleanup();assert(visualConveyor.locked&&visualConveyor.cleanups.length===0,"Conveyor cleanup drains registered artwork and interaction cleanup functions");
 // Use the real shared controller on spawned parcels, including cleanup mid-drag.
-const parcelHost={markup:"",get firstElementChild(){return this.node;},set innerHTML(value){this.markup=value;this.node=new FakeElement();}};
+const parcelHost={style:{},markup:"",get firstElementChild(){return this.node;},set innerHTML(value){this.markup=value;this.node=new FakeElement();}};
 const carrierTargets=["DHL","UPS","TNT","TOF","KLG","BRINGCARGO"].map((carrier,index)=>{const node=new FakeElement({left:200+index*120,top:100,width:100,height:80});node.dataset.chute=carrier;return node;});
-const motion={remove(){this.removed=true;}};
-const liveRoot={innerHTML:"",querySelector:selector=>selector==="#moving-parcel"?parcelHost:selector===".conveyor-motion"?motion:{clientWidth:1000},querySelectorAll:()=>carrierTargets};
+const motion=new FakeElement({left:190,top:170,width:820,height:30});
+motion.remove=()=>{motion.removed=true;};
+const liveBelt=new FakeElement({left:100,top:100,width:1000,height:200});
+const liveRoot={innerHTML:"",querySelector:selector=>selector==="#moving-parcel"?parcelHost:selector===".conveyor-motion"?motion:liveBelt,querySelectorAll:()=>carrierTargets};
 const liveContainer={append:node=>{liveContainer.child=node;}};
 global.document={body:liveContainer,documentElement:{classList:{add:name=>dragClasses.add(name),remove:name=>dragClasses.delete(name)}}};
 const liveConveyor=new Conveyor().init({root:liveRoot,data:{parcels:[{id:"GIFT-1",carrier:"DHL",gift:"TEDDY BEAR"},{id:"GIFT-2",carrier:"UPS",gift:"TRAIN SET"},{id:"GIFT-3",carrier:"BRINGCARGO",gift:"SNOW GLOBE"}]},config:GAME_CONFIGS[1],remaining:()=>10,flash:()=>{},update:()=>{},finish:()=>{}});
@@ -273,9 +275,52 @@ for(let mask=0;mask<256;mask++){
   const expected=scoreClassification({selected:[...qualityGame.selected],solution:qualityData.solution,universe:qualityData.parcels.map(parcel=>parcel.id),timeRemaining:10,timeLimit:15});
   assert(qualityGame.score()===expected,`Quality selection ${mask} preserves classification scoring`);
 }
-qualityGame.selected=new Set(qualityData.solution);const qualityResult=qualityGame.complete();
+qualityGame.selected=new Set(qualityData.solution);qualityLock.dispatchEvent(new Event("click"));qualityLock.dispatchEvent(new Event("click"));
+assert(qualityFinishes===1,"double-clicking LOCK confirms Quality exactly once before stage cleanup");
+const qualityResult=qualityGame.complete();
 assert(qualityResult.correct===8&&qualityResult.mistakes===0&&qualityResult.attempts===8&&qualityResult.score===95,"perfect Quality selection preserves accuracy, attempts and speed score");
 qualityLock.dispatchEvent(new Event("click"));assert(qualityFinishes===1,"LOCK QUALITY CHECK calls the original stage finish callback");
 qualityGame.cleanup();qualityLock.dispatchEvent(new Event("click"));assert(qualityFinishes===1&&qualityGame.cleanups.length===0,"Quality cleanup detaches lock and parcel listeners");
 assert(!qualityRoot.innerHTML.includes("box_success")&&!qualityRoot.innerHTML.includes("box_error"),"Quality does not reveal selection correctness before lock");
+// Track bounds and tempo are measured once, independent of viewport width.
+assert(!minigames.includes("this.x=-145")&&!minigames.includes("this.x>belt.clientWidth"),"Conveyor no longer uses container-edge spawn or miss bounds");
+const geometryHost={style:{},get firstElementChild(){return this.node;},set innerHTML(value){this.markup=value;this.node=new FakeElement({left:0,top:0,width:200,height:100});}};
+let geometryReads=0;
+const measuredBelt=new FakeElement({left:50,top:80,width:1000,height:250}),measuredTrack=new FakeElement({left:150,top:180,width:800,height:25});
+for(const node of [measuredBelt,measuredTrack]){const rect=node.getBoundingClientRect.bind(node);node.getBoundingClientRect=()=>{geometryReads++;return rect();};}
+const measuredRoot={querySelector:selector=>selector==="#moving-parcel"?geometryHost:selector===".conveyor-motion"?measuredTrack:measuredBelt,querySelectorAll:()=>[]};
+global.document={body:liveContainer,documentElement:{classList:{add:()=>{},remove:()=>{}}}};
+const timedConveyor=new Conveyor().init({root:measuredRoot,data:snapshotA.conveyor,config:GAME_CONFIGS[1],remaining:()=>10,flash:()=>{},update:()=>{},finish:()=>{}});
+timedConveyor.index=0;timedConveyor.start();
+assert(timedConveyor.trackStart===100&&timedConveyor.trackEnd===900&&timedConveyor.startX===-100&&timedConveyor.x===-100,"spawn is measured trackStart minus actual parcel width in belt coordinates");
+assert(timedConveyor.endX===900&&timedConveyor.travelDuration===3.8&&Math.abs(timedConveyor.speed-1000/3.8)<1e-9,"first parcel crosses the measured distance in 3.8 seconds");
+assert(geometryHost.style.clipPath==="inset(0 100px 0 100px)"&&timedConveyor.box.style.top==="25px","entry/exit clip and vertical seating follow the real track rectangle");
+const readsAfterSpawn=geometryReads,firstTick=frames[timedConveyor.raf-1];
+timedConveyor.dragging=true;const beforeDragX=timedConveyor.x;firstTick(timedConveyor.lastFrame+1000);
+assert(timedConveyor.x===beforeDragX&&geometryReads===readsAfterSpawn,"RAF pauses the dragged parcel and performs no geometry reads");
+timedConveyor.dragging=false;let detectedMisses=0;timedConveyor.miss=()=>{detectedMisses++;};
+timedConveyor.x=timedConveyor.endX-1;frames[timedConveyor.raf-1](timedConveyor.lastFrame+100);
+assert(detectedMisses===1&&geometryReads===readsAfterSpawn,"miss is detected after the right track end, without measuring the full container per frame");
+timedConveyor.boxDragCleanup?.();timedConveyor.index=11;timedConveyor.spawn();
+assert(timedConveyor.travelDuration===2.6&&timedConveyor.speed>1000/3.8,"last of twelve parcels is faster and never falls below 2.6 seconds travel time");
+timedConveyor.x=timedConveyor.startX+(timedConveyor.endX-timedConveyor.startX)*.5;
+measuredBelt.rect.width=1600;measuredTrack.rect={left:210,top:180,width:1280,height:25};timedConveyor.measureTrack(true);
+assert(timedConveyor.trackStart===160&&timedConveyor.trackEnd===1440&&timedConveyor.x===700&&Math.abs(timedConveyor.speed-1480/2.6)<1e-9,"resize preserves normalized journey progress and recalculates speed for the new surface width");
+timedConveyor.cleanup();delete global.document;
+// Validate issue composition per parcel; healthy artwork is never marked defective.
+const qualityMarkup=[...qualityRoot.innerHTML.matchAll(/<button class="quality-box[\s\S]*?<\/button>/g)].map(match=>match[0]);
+assert(qualityMarkup.length===8,"Quality still composes exactly eight whole parcel buttons");
+for(const [index,parcel] of qualityData.parcels.entries()){
+ const markup=qualityMarkup[index];
+ if(!parcel.issue)assert(!markup.includes("qc-damage")&&!markup.includes("qc-issue"),`${parcel.id} healthy carton has no damage or issue indicator`);
+ else{
+  const expected={dented:"issue_damage",missing:"issue_missing_data","wrong-label":"issue_wrong_carrier","wrong-sku":"issue_wrong_sku"}[parcel.issue];
+  assert(markup.includes(expected),`${parcel.issue} keeps its original issue artwork mapping`);
+  if(parcel.issue==="dented")assert(markup.includes("damage_crush.png"),"dented carton carries a real crush texture");
+  if(parcel.issue==="missing")assert(markup.includes("qc-empty-field")&&!markup.includes(parcel.sku),"missing SKU shows a visibly empty field without revealing the generated value");
+  if(parcel.issue==="wrong-label")assert(markup.includes('qc-carrier">OTHER</span>'),"wrong-label displays OTHER while retaining the task's actual carrier");
+  if(parcel.issue==="wrong-sku")assert(markup.includes("SKU-ERROR"),"wrong SKU keeps its visible error text");
+ }
+}
+assert(!css.includes("mix-blend-mode:multiply")&&css.includes("width:52%;height:84%")&&css.includes("clamp(30px,3vw,45px)"),"damage and issue markers have substantially stronger visible coverage");
 console.log(`Competition validation passed: ${checks.toLocaleString()} checks.`);

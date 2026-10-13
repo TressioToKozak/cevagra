@@ -133,18 +133,39 @@ export class ConveyorRush extends BaseMinigame {
     const art="assets/conveyor-rush/";
     this.root.innerHTML=`<div class="conveyor"><img class="conveyor-base" src="${art}belt/belt-base.png" alt="" draggable="false"><div class="conveyor-motion" aria-hidden="true"><div></div></div><img class="conveyor-trim" src="${art}belt/belt-front-trim.png" alt="" draggable="false"><div id="moving-parcel"></div></div><div class="chutes" aria-label="Carrier sorting zones">${CARRIERS.map(carrier=>`<div class="carrier-zone" data-chute="${carrier}" role="group" aria-label="${carrier}, drop matching parcel here"><div class="chute-art" aria-hidden="true"><img class="chute-image" src="${art}zones/zone-${carrier.toLowerCase()}.png" alt="" draggable="false"><img class="chute-state chute-hover" src="${art}states/drop-valid.png" alt="" draggable="false"><img class="chute-state chute-success" src="${art}states/drop-valid-check.png" alt="" draggable="false"><img class="chute-state chute-error" src="${art}states/drop-invalid.png" alt="" draggable="false"></div><div class="chute-copy"><img class="carrier-badge" src="${art}carriers/badge-${carrier.toLowerCase()}.png" alt="" draggable="false"><span class="carrier-name">${carrier}</span><small>DROP MATCHING BOX HERE</small><b class="chute-status" aria-hidden="true"></b></div></div>`).join("")}</div>`;
     this.cleanups.push(()=>this.root.querySelector(".conveyor-motion")?.remove());
+    this.resizeObserver=globalThis.ResizeObserver?new ResizeObserver(()=>{
+      if(!this.box||this.locked)return;
+      if(this.dragging)this.geometryPending=true;else this.measureTrack(true);
+    }):null;
+    const belt=this.root.querySelector(".conveyor");if(belt)this.resizeObserver?.observe(belt);
+    this.cleanups.push(()=>this.resizeObserver?.disconnect());
   }
-  start(){this.spawn();this.lastFrame=performance.now();const tick=now=>{if(this.locked)return;const seconds=(now-this.lastFrame)/1000;this.lastFrame=now;if(this.active&&!this.dragging&&!this.settling){this.x+=this.speed*seconds;this.position();const belt=this.root.querySelector(".conveyor");if(this.box&&belt&&this.x>belt.clientWidth)this.miss();}this.raf=requestAnimationFrame(tick);};this.raf=requestAnimationFrame(tick);this.cleanups.push(()=>cancelAnimationFrame(this.raf));}
+  start(){this.spawn();this.lastFrame=performance.now();const tick=now=>{if(this.locked)return;const seconds=(now-this.lastFrame)/1000;this.lastFrame=now;if(this.active&&!this.dragging&&!this.settling){this.x+=this.speed*seconds;this.position();if(this.box&&this.x>this.endX)this.miss();}if(!this.locked)this.raf=requestAnimationFrame(tick);};this.raf=requestAnimationFrame(tick);this.cleanups.push(()=>cancelAnimationFrame(this.raf));}
   spawn(){
     if(this.locked||this.index>=this.data.parcels.length)return;
-    this.active=this.data.parcels[this.index];this.x=-145;this.speed=95+this.index*9;
+    this.active=this.data.parcels[this.index];
     // Variant selection is presentation only; never consume the gameplay RNG.
     const variant=["front","angle-left","angle-right"][this.index%3],art="assets/conveyor-rush/";
     const host=this.root.querySelector("#moving-parcel");
-    host.innerHTML=`<div class="moving-box conveyor-parcel parcel-${variant}" data-moving-box role="group" aria-label="${this.active.carrier}, ${this.active.id}, ${this.active.gift}"><img class="parcel-art" src="${art}boxes/parcel-${variant}.png" alt="" draggable="false"><div class="parcel-label"><img src="${art}labels/shipping-label-${variant}.png" alt="" draggable="false"><div class="parcel-copy"><b>${this.active.carrier}</b><span>${this.active.id}</span><small>${this.active.gift}</small></div></div></div>`;
-    this.box=host.firstElementChild;this.position();
-    this.boxDragCleanup=attachPointerDrag({element:this.box,targets:()=>this.root.querySelectorAll("[data-chute]"),hitPadding:12,createGhost:({element})=>{const node=element.cloneNode(true);node.style.transform="none";return node;},onStart:()=>{this.dragging=true;},onDrop:({target})=>{this.dragging=false;if(target)this.sort(target);},onCancel:()=>{this.dragging=false;this.position();}});
+    host.innerHTML=`<div class="moving-box conveyor-parcel parcel-${variant}${this.active.carrier==="BRINGCARGO"?" parcel-long-carrier":""}" data-moving-box role="group" aria-label="${this.active.carrier}, ${this.active.id}, ${this.active.gift}"><img class="parcel-art" src="${art}boxes/parcel-${variant}.png" alt="" draggable="false"><div class="parcel-label"><img src="${art}labels/shipping-label-${variant}.png" alt="" draggable="false"><div class="parcel-copy"><b>${this.active.carrier}</b><span>${this.active.id}</span><small>${this.active.gift}</small></div></div></div>`;
+    this.box=host.firstElementChild;this.measureTrack();this.position();
+    this.boxDragCleanup=attachPointerDrag({element:this.box,targets:()=>this.root.querySelectorAll("[data-chute]"),hitPadding:12,createGhost:({element})=>{const node=element.cloneNode(true);node.style.transform="none";return node;},onStart:()=>{this.dragging=true;},onDrop:({target})=>{this.dragging=false;if(target)this.sort(target);else if(this.geometryPending)this.measureTrack(true);},onCancel:()=>{this.dragging=false;if(this.geometryPending)this.measureTrack(true);this.position();}});
     this.cleanups.push(this.boxDragCleanup);
+  }
+  measureTrack(preserveProgress=false){
+    const belt=this.root.querySelector(".conveyor"),track=this.root.querySelector(".conveyor-motion"),host=this.root.querySelector("#moving-parcel");
+    if(!belt||!track||!this.box)return;
+    const progress=preserveProgress&&this.endX>this.startX?(this.x-this.startX)/(this.endX-this.startX):0;
+    const beltRect=belt.getBoundingClientRect(),trackRect=track.getBoundingClientRect(),boxRect=this.box.getBoundingClientRect();
+    this.trackStart=trackRect.left-beltRect.left;this.trackEnd=trackRect.right-beltRect.left;
+    this.boxWidth=boxRect.width;this.startX=this.trackStart-this.boxWidth;this.endX=this.trackEnd;
+    this.travelDuration=Math.max(2.6,3.8-this.index*.11);
+    this.speed=(this.endX-this.startX)/this.travelDuration;
+    this.x=this.startX+progress*(this.endX-this.startX);
+    // Parcel coordinates share the belt origin; clipping hides entry/exit off the surface.
+    host.style.clipPath=`inset(0 ${Math.max(0,beltRect.width-this.trackEnd)}px 0 ${this.trackStart}px)`;
+    this.box.style.top=`${trackRect.bottom-beltRect.top-boxRect.height}px`;
+    this.geometryPending=false;this.position();
   }
   position(){if(this.box&&!this.dragging)this.box.style.transform=`translate3d(${this.x}px,0,0)`;}
   sort(zone){
@@ -264,9 +285,9 @@ export class QualityControl extends BaseMinigame {
       // Artwork variants never consume the task RNG or change the parcel data.
       const variant=["front","left","right"][index%3],carrier=parcel.issue==="wrong-label"?"OTHER":parcel.carrier,sku=parcel.issue==="missing"?"SKU ———":parcel.issue==="wrong-sku"?"SKU-ERROR":parcel.sku;
       const issueAsset={dented:"issue_damage",missing:"issue_missing_data","wrong-label":"issue_wrong_carrier","wrong-sku":"issue_wrong_sku"}[parcel.issue];
-      return `<button class="quality-box qc-card ${parcel.issue||""}" data-quality="${parcel.id}" aria-pressed="false" aria-label="${parcel.id}, ${carrier}, ${sku}"><span class="qc-parcel qc-parcel-${variant}"><img class="qc-box-art" src="${art}boxes/box_${variant}.png" alt="" draggable="false">${parcel.issue==="dented"?`<img class="qc-damage" src="${art}damage/damage_crush.png" alt="" draggable="false">`:""}<img class="qc-sticker" src="${art}decor/${["sticker_tree","sticker_gift","sticker_holly","sticker_snowflake"][index%4]}.png" alt="" draggable="false"><span class="qc-label"><img src="${art}labels/label_base.png" alt="" draggable="false"><span class="qc-label-copy"><span class="qc-carrier">${carrier}</span><b class="qc-gift">${parcel.id}</b><small class="qc-sku">${sku}</small></span></span>${issueAsset?`<img class="qc-issue" src="${art}issues/${issueAsset}.png" alt="" draggable="false">`:""}</span><span class="qc-selection" aria-hidden="true">SELECTED</span><span class="qc-state" aria-hidden="true"></span></button>`;
+      return `<button class="quality-box qc-card ${parcel.issue||""}" data-quality="${parcel.id}" aria-pressed="false" aria-label="${parcel.id}, ${carrier}, ${sku}"><span class="qc-parcel qc-parcel-${variant}"><img class="qc-box-art" src="${art}boxes/box_${variant}.png" alt="" draggable="false">${parcel.issue==="dented"?`<img class="qc-damage" src="${art}damage/damage_crush.png" alt="" draggable="false"><img class="qc-damage qc-damage-tear" src="${art}damage/damage_tear.png" alt="" draggable="false">`:""}<img class="qc-sticker" src="${art}decor/${["sticker_tree","sticker_gift","sticker_holly","sticker_snowflake"][index%4]}.png" alt="" draggable="false"><span class="qc-label"><img src="${art}labels/label_base.png" alt="" draggable="false"><span class="qc-label-copy"><span class="qc-carrier">${carrier}</span><b class="qc-gift">${parcel.id}</b><small class="qc-sku${parcel.issue==="missing"?" qc-sku-missing":""}">${parcel.issue==="missing"?'<span>SKU</span><span class="qc-empty-field" aria-label="Missing SKU"></span>':sku}</small></span></span>${issueAsset?`<img class="qc-issue" src="${art}issues/${issueAsset}.png" alt="" draggable="false">`:""}</span><span class="qc-selection" aria-hidden="true">SELECTED</span><span class="qc-state" aria-hidden="true"></span></button>`;
     }).join("")}</div><div class="quality-footer"><button class="lock-answer" id="lock-quality"><span aria-hidden="true">▣</span> LOCK QUALITY CHECK</button></div></div>`;
-    this.listen(this.root.querySelector("#lock-quality"),"click",()=>this.ctx.finish());
+    this.listen(this.root.querySelector("#lock-quality"),"click",()=>{if(this.locked)return;this.locked=true;this.ctx.finish();});
     this.root.querySelectorAll("[data-quality]").forEach(box=>this.listen(box,"click",()=>{
       const id=box.dataset.quality;this.selected.has(id)?this.selected.delete(id):this.selected.add(id);
       box.classList.toggle("selected");box.setAttribute("aria-pressed",String(this.selected.has(id)));
