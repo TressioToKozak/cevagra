@@ -3,7 +3,8 @@ export const clamp = (value,min,max) => Math.max(min,Math.min(max,value));
 export function scoreStandard({correct=0,total=1,mistakes=0,completed=false,timeRemaining=0,timeLimit=1,max=100}){
   const accuracy=clamp((correct-mistakes)/Math.max(1,total),0,1);
   const accuracyPoints=accuracy*.85*max;
-  const speedPoints=completed?clamp(timeRemaining/timeLimit,0,1)*.15*max:0;
+  // Full speed points remain achievable: finish within the first half of the limit.
+  const speedPoints=completed?clamp(timeRemaining/(timeLimit*.5),0,1)*.15*max:0;
   return Math.round(clamp(accuracyPoints+speedPoints,0,max));
 }
 

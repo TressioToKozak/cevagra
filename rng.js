@@ -12,3 +12,11 @@ export class SeededRandom {
   shuffle(items){const copy=[...items];for(let i=copy.length-1;i>0;i--){const j=this.int(0,i);[copy[i],copy[j]]=[copy[j],copy[i]];}return copy;}
   fork(label){return new SeededRandom(`${this.seed}:${label}`);}
 }
+
+// Event labels never enter task generation. Debug seeds are explicit opt-ins.
+export function createRunId(){
+  if(globalThis.crypto?.randomUUID)return crypto.randomUUID();
+  const bytes=new Uint8Array(16);crypto.getRandomValues(bytes);
+  return [...bytes].map(byte=>byte.toString(16).padStart(2,"0")).join("");
+}
+export const createRunSeed=()=>`CEVA-${createRunId()}`;

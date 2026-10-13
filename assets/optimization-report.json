@@ -1,0 +1,2211 @@
+{
+  "count": 174,
+  "before": 116302091,
+  "after": 9867326,
+  "assets": [
+    {
+      "source": "assets/backgrounds/02_conveyor_rush.png",
+      "runtime": "assets/backgrounds/02_conveyor_rush.webp",
+      "before": 2389472,
+      "sourceDimensions": [
+        1672,
+        941
+      ],
+      "runtimeDimensions": [
+        1672,
+        941
+      ],
+      "after": 324000
+    },
+    {
+      "source": "assets/backgrounds/05_wms_detective.png",
+      "runtime": "assets/backgrounds/05_wms_detective.webp",
+      "before": 2245640,
+      "sourceDimensions": [
+        1672,
+        941
+      ],
+      "runtimeDimensions": [
+        1672,
+        941
+      ],
+      "after": 287320
+    },
+    {
+      "source": "assets/backgrounds/06_truck_loading.png",
+      "runtime": "assets/backgrounds/06_truck_loading.webp",
+      "before": 2409251,
+      "sourceDimensions": [
+        1672,
+        941
+      ],
+      "runtimeDimensions": [
+        1672,
+        941
+      ],
+      "after": 328336
+    },
+    {
+      "source": "assets/backgrounds/07_memory_challenge.png",
+      "runtime": "assets/backgrounds/07_memory_challenge.webp",
+      "before": 2516207,
+      "sourceDimensions": [
+        1672,
+        941
+      ],
+      "runtimeDimensions": [
+        1672,
+        941
+      ],
+      "after": 368350
+    },
+    {
+      "source": "assets/backgrounds/08_quality_control.png",
+      "runtime": "assets/backgrounds/08_quality_control.webp",
+      "before": 2191199,
+      "sourceDimensions": [
+        1672,
+        941
+      ],
+      "runtimeDimensions": [
+        1672,
+        941
+      ],
+      "after": 265316
+    },
+    {
+      "source": "assets/backgrounds/09_final_dispatch.png",
+      "runtime": "assets/backgrounds/09_final_dispatch.webp",
+      "before": 2416032,
+      "sourceDimensions": [
+        1672,
+        941
+      ],
+      "runtimeDimensions": [
+        1672,
+        941
+      ],
+      "after": 328790
+    },
+    {
+      "source": "assets/barcode-hunt/background/background-barcode-hunt.png",
+      "runtime": "assets/barcode-hunt/background/background-barcode-hunt.webp",
+      "before": 2324643,
+      "sourceDimensions": [
+        1672,
+        941
+      ],
+      "runtimeDimensions": [
+        1672,
+        941
+      ],
+      "after": 298762
+    },
+    {
+      "source": "assets/barcode-hunt/boxes/box-angle-left-blank-label.png",
+      "runtime": "assets/barcode-hunt/boxes/box-angle-left-blank-label.webp",
+      "before": 1971211,
+      "sourceDimensions": [
+        1254,
+        1254
+      ],
+      "runtimeDimensions": [
+        640,
+        640
+      ],
+      "after": 69800
+    },
+    {
+      "source": "assets/barcode-hunt/boxes/box-angle-right-blank-label.png",
+      "runtime": "assets/barcode-hunt/boxes/box-angle-right-blank-label.webp",
+      "before": 2015652,
+      "sourceDimensions": [
+        1254,
+        1254
+      ],
+      "runtimeDimensions": [
+        640,
+        640
+      ],
+      "after": 63950
+    },
+    {
+      "source": "assets/barcode-hunt/boxes/box-front-square-label.png",
+      "runtime": "assets/barcode-hunt/boxes/box-front-square-label.webp",
+      "before": 2361930,
+      "sourceDimensions": [
+        1254,
+        1254
+      ],
+      "runtimeDimensions": [
+        640,
+        640
+      ],
+      "after": 73066
+    },
+    {
+      "source": "assets/barcode-hunt/cards/answer-card-shell.png",
+      "runtime": "assets/barcode-hunt/cards/answer-card-shell.webp",
+      "before": 1000813,
+      "sourceDimensions": [
+        1619,
+        971
+      ],
+      "runtimeDimensions": [
+        1024,
+        614
+      ],
+      "after": 33614
+    },
+    {
+      "source": "assets/barcode-hunt/hud/instruction-banner-click.png",
+      "runtime": "assets/barcode-hunt/hud/instruction-banner-click.webp",
+      "before": 631749,
+      "sourceDimensions": [
+        2172,
+        724
+      ],
+      "runtimeDimensions": [
+        1024,
+        341
+      ],
+      "after": 24482
+    },
+    {
+      "source": "assets/barcode-hunt/hud/score-panel.png",
+      "runtime": "assets/barcode-hunt/hud/score-panel.webp",
+      "before": 525962,
+      "sourceDimensions": [
+        1774,
+        887
+      ],
+      "runtimeDimensions": [
+        1024,
+        512
+      ],
+      "after": 20912
+    },
+    {
+      "source": "assets/barcode-hunt/hud/target-sku-panel.png",
+      "runtime": "assets/barcode-hunt/hud/target-sku-panel.webp",
+      "before": 487190,
+      "sourceDimensions": [
+        2172,
+        724
+      ],
+      "runtimeDimensions": [
+        1024,
+        341
+      ],
+      "after": 14610
+    },
+    {
+      "source": "assets/barcode-hunt/hud/time-panel.png",
+      "runtime": "assets/barcode-hunt/hud/time-panel.webp",
+      "before": 686973,
+      "sourceDimensions": [
+        1774,
+        887
+      ],
+      "runtimeDimensions": [
+        1024,
+        512
+      ],
+      "after": 26786
+    },
+    {
+      "source": "assets/barcode-hunt/hud/title-badge-barcode-hunt.png",
+      "runtime": "assets/barcode-hunt/hud/title-badge-barcode-hunt.webp",
+      "before": 675556,
+      "sourceDimensions": [
+        2172,
+        724
+      ],
+      "runtimeDimensions": [
+        1024,
+        341
+      ],
+      "after": 25034
+    },
+    {
+      "source": "assets/conveyor-rush/belt/belt-base.png",
+      "runtime": "assets/conveyor-rush/belt/belt-base.webp",
+      "before": 630520,
+      "sourceDimensions": [
+        1428,
+        272
+      ],
+      "runtimeDimensions": [
+        1024,
+        195
+      ],
+      "after": 78244
+    },
+    {
+      "source": "assets/conveyor-rush/belt/belt-front-trim.png",
+      "runtime": "assets/conveyor-rush/belt/belt-front-trim.webp",
+      "before": 221971,
+      "sourceDimensions": [
+        1382,
+        111
+      ],
+      "runtimeDimensions": [
+        1024,
+        82
+      ],
+      "after": 36832
+    },
+    {
+      "source": "assets/conveyor-rush/boxes/parcel-angle-left.png",
+      "runtime": "assets/conveyor-rush/boxes/parcel-angle-left.webp",
+      "before": 509352,
+      "sourceDimensions": [
+        687,
+        483
+      ],
+      "runtimeDimensions": [
+        640,
+        450
+      ],
+      "after": 67110
+    },
+    {
+      "source": "assets/conveyor-rush/boxes/parcel-angle-right.png",
+      "runtime": "assets/conveyor-rush/boxes/parcel-angle-right.webp",
+      "before": 514704,
+      "sourceDimensions": [
+        685,
+        497
+      ],
+      "runtimeDimensions": [
+        640,
+        464
+      ],
+      "after": 70056
+    },
+    {
+      "source": "assets/conveyor-rush/boxes/parcel-front.png",
+      "runtime": "assets/conveyor-rush/boxes/parcel-front.webp",
+      "before": 540527,
+      "sourceDimensions": [
+        750,
+        431
+      ],
+      "runtimeDimensions": [
+        640,
+        368
+      ],
+      "after": 61698
+    },
+    {
+      "source": "assets/conveyor-rush/carriers/badge-bringcargo.png",
+      "runtime": "assets/conveyor-rush/carriers/badge-bringcargo.webp",
+      "before": 355771,
+      "sourceDimensions": [
+        693,
+        309
+      ],
+      "runtimeDimensions": [
+        693,
+        309
+      ],
+      "after": 69908
+    },
+    {
+      "source": "assets/conveyor-rush/carriers/badge-dhl.png",
+      "runtime": "assets/conveyor-rush/carriers/badge-dhl.webp",
+      "before": 336183,
+      "sourceDimensions": [
+        687,
+        302
+      ],
+      "runtimeDimensions": [
+        687,
+        302
+      ],
+      "after": 75420
+    },
+    {
+      "source": "assets/conveyor-rush/carriers/badge-klg.png",
+      "runtime": "assets/conveyor-rush/carriers/badge-klg.webp",
+      "before": 354325,
+      "sourceDimensions": [
+        693,
+        307
+      ],
+      "runtimeDimensions": [
+        693,
+        307
+      ],
+      "after": 71094
+    },
+    {
+      "source": "assets/conveyor-rush/carriers/badge-tnt.png",
+      "runtime": "assets/conveyor-rush/carriers/badge-tnt.webp",
+      "before": 362774,
+      "sourceDimensions": [
+        692,
+        307
+      ],
+      "runtimeDimensions": [
+        692,
+        307
+      ],
+      "after": 74926
+    },
+    {
+      "source": "assets/conveyor-rush/carriers/badge-tof.png",
+      "runtime": "assets/conveyor-rush/carriers/badge-tof.webp",
+      "before": 349699,
+      "sourceDimensions": [
+        688,
+        309
+      ],
+      "runtimeDimensions": [
+        688,
+        309
+      ],
+      "after": 69804
+    },
+    {
+      "source": "assets/conveyor-rush/carriers/badge-ups.png",
+      "runtime": "assets/conveyor-rush/carriers/badge-ups.webp",
+      "before": 350849,
+      "sourceDimensions": [
+        686,
+        299
+      ],
+      "runtimeDimensions": [
+        686,
+        299
+      ],
+      "after": 71834
+    },
+    {
+      "source": "assets/conveyor-rush/labels/shipping-label-angle-left.png",
+      "runtime": "assets/conveyor-rush/labels/shipping-label-angle-left.webp",
+      "before": 451453,
+      "sourceDimensions": [
+        642,
+        471
+      ],
+      "runtimeDimensions": [
+        642,
+        471
+      ],
+      "after": 69682
+    },
+    {
+      "source": "assets/conveyor-rush/labels/shipping-label-angle-right.png",
+      "runtime": "assets/conveyor-rush/labels/shipping-label-angle-right.webp",
+      "before": 455080,
+      "sourceDimensions": [
+        568,
+        525
+      ],
+      "runtimeDimensions": [
+        568,
+        525
+      ],
+      "after": 69142
+    },
+    {
+      "source": "assets/conveyor-rush/labels/shipping-label-front.png",
+      "runtime": "assets/conveyor-rush/labels/shipping-label-front.webp",
+      "before": 506692,
+      "sourceDimensions": [
+        663,
+        479
+      ],
+      "runtimeDimensions": [
+        663,
+        479
+      ],
+      "after": 67806
+    },
+    {
+      "source": "assets/conveyor-rush/states/drop-invalid.png",
+      "runtime": "assets/conveyor-rush/states/drop-invalid.webp",
+      "before": 504862,
+      "sourceDimensions": [
+        661,
+        420
+      ],
+      "runtimeDimensions": [
+        661,
+        420
+      ],
+      "after": 117356
+    },
+    {
+      "source": "assets/conveyor-rush/states/drop-valid-check.png",
+      "runtime": "assets/conveyor-rush/states/drop-valid-check.webp",
+      "before": 486437,
+      "sourceDimensions": [
+        645,
+        398
+      ],
+      "runtimeDimensions": [
+        645,
+        398
+      ],
+      "after": 106800
+    },
+    {
+      "source": "assets/conveyor-rush/states/drop-valid.png",
+      "runtime": "assets/conveyor-rush/states/drop-valid.webp",
+      "before": 468449,
+      "sourceDimensions": [
+        653,
+        422
+      ],
+      "runtimeDimensions": [
+        653,
+        422
+      ],
+      "after": 132476
+    },
+    {
+      "source": "assets/conveyor-rush/zones/zone-bringcargo.png",
+      "runtime": "assets/conveyor-rush/zones/zone-bringcargo.webp",
+      "before": 566751,
+      "sourceDimensions": [
+        493,
+        595
+      ],
+      "runtimeDimensions": [
+        493,
+        595
+      ],
+      "after": 116172
+    },
+    {
+      "source": "assets/conveyor-rush/zones/zone-dhl.png",
+      "runtime": "assets/conveyor-rush/zones/zone-dhl.webp",
+      "before": 590445,
+      "sourceDimensions": [
+        502,
+        660
+      ],
+      "runtimeDimensions": [
+        502,
+        660
+      ],
+      "after": 125202
+    },
+    {
+      "source": "assets/conveyor-rush/zones/zone-klg.png",
+      "runtime": "assets/conveyor-rush/zones/zone-klg.webp",
+      "before": 540239,
+      "sourceDimensions": [
+        471,
+        595
+      ],
+      "runtimeDimensions": [
+        471,
+        595
+      ],
+      "after": 115000
+    },
+    {
+      "source": "assets/conveyor-rush/zones/zone-tnt.png",
+      "runtime": "assets/conveyor-rush/zones/zone-tnt.webp",
+      "before": 596667,
+      "sourceDimensions": [
+        500,
+        661
+      ],
+      "runtimeDimensions": [
+        500,
+        661
+      ],
+      "after": 121752
+    },
+    {
+      "source": "assets/conveyor-rush/zones/zone-tof.png",
+      "runtime": "assets/conveyor-rush/zones/zone-tof.webp",
+      "before": 568703,
+      "sourceDimensions": [
+        494,
+        596
+      ],
+      "runtimeDimensions": [
+        494,
+        596
+      ],
+      "after": 115514
+    },
+    {
+      "source": "assets/conveyor-rush/zones/zone-ups.png",
+      "runtime": "assets/conveyor-rush/zones/zone-ups.webp",
+      "before": 584717,
+      "sourceDimensions": [
+        480,
+        660
+      ],
+      "runtimeDimensions": [
+        480,
+        660
+      ],
+      "after": 122848
+    },
+    {
+      "source": "assets/cursor/clicker-click.png",
+      "runtime": "assets/cursor/clicker-click.png",
+      "before": 7936,
+      "after": 7936
+    },
+    {
+      "source": "assets/cursor/clicker-hover.png",
+      "runtime": "assets/cursor/clicker-hover.png",
+      "before": 8865,
+      "after": 8865
+    },
+    {
+      "source": "assets/cursor/clicker.png",
+      "runtime": "assets/cursor/clicker.png",
+      "before": 7639,
+      "after": 7639
+    },
+    {
+      "source": "assets/cursor/pointer-busy.png",
+      "runtime": "assets/cursor/pointer-busy.png",
+      "before": 7787,
+      "after": 7787
+    },
+    {
+      "source": "assets/cursor/pointer-click.png",
+      "runtime": "assets/cursor/pointer-click.png",
+      "before": 7092,
+      "after": 7092
+    },
+    {
+      "source": "assets/cursor/pointer-hover.png",
+      "runtime": "assets/cursor/pointer-hover.png",
+      "before": 7963,
+      "after": 7963
+    },
+    {
+      "source": "assets/cursor/pointer-unavailable.png",
+      "runtime": "assets/cursor/pointer-unavailable.png",
+      "before": 7005,
+      "after": 7005
+    },
+    {
+      "source": "assets/cursor/pointer.png",
+      "runtime": "assets/cursor/pointer.png",
+      "before": 6687,
+      "after": 6687
+    },
+    {
+      "source": "assets/final_dispatch/buttons/04_hold_shipment_button.png",
+      "runtime": "assets/final_dispatch/buttons/04_hold_shipment_button.webp",
+      "before": 1139274,
+      "sourceDimensions": [
+        2172,
+        724
+      ],
+      "runtimeDimensions": [
+        1024,
+        341
+      ],
+      "after": 32368
+    },
+    {
+      "source": "assets/final_dispatch/buttons/05_issue_wrong_quantity.png",
+      "runtime": "assets/final_dispatch/buttons/05_issue_wrong_quantity.webp",
+      "before": 291142,
+      "sourceDimensions": [
+        828,
+        263
+      ],
+      "runtimeDimensions": [
+        828,
+        263
+      ],
+      "after": 47006
+    },
+    {
+      "source": "assets/final_dispatch/buttons/06_issue_wrong_carrier.png",
+      "runtime": "assets/final_dispatch/buttons/06_issue_wrong_carrier.webp",
+      "before": 279098,
+      "sourceDimensions": [
+        828,
+        264
+      ],
+      "runtimeDimensions": [
+        828,
+        264
+      ],
+      "after": 45456
+    },
+    {
+      "source": "assets/final_dispatch/buttons/07_issue_wrong_sku.png",
+      "runtime": "assets/final_dispatch/buttons/07_issue_wrong_sku.webp",
+      "before": 278268,
+      "sourceDimensions": [
+        828,
+        265
+      ],
+      "runtimeDimensions": [
+        828,
+        265
+      ],
+      "after": 43782
+    },
+    {
+      "source": "assets/final_dispatch/buttons/08_issue_missing_serials.png",
+      "runtime": "assets/final_dispatch/buttons/08_issue_missing_serials.webp",
+      "before": 272052,
+      "sourceDimensions": [
+        828,
+        264
+      ],
+      "runtimeDimensions": [
+        828,
+        264
+      ],
+      "after": 44284
+    },
+    {
+      "source": "assets/final_dispatch/icons/15_icon_order_clipboard_tile.png",
+      "runtime": "assets/final_dispatch/icons/15_icon_order_clipboard_tile.webp",
+      "before": 67662,
+      "sourceDimensions": [
+        241,
+        227
+      ],
+      "runtimeDimensions": [
+        128,
+        121
+      ],
+      "after": 5076
+    },
+    {
+      "source": "assets/final_dispatch/icons/16_icon_shipment_carton_tile.png",
+      "runtime": "assets/final_dispatch/icons/16_icon_shipment_carton_tile.webp",
+      "before": 72170,
+      "sourceDimensions": [
+        241,
+        226
+      ],
+      "runtimeDimensions": [
+        128,
+        120
+      ],
+      "after": 5432
+    },
+    {
+      "source": "assets/final_dispatch/panels/01_order_panel.png",
+      "runtime": "assets/final_dispatch/panels/01_order_panel.webp",
+      "before": 1665993,
+      "sourceDimensions": [
+        1122,
+        1402
+      ],
+      "runtimeDimensions": [
+        1122,
+        1402
+      ],
+      "after": 169296
+    },
+    {
+      "source": "assets/final_dispatch/panels/02_packed_shipment_panel.png",
+      "runtime": "assets/final_dispatch/panels/02_packed_shipment_panel.webp",
+      "before": 1671483,
+      "sourceDimensions": [
+        1122,
+        1402
+      ],
+      "runtimeDimensions": [
+        1122,
+        1402
+      ],
+      "after": 176754
+    },
+    {
+      "source": "assets/leaderboard/christmas-corner.png",
+      "runtime": "assets/leaderboard/christmas-corner.webp",
+      "before": 1064411,
+      "sourceDimensions": [
+        1254,
+        1254
+      ],
+      "runtimeDimensions": [
+        1024,
+        1024
+      ],
+      "after": 219568
+    },
+    {
+      "source": "assets/leaderboard/close-button-empty.png",
+      "runtime": "assets/leaderboard/close-button-empty.webp",
+      "before": 2229,
+      "sourceDimensions": [
+        90,
+        90
+      ],
+      "runtimeDimensions": [
+        90,
+        90
+      ],
+      "after": 1512
+    },
+    {
+      "source": "assets/leaderboard/logo-from-reference.png",
+      "runtime": "assets/leaderboard/logo-from-reference.webp",
+      "before": 90255,
+      "sourceDimensions": [
+        445,
+        178
+      ],
+      "runtimeDimensions": [
+        445,
+        178
+      ],
+      "after": 10266
+    },
+    {
+      "source": "assets/leaderboard/medal-1.png",
+      "runtime": "assets/leaderboard/medal-1.webp",
+      "before": 11067,
+      "sourceDimensions": [
+        112,
+        124
+      ],
+      "runtimeDimensions": [
+        112,
+        124
+      ],
+      "after": 6680
+    },
+    {
+      "source": "assets/leaderboard/medal-2.png",
+      "runtime": "assets/leaderboard/medal-2.webp",
+      "before": 11800,
+      "sourceDimensions": [
+        112,
+        124
+      ],
+      "runtimeDimensions": [
+        112,
+        124
+      ],
+      "after": 6426
+    },
+    {
+      "source": "assets/leaderboard/medal-3.png",
+      "runtime": "assets/leaderboard/medal-3.webp",
+      "before": 12195,
+      "sourceDimensions": [
+        112,
+        124
+      ],
+      "runtimeDimensions": [
+        112,
+        124
+      ],
+      "after": 6698
+    },
+    {
+      "source": "assets/leaderboard/record-plaque-empty.png",
+      "runtime": "assets/leaderboard/record-plaque-empty.webp",
+      "before": 7094,
+      "sourceDimensions": [
+        1100,
+        148
+      ],
+      "runtimeDimensions": [
+        1024,
+        138
+      ],
+      "after": 9538
+    },
+    {
+      "source": "assets/leaderboard/table-header-empty.png",
+      "runtime": "assets/leaderboard/table-header-empty.webp",
+      "before": 1910,
+      "sourceDimensions": [
+        1000,
+        64
+      ],
+      "runtimeDimensions": [
+        1000,
+        64
+      ],
+      "after": 1670
+    },
+    {
+      "source": "assets/leaderboard/trophy.png",
+      "runtime": "assets/leaderboard/trophy.webp",
+      "before": 17883,
+      "sourceDimensions": [
+        150,
+        150
+      ],
+      "runtimeDimensions": [
+        150,
+        150
+      ],
+      "after": 13338
+    },
+    {
+      "source": "assets/memory_challenge/gifts/gift_blue_snowflakes.png",
+      "runtime": "assets/memory_challenge/gifts/gift_blue_snowflakes.webp",
+      "before": 310573,
+      "sourceDimensions": [
+        409,
+        469
+      ],
+      "runtimeDimensions": [
+        409,
+        469
+      ],
+      "after": 62874
+    },
+    {
+      "source": "assets/memory_challenge/gifts/gift_blue_stars.png",
+      "runtime": "assets/memory_challenge/gifts/gift_blue_stars.webp",
+      "before": 286891,
+      "sourceDimensions": [
+        423,
+        469
+      ],
+      "runtimeDimensions": [
+        423,
+        469
+      ],
+      "after": 53414
+    },
+    {
+      "source": "assets/memory_challenge/gifts/gift_gold_stripes.png",
+      "runtime": "assets/memory_challenge/gifts/gift_gold_stripes.webp",
+      "before": 307356,
+      "sourceDimensions": [
+        422,
+        476
+      ],
+      "runtimeDimensions": [
+        422,
+        476
+      ],
+      "after": 57132
+    },
+    {
+      "source": "assets/memory_challenge/gifts/gift_green_red_ribbon.png",
+      "runtime": "assets/memory_challenge/gifts/gift_green_red_ribbon.webp",
+      "before": 331358,
+      "sourceDimensions": [
+        474,
+        487
+      ],
+      "runtimeDimensions": [
+        474,
+        487
+      ],
+      "after": 57242
+    },
+    {
+      "source": "assets/memory_challenge/gifts/gift_green_trees.png",
+      "runtime": "assets/memory_challenge/gifts/gift_green_trees.webp",
+      "before": 318305,
+      "sourceDimensions": [
+        416,
+        469
+      ],
+      "runtimeDimensions": [
+        416,
+        469
+      ],
+      "after": 58412
+    },
+    {
+      "source": "assets/memory_challenge/gifts/gift_purple_diagonal.png",
+      "runtime": "assets/memory_challenge/gifts/gift_purple_diagonal.webp",
+      "before": 313049,
+      "sourceDimensions": [
+        441,
+        473
+      ],
+      "runtimeDimensions": [
+        441,
+        473
+      ],
+      "after": 56254
+    },
+    {
+      "source": "assets/memory_challenge/gifts/gift_red_snowflake.png",
+      "runtime": "assets/memory_challenge/gifts/gift_red_snowflake.webp",
+      "before": 309851,
+      "sourceDimensions": [
+        425,
+        470
+      ],
+      "runtimeDimensions": [
+        425,
+        470
+      ],
+      "after": 64614
+    },
+    {
+      "source": "assets/memory_challenge/gifts/gift_red_tartan.png",
+      "runtime": "assets/memory_challenge/gifts/gift_red_tartan.webp",
+      "before": 331201,
+      "sourceDimensions": [
+        451,
+        470
+      ],
+      "runtimeDimensions": [
+        451,
+        470
+      ],
+      "after": 63502
+    },
+    {
+      "source": "assets/memory_challenge/gifts/gift_white_gold_stars.png",
+      "runtime": "assets/memory_challenge/gifts/gift_white_gold_stars.webp",
+      "before": 324219,
+      "sourceDimensions": [
+        461,
+        485
+      ],
+      "runtimeDimensions": [
+        461,
+        485
+      ],
+      "after": 58534
+    },
+    {
+      "source": "assets/memory_challenge/gifts/gift_white_red_dots.png",
+      "runtime": "assets/memory_challenge/gifts/gift_white_red_dots.webp",
+      "before": 285657,
+      "sourceDimensions": [
+        430,
+        481
+      ],
+      "runtimeDimensions": [
+        430,
+        481
+      ],
+      "after": 50332
+    },
+    {
+      "source": "assets/memory_challenge/scene/memory_conveyor_platform.png",
+      "runtime": "assets/memory_challenge/scene/memory_conveyor_platform.webp",
+      "before": 1725042,
+      "sourceDimensions": [
+        1983,
+        793
+      ],
+      "runtimeDimensions": [
+        1536,
+        614
+      ],
+      "after": 184884
+    },
+    {
+      "source": "assets/memory_challenge/ui/checkbox_checked.png",
+      "runtime": "assets/memory_challenge/ui/checkbox_checked.webp",
+      "before": 10206,
+      "sourceDimensions": [
+        80,
+        85
+      ],
+      "runtimeDimensions": [
+        80,
+        85
+      ],
+      "after": 3520
+    },
+    {
+      "source": "assets/memory_challenge/ui/checkbox_unchecked.png",
+      "runtime": "assets/memory_challenge/ui/checkbox_unchecked.webp",
+      "before": 6627,
+      "sourceDimensions": [
+        80,
+        79
+      ],
+      "runtimeDimensions": [
+        80,
+        79
+      ],
+      "after": 1978
+    },
+    {
+      "source": "assets/memory_challenge/ui/info_icon.png",
+      "runtime": "assets/memory_challenge/ui/info_icon.webp",
+      "before": 24247,
+      "sourceDimensions": [
+        128,
+        126
+      ],
+      "runtimeDimensions": [
+        128,
+        126
+      ],
+      "after": 8354
+    },
+    {
+      "source": "assets/memory_challenge/ui/phase_1_2_pill.png",
+      "runtime": "assets/memory_challenge/ui/phase_1_2_pill.webp",
+      "before": 37273,
+      "sourceDimensions": [
+        314,
+        89
+      ],
+      "runtimeDimensions": [
+        314,
+        89
+      ],
+      "after": 11656
+    },
+    {
+      "source": "assets/memory_challenge/ui/phase_2_2_pill.png",
+      "runtime": "assets/memory_challenge/ui/phase_2_2_pill.webp",
+      "before": 37151,
+      "sourceDimensions": [
+        310,
+        91
+      ],
+      "runtimeDimensions": [
+        310,
+        91
+      ],
+      "after": 11654
+    },
+    {
+      "source": "assets/memory_challenge/ui/selection_card_slot.png",
+      "runtime": "assets/memory_challenge/ui/selection_card_slot.webp",
+      "before": 76480,
+      "sourceDimensions": [
+        246,
+        285
+      ],
+      "runtimeDimensions": [
+        246,
+        285
+      ],
+      "after": 7270
+    },
+    {
+      "source": "assets/menu/background.png",
+      "runtime": "assets/menu/background.webp",
+      "before": 2152913,
+      "sourceDimensions": [
+        1672,
+        941
+      ],
+      "runtimeDimensions": [
+        1672,
+        941
+      ],
+      "after": 170412
+    },
+    {
+      "source": "assets/menu/logo-light.png",
+      "runtime": "assets/menu/logo-light.webp",
+      "before": 42385,
+      "sourceDimensions": [
+        2048,
+        990
+      ],
+      "runtimeDimensions": [
+        1024,
+        495
+      ],
+      "after": 29012
+    },
+    {
+      "source": "assets/packing-tetris/background-packing-tetris.png",
+      "runtime": "assets/packing-tetris/background-packing-tetris.webp",
+      "before": 3529820,
+      "sourceDimensions": [
+        1672,
+        941
+      ],
+      "runtimeDimensions": [
+        1672,
+        941
+      ],
+      "after": 320962
+    },
+    {
+      "source": "assets/packing-tetris/board/pallet-top-view.png",
+      "runtime": "assets/packing-tetris/board/pallet-top-view.webp",
+      "before": 1823033,
+      "sourceDimensions": [
+        1448,
+        1086
+      ],
+      "runtimeDimensions": [
+        1024,
+        768
+      ],
+      "after": 168614
+    },
+    {
+      "source": "assets/packing-tetris/boxes/box-1x1-a.png",
+      "runtime": "assets/packing-tetris/boxes/box-1x1-a.webp",
+      "before": 2549214,
+      "sourceDimensions": [
+        1254,
+        1254
+      ],
+      "runtimeDimensions": [
+        640,
+        640
+      ],
+      "after": 95296
+    },
+    {
+      "source": "assets/packing-tetris/boxes/box-1x1-b.png",
+      "runtime": "assets/packing-tetris/boxes/box-1x1-b.webp",
+      "before": 2376324,
+      "sourceDimensions": [
+        1254,
+        1254
+      ],
+      "runtimeDimensions": [
+        640,
+        640
+      ],
+      "after": 109928
+    },
+    {
+      "source": "assets/packing-tetris/boxes/box-1x2.png",
+      "runtime": "assets/packing-tetris/boxes/box-1x2.webp",
+      "before": 2191454,
+      "sourceDimensions": [
+        887,
+        1774
+      ],
+      "runtimeDimensions": [
+        320,
+        640
+      ],
+      "after": 43136
+    },
+    {
+      "source": "assets/packing-tetris/boxes/box-1x3.png",
+      "runtime": "assets/packing-tetris/boxes/box-1x3.webp",
+      "before": 2534537,
+      "sourceDimensions": [
+        1024,
+        1536
+      ],
+      "runtimeDimensions": [
+        427,
+        640
+      ],
+      "after": 48760
+    },
+    {
+      "source": "assets/packing-tetris/boxes/box-2x1-a.png",
+      "runtime": "assets/packing-tetris/boxes/box-2x1-a.webp",
+      "before": 2046472,
+      "sourceDimensions": [
+        1774,
+        887
+      ],
+      "runtimeDimensions": [
+        640,
+        320
+      ],
+      "after": 40032
+    },
+    {
+      "source": "assets/packing-tetris/boxes/box-2x1-b.png",
+      "runtime": "assets/packing-tetris/boxes/box-2x1-b.webp",
+      "before": 2206680,
+      "sourceDimensions": [
+        2172,
+        724
+      ],
+      "runtimeDimensions": [
+        640,
+        213
+      ],
+      "after": 30910
+    },
+    {
+      "source": "assets/packing-tetris/boxes/box-2x2-a.png",
+      "runtime": "assets/packing-tetris/boxes/box-2x2-a.webp",
+      "before": 2164871,
+      "sourceDimensions": [
+        1254,
+        1254
+      ],
+      "runtimeDimensions": [
+        640,
+        640
+      ],
+      "after": 87442
+    },
+    {
+      "source": "assets/packing-tetris/boxes/box-2x2-b.png",
+      "runtime": "assets/packing-tetris/boxes/box-2x2-b.webp",
+      "before": 2376324,
+      "sourceDimensions": [
+        1254,
+        1254
+      ],
+      "runtimeDimensions": [
+        640,
+        640
+      ],
+      "after": 109928
+    },
+    {
+      "source": "assets/packing-tetris/boxes/box-3x1-a.png",
+      "runtime": "assets/packing-tetris/boxes/box-3x1-a.webp",
+      "before": 2236212,
+      "sourceDimensions": [
+        2172,
+        724
+      ],
+      "runtimeDimensions": [
+        640,
+        213
+      ],
+      "after": 32516
+    },
+    {
+      "source": "assets/packing-tetris/boxes/box-3x1-b.png",
+      "runtime": "assets/packing-tetris/boxes/box-3x1-b.webp",
+      "before": 2305905,
+      "sourceDimensions": [
+        2172,
+        724
+      ],
+      "runtimeDimensions": [
+        640,
+        213
+      ],
+      "after": 25940
+    },
+    {
+      "source": "assets/packing-tetris/boxes/box-3x2.png",
+      "runtime": "assets/packing-tetris/boxes/box-3x2.webp",
+      "before": 2720871,
+      "sourceDimensions": [
+        1536,
+        1024
+      ],
+      "runtimeDimensions": [
+        640,
+        427
+      ],
+      "after": 60440
+    },
+    {
+      "source": "assets/quality_control/boxes/box_front.png",
+      "runtime": "assets/quality_control/boxes/box_front.webp",
+      "before": 32981,
+      "sourceDimensions": [
+        153,
+        108
+      ],
+      "runtimeDimensions": [
+        153,
+        108
+      ],
+      "after": 2620
+    },
+    {
+      "source": "assets/quality_control/boxes/box_left.png",
+      "runtime": "assets/quality_control/boxes/box_left.webp",
+      "before": 29325,
+      "sourceDimensions": [
+        118,
+        113
+      ],
+      "runtimeDimensions": [
+        118,
+        113
+      ],
+      "after": 2918
+    },
+    {
+      "source": "assets/quality_control/boxes/box_right.png",
+      "runtime": "assets/quality_control/boxes/box_right.webp",
+      "before": 31667,
+      "sourceDimensions": [
+        124,
+        119
+      ],
+      "runtimeDimensions": [
+        124,
+        119
+      ],
+      "after": 3500
+    },
+    {
+      "source": "assets/quality_control/damage/damage_crush.png",
+      "runtime": "assets/quality_control/damage/damage_crush.webp",
+      "before": 16839,
+      "sourceDimensions": [
+        72,
+        88
+      ],
+      "runtimeDimensions": [
+        72,
+        88
+      ],
+      "after": 2240
+    },
+    {
+      "source": "assets/quality_control/damage/damage_tear.png",
+      "runtime": "assets/quality_control/damage/damage_tear.webp",
+      "before": 17374,
+      "sourceDimensions": [
+        76,
+        89
+      ],
+      "runtimeDimensions": [
+        76,
+        89
+      ],
+      "after": 2276
+    },
+    {
+      "source": "assets/quality_control/decor/sticker_gift.png",
+      "runtime": "assets/quality_control/decor/sticker_gift.webp",
+      "before": 7163,
+      "sourceDimensions": [
+        45,
+        56
+      ],
+      "runtimeDimensions": [
+        45,
+        56
+      ],
+      "after": 1856
+    },
+    {
+      "source": "assets/quality_control/decor/sticker_holly.png",
+      "runtime": "assets/quality_control/decor/sticker_holly.webp",
+      "before": 5509,
+      "sourceDimensions": [
+        38,
+        51
+      ],
+      "runtimeDimensions": [
+        38,
+        51
+      ],
+      "after": 1436
+    },
+    {
+      "source": "assets/quality_control/decor/sticker_snowflake.png",
+      "runtime": "assets/quality_control/decor/sticker_snowflake.webp",
+      "before": 8110,
+      "sourceDimensions": [
+        53,
+        51
+      ],
+      "runtimeDimensions": [
+        53,
+        51
+      ],
+      "after": 2016
+    },
+    {
+      "source": "assets/quality_control/decor/sticker_tree.png",
+      "runtime": "assets/quality_control/decor/sticker_tree.webp",
+      "before": 7585,
+      "sourceDimensions": [
+        44,
+        66
+      ],
+      "runtimeDimensions": [
+        44,
+        66
+      ],
+      "after": 1780
+    },
+    {
+      "source": "assets/quality_control/issues/issue_damage.png",
+      "runtime": "assets/quality_control/issues/issue_damage.webp",
+      "before": 6419,
+      "sourceDimensions": [
+        39,
+        69
+      ],
+      "runtimeDimensions": [
+        39,
+        69
+      ],
+      "after": 1448
+    },
+    {
+      "source": "assets/quality_control/issues/issue_missing_data.png",
+      "runtime": "assets/quality_control/issues/issue_missing_data.webp",
+      "before": 7058,
+      "sourceDimensions": [
+        61,
+        65
+      ],
+      "runtimeDimensions": [
+        61,
+        65
+      ],
+      "after": 1408
+    },
+    {
+      "source": "assets/quality_control/issues/issue_wrong_carrier.png",
+      "runtime": "assets/quality_control/issues/issue_wrong_carrier.webp",
+      "before": 8319,
+      "sourceDimensions": [
+        70,
+        74
+      ],
+      "runtimeDimensions": [
+        70,
+        74
+      ],
+      "after": 1528
+    },
+    {
+      "source": "assets/quality_control/issues/issue_wrong_sku.png",
+      "runtime": "assets/quality_control/issues/issue_wrong_sku.webp",
+      "before": 9499,
+      "sourceDimensions": [
+        65,
+        69
+      ],
+      "runtimeDimensions": [
+        65,
+        69
+      ],
+      "after": 946
+    },
+    {
+      "source": "assets/quality_control/labels/label_base.png",
+      "runtime": "assets/quality_control/labels/label_base.webp",
+      "before": 37905,
+      "sourceDimensions": [
+        154,
+        106
+      ],
+      "runtimeDimensions": [
+        154,
+        106
+      ],
+      "after": 2752
+    },
+    {
+      "source": "assets/quality_control/states/box_highlight.png",
+      "runtime": "assets/quality_control/states/box_highlight.webp",
+      "before": 26018,
+      "sourceDimensions": [
+        133,
+        66
+      ],
+      "runtimeDimensions": [
+        133,
+        66
+      ],
+      "after": 8820
+    },
+    {
+      "source": "assets/quality_control/states/box_selected.png",
+      "runtime": "assets/quality_control/states/box_selected.webp",
+      "before": 23396,
+      "sourceDimensions": [
+        131,
+        66
+      ],
+      "runtimeDimensions": [
+        131,
+        66
+      ],
+      "after": 5750
+    },
+    {
+      "source": "assets/results/background/results-background.png",
+      "runtime": "assets/results/background/results-background.webp",
+      "before": 1879371,
+      "sourceDimensions": [
+        1920,
+        1080
+      ],
+      "runtimeDimensions": [
+        1920,
+        1080
+      ],
+      "after": 152008
+    },
+    {
+      "source": "assets/results/buttons/leaderboard.svg",
+      "runtime": "assets/results/buttons/leaderboard.svg",
+      "before": 1347,
+      "after": 1347
+    },
+    {
+      "source": "assets/results/buttons/return-to-start.svg",
+      "runtime": "assets/results/buttons/return-to-start.svg",
+      "before": 1347,
+      "after": 1347
+    },
+    {
+      "source": "assets/results/icons/accuracy.svg",
+      "runtime": "assets/results/icons/accuracy.svg",
+      "before": 1270,
+      "after": 1270
+    },
+    {
+      "source": "assets/results/icons/barcode-hunt.svg",
+      "runtime": "assets/results/icons/barcode-hunt.svg",
+      "before": 1237,
+      "after": 1237
+    },
+    {
+      "source": "assets/results/icons/challenges.svg",
+      "runtime": "assets/results/icons/challenges.svg",
+      "before": 1217,
+      "after": 1217
+    },
+    {
+      "source": "assets/results/icons/conveyor-rush.svg",
+      "runtime": "assets/results/icons/conveyor-rush.svg",
+      "before": 1228,
+      "after": 1228
+    },
+    {
+      "source": "assets/results/icons/final-dispatch.svg",
+      "runtime": "assets/results/icons/final-dispatch.svg",
+      "before": 1217,
+      "after": 1217
+    },
+    {
+      "source": "assets/results/icons/memory-challenge.svg",
+      "runtime": "assets/results/icons/memory-challenge.svg",
+      "before": 1326,
+      "after": 1326
+    },
+    {
+      "source": "assets/results/icons/mistakes.svg",
+      "runtime": "assets/results/icons/mistakes.svg",
+      "before": 1238,
+      "after": 1238
+    },
+    {
+      "source": "assets/results/icons/packing-tetris.svg",
+      "runtime": "assets/results/icons/packing-tetris.svg",
+      "before": 1241,
+      "after": 1241
+    },
+    {
+      "source": "assets/results/icons/quality-control.svg",
+      "runtime": "assets/results/icons/quality-control.svg",
+      "before": 1253,
+      "after": 1253
+    },
+    {
+      "source": "assets/results/icons/rank-trophy.svg",
+      "runtime": "assets/results/icons/rank-trophy.svg",
+      "before": 1310,
+      "after": 1310
+    },
+    {
+      "source": "assets/results/icons/score-star.svg",
+      "runtime": "assets/results/icons/score-star.svg",
+      "before": 1239,
+      "after": 1239
+    },
+    {
+      "source": "assets/results/icons/speed-picking.svg",
+      "runtime": "assets/results/icons/speed-picking.svg",
+      "before": 1282,
+      "after": 1282
+    },
+    {
+      "source": "assets/results/icons/truck-loading.svg",
+      "runtime": "assets/results/icons/truck-loading.svg",
+      "before": 1294,
+      "after": 1294
+    },
+    {
+      "source": "assets/results/icons/wms-detective.svg",
+      "runtime": "assets/results/icons/wms-detective.svg",
+      "before": 1226,
+      "after": 1226
+    },
+    {
+      "source": "assets/results/panels/challenge-card.svg",
+      "runtime": "assets/results/panels/challenge-card.svg",
+      "before": 1336,
+      "after": 1336
+    },
+    {
+      "source": "assets/results/panels/final-score-panel.svg",
+      "runtime": "assets/results/panels/final-score-panel.svg",
+      "before": 1589,
+      "after": 1589
+    },
+    {
+      "source": "assets/results/panels/player-rank-panel.svg",
+      "runtime": "assets/results/panels/player-rank-panel.svg",
+      "before": 1804,
+      "after": 1804
+    },
+    {
+      "source": "assets/results/panels/stat-card.svg",
+      "runtime": "assets/results/panels/stat-card.svg",
+      "before": 1272,
+      "after": 1272
+    },
+    {
+      "source": "assets/results/panels/title-run-complete.svg",
+      "runtime": "assets/results/panels/title-run-complete.svg",
+      "before": 1651,
+      "after": 1651
+    },
+    {
+      "source": "assets/speed-picking/background-speed-picking.png",
+      "runtime": "assets/speed-picking/background-speed-picking.webp",
+      "before": 3402616,
+      "sourceDimensions": [
+        1672,
+        941
+      ],
+      "runtimeDimensions": [
+        1672,
+        941
+      ],
+      "after": 304518
+    },
+    {
+      "source": "assets/speed-picking/icons/arrow.png",
+      "runtime": "assets/speed-picking/icons/arrow.webp",
+      "before": 2188,
+      "sourceDimensions": [
+        128,
+        128
+      ],
+      "runtimeDimensions": [
+        128,
+        128
+      ],
+      "after": 1390
+    },
+    {
+      "source": "assets/speed-picking/icons/parcel.png",
+      "runtime": "assets/speed-picking/icons/parcel.webp",
+      "before": 3229,
+      "sourceDimensions": [
+        128,
+        128
+      ],
+      "runtimeDimensions": [
+        128,
+        128
+      ],
+      "after": 2914
+    },
+    {
+      "source": "assets/speed-picking/locations/location-01-natural-wood-pallet.png",
+      "runtime": "assets/speed-picking/locations/location-01-natural-wood-pallet.webp",
+      "before": 2035063,
+      "sourceDimensions": [
+        1448,
+        1086
+      ],
+      "runtimeDimensions": [
+        640,
+        480
+      ],
+      "after": 63632
+    },
+    {
+      "source": "assets/speed-picking/locations/location-02-blue-pallet.png",
+      "runtime": "assets/speed-picking/locations/location-02-blue-pallet.webp",
+      "before": 1995055,
+      "sourceDimensions": [
+        1448,
+        1086
+      ],
+      "runtimeDimensions": [
+        640,
+        480
+      ],
+      "after": 59944
+    },
+    {
+      "source": "assets/speed-picking/locations/location-03-red-pallet.png",
+      "runtime": "assets/speed-picking/locations/location-03-red-pallet.webp",
+      "before": 2011410,
+      "sourceDimensions": [
+        1448,
+        1086
+      ],
+      "runtimeDimensions": [
+        640,
+        480
+      ],
+      "after": 62162
+    },
+    {
+      "source": "assets/speed-picking/locations/location-04-yellow-pallet.png",
+      "runtime": "assets/speed-picking/locations/location-04-yellow-pallet.webp",
+      "before": 1990558,
+      "sourceDimensions": [
+        1448,
+        1086
+      ],
+      "runtimeDimensions": [
+        640,
+        480
+      ],
+      "after": 61348
+    },
+    {
+      "source": "assets/speed-picking/locations/location-05-green-pallet.png",
+      "runtime": "assets/speed-picking/locations/location-05-green-pallet.webp",
+      "before": 2022630,
+      "sourceDimensions": [
+        1448,
+        1086
+      ],
+      "runtimeDimensions": [
+        640,
+        480
+      ],
+      "after": 60702
+    },
+    {
+      "source": "assets/speed-picking/locations/location-06-purple-pallet.png",
+      "runtime": "assets/speed-picking/locations/location-06-purple-pallet.webp",
+      "before": 2012767,
+      "sourceDimensions": [
+        1448,
+        1086
+      ],
+      "runtimeDimensions": [
+        640,
+        480
+      ],
+      "after": 60980
+    },
+    {
+      "source": "assets/speed-picking/ui/hud-game.png",
+      "runtime": "assets/speed-picking/ui/hud-game.webp",
+      "before": 4746,
+      "sourceDimensions": [
+        390,
+        112
+      ],
+      "runtimeDimensions": [
+        390,
+        112
+      ],
+      "after": 2086
+    },
+    {
+      "source": "assets/speed-picking/ui/hud-player.png",
+      "runtime": "assets/speed-picking/ui/hud-player.webp",
+      "before": 4345,
+      "sourceDimensions": [
+        310,
+        112
+      ],
+      "runtimeDimensions": [
+        310,
+        112
+      ],
+      "after": 2018
+    },
+    {
+      "source": "assets/speed-picking/ui/hud-score.png",
+      "runtime": "assets/speed-picking/ui/hud-score.webp",
+      "before": 3758,
+      "sourceDimensions": [
+        255,
+        112
+      ],
+      "runtimeDimensions": [
+        255,
+        112
+      ],
+      "after": 1894
+    },
+    {
+      "source": "assets/speed-picking/ui/hud-time.png",
+      "runtime": "assets/speed-picking/ui/hud-time.webp",
+      "before": 3758,
+      "sourceDimensions": [
+        255,
+        112
+      ],
+      "runtimeDimensions": [
+        255,
+        112
+      ],
+      "after": 1894
+    },
+    {
+      "source": "assets/speed-picking/ui/instruction-panel.png",
+      "runtime": "assets/speed-picking/ui/instruction-panel.webp",
+      "before": 7960,
+      "sourceDimensions": [
+        1120,
+        140
+      ],
+      "runtimeDimensions": [
+        1024,
+        128
+      ],
+      "after": 2938
+    },
+    {
+      "source": "assets/speed-picking/ui/location-badge.png",
+      "runtime": "assets/speed-picking/ui/location-badge.webp",
+      "before": 1383,
+      "sourceDimensions": [
+        145,
+        65
+      ],
+      "runtimeDimensions": [
+        145,
+        65
+      ],
+      "after": 816
+    },
+    {
+      "source": "assets/speed-picking/ui/location-card-footer.png",
+      "runtime": "assets/speed-picking/ui/location-card-footer.webp",
+      "before": 2472,
+      "sourceDimensions": [
+        730,
+        96
+      ],
+      "runtimeDimensions": [
+        730,
+        96
+      ],
+      "after": 1690
+    },
+    {
+      "source": "assets/speed-picking/ui/location-card-frame.png",
+      "runtime": "assets/speed-picking/ui/location-card-frame.webp",
+      "before": 4266,
+      "sourceDimensions": [
+        730,
+        430
+      ],
+      "runtimeDimensions": [
+        730,
+        430
+      ],
+      "after": 2818
+    },
+    {
+      "source": "assets/speed-picking/ui/target-sku-panel.png",
+      "runtime": "assets/speed-picking/ui/target-sku-panel.webp",
+      "before": 3815,
+      "sourceDimensions": [
+        460,
+        86
+      ],
+      "runtimeDimensions": [
+        460,
+        86
+      ],
+      "after": 1762
+    },
+    {
+      "source": "assets/truck_loading/overlays/09_single_drop_slot_overlay.png",
+      "runtime": "assets/truck_loading/overlays/09_single_drop_slot_overlay.webp",
+      "before": 966133,
+      "sourceDimensions": [
+        1448,
+        1086
+      ],
+      "runtimeDimensions": [
+        1024,
+        768
+      ],
+      "after": 131420
+    },
+    {
+      "source": "assets/truck_loading/pallets/05_pallet_crate_base.png",
+      "runtime": "assets/truck_loading/pallets/05_pallet_crate_base.webp",
+      "before": 2250281,
+      "sourceDimensions": [
+        1448,
+        1086
+      ],
+      "runtimeDimensions": [
+        1024,
+        768
+      ],
+      "after": 141182
+    },
+    {
+      "source": "assets/truck_loading/pallets/06_blank_label_overlay.png",
+      "runtime": "assets/truck_loading/pallets/06_blank_label_overlay.webp",
+      "before": 2038027,
+      "sourceDimensions": [
+        1448,
+        1086
+      ],
+      "runtimeDimensions": [
+        1024,
+        768
+      ],
+      "after": 125070
+    },
+    {
+      "source": "assets/truck_loading/scene/01_trailer_interior_7_bays.png",
+      "runtime": "assets/truck_loading/scene/01_trailer_interior_7_bays.webp",
+      "before": 1442888,
+      "sourceDimensions": [
+        1672,
+        941
+      ],
+      "runtimeDimensions": [
+        1672,
+        941
+      ],
+      "after": 222164
+    },
+    {
+      "source": "assets/truck_loading/scene/02_truck_front_marker.png",
+      "runtime": "assets/truck_loading/scene/02_truck_front_marker.webp",
+      "before": 2015413,
+      "sourceDimensions": [
+        1086,
+        1448
+      ],
+      "runtimeDimensions": [
+        768,
+        1024
+      ],
+      "after": 190664
+    },
+    {
+      "source": "assets/truck_loading/scene/03_rear_door_marker.png",
+      "runtime": "assets/truck_loading/scene/03_rear_door_marker.webp",
+      "before": 1965909,
+      "sourceDimensions": [
+        1086,
+        1448
+      ],
+      "runtimeDimensions": [
+        768,
+        1024
+      ],
+      "after": 195604
+    },
+    {
+      "source": "assets/truck_loading/ui/04_pallets_waiting_panel.png",
+      "runtime": "assets/truck_loading/ui/04_pallets_waiting_panel.webp",
+      "before": 2264893,
+      "sourceDimensions": [
+        1024,
+        1536
+      ],
+      "runtimeDimensions": [
+        683,
+        1024
+      ],
+      "after": 169294
+    },
+    {
+      "source": "assets/truck_loading/ui/07_lock_load_order_button_blank.png",
+      "runtime": "assets/truck_loading/ui/07_lock_load_order_button_blank.webp",
+      "before": 1729134,
+      "sourceDimensions": [
+        2172,
+        724
+      ],
+      "runtimeDimensions": [
+        1024,
+        341
+      ],
+      "after": 45774
+    },
+    {
+      "source": "assets/truck_loading/ui/08_last_delivery_load_first_banner.png",
+      "runtime": "assets/truck_loading/ui/08_last_delivery_load_first_banner.webp",
+      "before": 883201,
+      "sourceDimensions": [
+        2172,
+        724
+      ],
+      "runtimeDimensions": [
+        1024,
+        341
+      ],
+      "after": 33698
+    },
+    {
+      "source": "assets/wms-detective/controls/checkbox_checked.png",
+      "runtime": "assets/wms-detective/controls/checkbox_checked.webp",
+      "before": 7209,
+      "sourceDimensions": [
+        96,
+        96
+      ],
+      "runtimeDimensions": [
+        96,
+        96
+      ],
+      "after": 2756
+    },
+    {
+      "source": "assets/wms-detective/controls/checkbox_empty.png",
+      "runtime": "assets/wms-detective/controls/checkbox_empty.webp",
+      "before": 1481,
+      "sourceDimensions": [
+        96,
+        96
+      ],
+      "runtimeDimensions": [
+        96,
+        96
+      ],
+      "after": 1128
+    },
+    {
+      "source": "assets/wms-detective/controls/checkbox_hover.png",
+      "runtime": "assets/wms-detective/controls/checkbox_hover.webp",
+      "before": 7755,
+      "sourceDimensions": [
+        96,
+        96
+      ],
+      "runtimeDimensions": [
+        96,
+        96
+      ],
+      "after": 2574
+    },
+    {
+      "source": "assets/wms-detective/icons/compare_arrow.png",
+      "runtime": "assets/wms-detective/icons/compare_arrow.webp",
+      "before": 2538,
+      "sourceDimensions": [
+        110,
+        80
+      ],
+      "runtimeDimensions": [
+        110,
+        80
+      ],
+      "after": 2084
+    },
+    {
+      "source": "assets/wms-detective/icons/info.png",
+      "runtime": "assets/wms-detective/icons/info.webp",
+      "before": 4315,
+      "sourceDimensions": [
+        96,
+        96
+      ],
+      "runtimeDimensions": [
+        96,
+        96
+      ],
+      "after": 2702
+    },
+    {
+      "source": "assets/wms-detective/icons/lock.png",
+      "runtime": "assets/wms-detective/icons/lock.webp",
+      "before": 2071,
+      "sourceDimensions": [
+        96,
+        96
+      ],
+      "runtimeDimensions": [
+        96,
+        96
+      ],
+      "after": 1226
+    },
+    {
+      "source": "assets/wms-detective/icons/monitor.png",
+      "runtime": "assets/wms-detective/icons/monitor.webp",
+      "before": 1587,
+      "sourceDimensions": [
+        96,
+        96
+      ],
+      "runtimeDimensions": [
+        96,
+        96
+      ],
+      "after": 1348
+    },
+    {
+      "source": "assets/wms-detective/rows/row_hover.png",
+      "runtime": "assets/wms-detective/rows/row_hover.webp",
+      "before": 4516,
+      "sourceDimensions": [
+        1200,
+        142
+      ],
+      "runtimeDimensions": [
+        1024,
+        121
+      ],
+      "after": 2010
+    },
+    {
+      "source": "assets/wms-detective/rows/row_normal.png",
+      "runtime": "assets/wms-detective/rows/row_normal.webp",
+      "before": 2470,
+      "sourceDimensions": [
+        1200,
+        142
+      ],
+      "runtimeDimensions": [
+        1024,
+        121
+      ],
+      "after": 1750
+    },
+    {
+      "source": "assets/wms-detective/rows/row_selected.png",
+      "runtime": "assets/wms-detective/rows/row_selected.webp",
+      "before": 4441,
+      "sourceDimensions": [
+        1200,
+        142
+      ],
+      "runtimeDimensions": [
+        1024,
+        121
+      ],
+      "after": 2010
+    },
+    {
+      "source": "assets/wms-detective/ui/button_confirm.png",
+      "runtime": "assets/wms-detective/ui/button_confirm.webp",
+      "before": 3597,
+      "sourceDimensions": [
+        460,
+        72
+      ],
+      "runtimeDimensions": [
+        460,
+        72
+      ],
+      "after": 1630
+    },
+    {
+      "source": "assets/wms-detective/ui/button_confirm_hover.png",
+      "runtime": "assets/wms-detective/ui/button_confirm_hover.webp",
+      "before": 3640,
+      "sourceDimensions": [
+        460,
+        72
+      ],
+      "runtimeDimensions": [
+        460,
+        72
+      ],
+      "after": 1624
+    }
+  ]
+}

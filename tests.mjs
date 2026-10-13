@@ -13,7 +13,7 @@ const assert=(condition,message)=>{checks++;if(!condition)throw new Error(messag
 assert(GAME_CONFIGS.length===9,"competition has eight minigames and one final");
 assert(GAME_CONFIGS.slice(0,8).every(game=>game.max===100)&&GAME_CONFIGS.at(-1).max===200,"score caps total 1,000");
 assert(ACTIVE_SECONDS===165,"active gameplay totals 165 seconds");
-assert(3+(GAME_CONFIGS.length-1)*TRANSITION_SECONDS===15,"countdown and between-game transitions total 15 seconds");
+assert(TRANSITION_SECONDS===1.5,"completed-stage summaries retain the short original transition");
 assert(COMPETITION_SECONDS===180,"competition duration is three minutes");
 assert(GAME_CONFIGS.map(game=>game.time).join(",")==="15,20,15,25,15,20,15,15,25","all stage timers match specification");
 const orderA=buildGameOrder(new SeededRandom("ORDER-A")),orderB=buildGameOrder(new SeededRandom("ORDER-B"));
@@ -47,7 +47,7 @@ assert(snapshotA.detective.solution.length===3,"WMS detective has equivalent dis
 assert(snapshotA.loading.solution.length===7,"truck loading has seven ordered pallets");
 assert(snapshotA.memory.shipment.length===5&&snapshotA.memory.options.length===8,"memory challenge has five targets and three decoys");
 assert(snapshotA.quality.solution.length===4,"quality control has four visual issues");
-assert(snapshotA.final.solution.length===2&&snapshotA.final.action==="HOLD","final has two randomized discrepancies and requires hold");
+assert([0,2].includes(snapshotA.final.solution.length)&&snapshotA.final.action===(snapshotA.final.solution.length?"HOLD":"RELEASE"),"final generates either a clear shipment or two discrepancies with the matching action");
 
 const finalCombos=new Set(Array.from({length:100},(_,index)=>{const game=buildCompetition(`FINAL-${index}`,new SeededRandom(`FINAL-${index}`));return [...game.final.solution].sort().join("+");}));
 assert(finalCombos.size>=5,"final discrepancy combinations vary substantially between runs");
@@ -95,7 +95,7 @@ source.dispatchEvent(pointer("pointerup",225,130));assert(dropped===target&&cont
 for(let run=0;run<1000;run++){
   const data=buildCompetition(`SEED-${run}`,new SeededRandom(`SEED-${run}`));
   assert(data.detective.solution.every(id=>{const row=data.detective.rows.find(item=>item.id===id);return row.expected!==row.actual;}),"WMS solutions are genuine hidden mismatches");
-  assert(new Set(data.final.solution).size===2,"final discrepancies are unique");
+  assert([0,2].includes(new Set(data.final.solution).size),"final discrepancies are unique");
   assert(new Set(data.loading.pallets.map(item=>item.id)).size===7,"pallet identifiers are unique");
 }
 
@@ -131,17 +131,17 @@ assert(board.getLeaderboard().length===2&&new Set(board.getLeaderboard().map(run
 board.clearLeaderboard();assert(board.getLeaderboard().length===0,"leaderboard adapter clears local data");
 
 const html=readFileSync("index.html","utf8"),css=readFileSync("styles.css","utf8"),game=readFileSync("game.js","utf8"),minigames=readFileSync("minigames.js","utf8"),interactions=readFileSync("interactions.js","utf8"),effects=readFileSync("effects.js","utf8");
-assert(game.includes('assets/menu/logo-light.png')&&game.includes("CHRISTMAS</span><strong>LOGISTICS CHALLENGE"),"CEVA logo and brand remain");
+assert(game.includes('assets/menu/logo-light.webp')&&game.includes("CHRISTMAS</span><strong>LOGISTICS CHALLENGE"),"CEVA logo and brand remain");
 assert(game.includes("CHRISTMAS</span><strong>LOGISTICS CHALLENGE")&&css.includes("menu-screen"),"Christmas presentation remains");
-assert(game.includes("COMPETITION REMAINING")&&game.includes("/ 1000"),"HUD shows global progress and accumulated score");
+assert(game.includes("ACTIVE TIME REMAINING")&&game.includes("/ 1000"),"HUD shows global progress and accumulated score");
 assert(game.includes("finish:()=>this.completeGame(token)")&&!game.includes("lockGame(token)"),"accepted answers advance immediately without waiting for the timer");
 assert(game.includes('createRunSeed')&&game.includes('buildGameOrder'),"each run receives fresh task data and a shuffled pre-final order");
 assert(!game.includes("LOCAL DEVICE LEADERBOARD")&&!game.includes("not a centralized company leaderboard"),"leaderboard omits the legacy local header and storage footer");
-assert(game.includes('class="leaderboard-scroll"')&&game.includes('assets/leaderboard/medal-${index+1}.png'),"leaderboard stays dynamic with a scrolling semantic table and ranked medal assets");
+assert(game.includes('class="leaderboard-scroll"')&&game.includes('assets/leaderboard/medal-${index+1}.webp'),"leaderboard stays dynamic with a scrolling semantic table and ranked medal assets");
 assert(!game.includes("HIGHEST SCORE ON THIS DEVICE")&&game.includes("COMPETITION RECORD"),"competition record banner omits the removed device subtitle");
 assert(!css.includes('.podium-1 td:first-child:before')&&!css.includes('.podium-2 td:first-child:before')&&!css.includes('.podium-3 td:first-child:before'),"leaderboard podium cells render only their supplied medal image");
 assert(css.includes("height:auto;max-width:none;max-height:calc(100dvh - 32px)")&&css.includes("max-height:min(312px,calc(100dvh - 360px))"),"leaderboard height follows its content while the table alone has a viewport-safe scroll limit");
-assert(!css.includes('background:url("assets/leaderboard/panel-empty.png") center/100% 100%')&&css.includes('assets/leaderboard/christmas-corner.png'),"leaderboard decorations retain their aspect ratio instead of stretching the full panel artwork");
+assert(!css.includes('background:url("assets/leaderboard/panel-empty.webp") center/100% 100%')&&css.includes('assets/leaderboard/christmas-corner.webp'),"leaderboard decorations retain their aspect ratio instead of stretching the full panel artwork");
 assert(css.includes('input:hover,textarea:hover')&&css.includes('assets/cursor/clicker-click.png'),"editable fields use the Christmas clicker hover and pressed cursor states");
 assert(css.includes("html.is-pointer-dragging *")&&css.includes('cursor:url("assets/cursor/clicker-click.png") 18 5,pointer!important'),"all pointer-captured drags retain the Christmas pressed-hand cursor");
 assert(minigames.includes("attachPointerDrag({element:this.box"),"conveyor boxes use the shared pointer drag interaction");
@@ -164,7 +164,7 @@ assert(minigames.includes('className="shape-slot"')&&minigames.includes("source?
 assert(minigames.includes('className="packing-drag-ghost"')&&interactions.includes("createGhost")&&css.includes(".packing-drag-ghost"),"packing uses a dedicated transparent artwork ghost instead of cloning an inventory slot");
 assert(minigames.includes("if(target&&this.dragCoordinate)this.place(box.id,this.dragCoordinate)"),"packing preview and drop commit share one cached grid coordinate");
 assert(css.includes("grid-auto-flow:row")&&!css.includes("grid-auto-flow:dense")&&css.includes(".shape-box.packed-away{visibility:hidden")&&!minigames.includes("source?.remove(),180"),"packed inventory boxes retain permanent grid space without dense reflow");
-assert((minigames.match(/data-action="/g)||[]).length===1&&minigames.includes("CONFIRM · HOLD SHIPMENT"),"final dispatch has one confirmation action");
+assert((minigames.match(/data-action="/g)||[]).length===2&&minigames.includes("CONFIRM · HOLD SHIPMENT"),"final dispatch has RELEASE and HOLD confirmation actions");
 assert(css.includes("var(--pack-cell-w)")&&css.includes("var(--pack-cell-h)")&&minigames.includes("ResizeObserver"),"packing rack and pallet share responsive measured cell dimensions");
 assert(css.includes("@keyframes panelReveal")&&css.includes("@keyframes selectedPulse"),"minigames include restrained entrance and selection animations");
 assert(!minigames.includes('"MATCH"')&&!minigames.includes('"WRONG"'),"WMS rows do not reveal correctness");
@@ -177,8 +177,8 @@ assert(!/carrier\s*\([^)]*\)\s*\{/g.test(readFileSync("tasks.js","utf8")),"legac
 const { CompetitionSettings, leaderboardCsv } = await import("./storage.js");
 const settingsStore=new Map();
 const settings=new CompetitionSettings({getItem:key=>settingsStore.get(key)??null,setItem:(key,value)=>settingsStore.set(key,value)});
-assert(settings.getSeed()==="CEVA-CHRISTMAS-2026","competition settings provide one fixed default seed");
-assert(settings.setSeed(" event 2026! ")&&settings.getSeed()==="EVENT2026","organizer seed is sanitized and persisted locally");
+assert(settings.getSeed()==="CEVA-CHRISTMAS-2026","legacy organizer setting remains readable as the event identifier");
+assert(settings.setSeed(" event 2026! ")&&settings.getSeed()==="EVENT2026","organizer event identifier is sanitized and persisted locally");
 const csv=leaderboardCsv([{id:"run-1",name:'Ana "Ace", Smith',score:999,accuracy:98,timestamp:"2026-12-01T10:00:00Z"},{id:"run-2",name:'Ana "Ace", Smith',score:850,accuracy:91,timestamp:"2026-12-02T10:00:00Z"}]);
 assert(csv.includes('"Ana ""Ace"", Smith"')&&csv.includes('"999"')&&csv.includes('"run-1"')&&csv.includes('"run-2"')&&csv.split("\r\n").length===3,"CSV export safely includes every individual run and its identifier");
 assert(interactions.includes("setPointerCapture")&&interactions.includes("pointercancel")&&interactions.includes("requestAnimationFrame"),"shared drag controller captures pointers, cancels safely, and paints on animation frames");
@@ -207,10 +207,10 @@ const visualConveyor=new Conveyor().init({root:conveyorRoot,data:snapshotA.conve
 visualConveyor.render();
 assert((conveyorRoot.innerHTML.match(/data-chute=/g)||[]).length===6,"Conveyor renders all six logical carrier hit targets");
 for(const carrier of ["DHL","UPS","TNT","TOF","KLG","BRINGCARGO"]){
-  assert(conveyorRoot.innerHTML.includes(`data-chute="${carrier}"`)&&conveyorRoot.innerHTML.includes(`zones/zone-${carrier.toLowerCase()}.png`),`${carrier} retains its matching chute and artwork`);
+  assert(conveyorRoot.innerHTML.includes(`data-chute="${carrier}"`)&&conveyorRoot.innerHTML.includes(`zones/zone-${carrier.toLowerCase()}.webp`),`${carrier} retains its matching chute and artwork`);
 }
 for(const asset of [...conveyorRoot.innerHTML.matchAll(/src="([^"]+)"/g)].map(match=>match[1]))assert(readFileSync(asset).length>0,`Conveyor asset exists: ${asset}`);
-assert(conveyorRoot.innerHTML.includes("belt/belt-base.png")&&conveyorRoot.innerHTML.includes("belt/belt-front-trim.png")&&conveyorRoot.innerHTML.includes("states/drop-valid-check.png")&&conveyorRoot.innerHTML.includes("states/drop-invalid.png"),"belt layers and success/error overlays use supplied assets");
+assert(conveyorRoot.innerHTML.includes("belt/belt-base.webp")&&conveyorRoot.innerHTML.includes("belt/belt-front-trim.webp")&&conveyorRoot.innerHTML.includes("states/drop-valid-check.webp")&&conveyorRoot.innerHTML.includes("states/drop-invalid.webp"),"belt layers and success/error overlays use supplied assets");
 let advancedParcel=0,detachedParcel=0,finishedConveyor=0;
 visualConveyor.spawn=()=>{advancedParcel++;};visualConveyor.ctx.finish=()=>{finishedConveyor++;};visualConveyor.boxDragCleanup=()=>{detachedParcel++;};visualConveyor.active=snapshotA.conveyor.parcels[0];visualConveyor.miss();
 assert(visualConveyor.mistakes===1&&visualConveyor.index===1&&advancedParcel===1&&detachedParcel===1,"missed parcel adds one mistake, detaches drag, and advances exactly once");
@@ -230,17 +230,17 @@ const liveContainer={append:node=>{liveContainer.child=node;}};
 global.document={body:liveContainer,documentElement:{classList:{add:name=>dragClasses.add(name),remove:name=>dragClasses.delete(name)}}};
 const liveConveyor=new Conveyor().init({root:liveRoot,data:{parcels:[{id:"GIFT-1",carrier:"DHL",gift:"TEDDY BEAR"},{id:"GIFT-2",carrier:"UPS",gift:"TRAIN SET"},{id:"GIFT-3",carrier:"BRINGCARGO",gift:"SNOW GLOBE"}]},config:GAME_CONFIGS[1],remaining:()=>10,flash:()=>{},update:()=>{},finish:()=>{}});
 liveConveyor.render();liveConveyor.start();
-assert(parcelHost.markup.includes("boxes/parcel-front.png")&&parcelHost.markup.includes("labels/shipping-label-front.png")&&parcelHost.markup.includes("<b>DHL</b>")&&parcelHost.markup.includes("GIFT-1")&&parcelHost.markup.includes("TEDDY BEAR"),"spawn layers supplied carton and label assets under dynamic HTML data");
+assert(parcelHost.markup.includes("boxes/parcel-front.webp")&&parcelHost.markup.includes("labels/shipping-label-front.webp")&&parcelHost.markup.includes("<b>DHL</b>")&&parcelHost.markup.includes("GIFT-1")&&parcelHost.markup.includes("TEDDY BEAR"),"spawn layers supplied carton and label assets under dynamic HTML data");
 const firstParcel=liveConveyor.box;
 firstParcel.dispatchEvent(pointer("pointerdown",30,30));
 assert(liveConveyor.dragging&&liveContainer.child.style.transform==="none","spawned parcel uses attachPointerDrag and clears belt translation on its ghost");
 firstParcel.dispatchEvent(pointer("pointercancel",30,30));
 assert(!liveConveyor.dragging&&liveContainer.child.removed&&liveConveyor.index===0,"cancel restores the original moving parcel without consuming it");
 firstParcel.dispatchEvent(pointer("pointerdown",30,30));firstParcel.dispatchEvent(pointer("pointermove",225,130));firstParcel.dispatchEvent(pointer("pointerup",225,130));
-assert(liveConveyor.correct===1&&liveConveyor.mistakes===0&&liveConveyor.index===1&&parcelHost.markup.includes("parcel-angle-left.png"),"correct pointer drop scores once and spawns the next visual variant");
+assert(liveConveyor.correct===1&&liveConveyor.mistakes===0&&liveConveyor.index===1&&parcelHost.markup.includes("parcel-angle-left.webp"),"correct pointer drop scores once and spawns the next visual variant");
 const secondParcel=liveConveyor.box;
 secondParcel.dispatchEvent(pointer("pointerdown",30,30));secondParcel.dispatchEvent(pointer("pointermove",225,130));secondParcel.dispatchEvent(pointer("pointerup",225,130));
-assert(liveConveyor.correct===1&&liveConveyor.mistakes===1&&liveConveyor.index===2&&parcelHost.markup.includes("parcel-angle-right.png"),"wrong pointer drop penalizes once and advances to the right-angle carton");
+assert(liveConveyor.correct===1&&liveConveyor.mistakes===1&&liveConveyor.index===2&&parcelHost.markup.includes("parcel-angle-right.webp"),"wrong pointer drop penalizes once and advances to the right-angle carton");
 const lastParcel=liveConveyor.box;lastParcel.dispatchEvent(pointer("pointerdown",30,30));
 const conveyorFrame=liveConveyor.raf;let cancelledFrame=null;
 const savedCancel=global.cancelAnimationFrame;global.cancelAnimationFrame=id=>{cancelledFrame=id;};
@@ -278,7 +278,7 @@ for(let mask=0;mask<256;mask++){
 qualityGame.selected=new Set(qualityData.solution);qualityLock.dispatchEvent(new Event("click"));qualityLock.dispatchEvent(new Event("click"));
 assert(qualityFinishes===1,"double-clicking LOCK confirms Quality exactly once before stage cleanup");
 const qualityResult=qualityGame.complete();
-assert(qualityResult.correct===8&&qualityResult.mistakes===0&&qualityResult.attempts===8&&qualityResult.score===95,"perfect Quality selection preserves accuracy, attempts and speed score");
+assert(qualityResult.correct===8&&qualityResult.mistakes===0&&qualityResult.attempts===8&&qualityResult.score===100,"perfect Quality selection preserves accuracy, attempts and speed score");
 qualityLock.dispatchEvent(new Event("click"));assert(qualityFinishes===1,"LOCK QUALITY CHECK calls the original stage finish callback");
 qualityGame.cleanup();qualityLock.dispatchEvent(new Event("click"));assert(qualityFinishes===1&&qualityGame.cleanups.length===0,"Quality cleanup detaches lock and parcel listeners");
 assert(!qualityRoot.innerHTML.includes("box_success")&&!qualityRoot.innerHTML.includes("box_error"),"Quality does not reveal selection correctness before lock");
@@ -316,7 +316,7 @@ for(const [index,parcel] of qualityData.parcels.entries()){
  else{
   const expected={dented:"issue_damage",missing:"issue_missing_data","wrong-label":"issue_wrong_carrier","wrong-sku":"issue_wrong_sku"}[parcel.issue];
   assert(markup.includes(expected),`${parcel.issue} keeps its original issue artwork mapping`);
-  if(parcel.issue==="dented")assert(markup.includes("damage_crush.png"),"dented carton carries a real crush texture");
+  if(parcel.issue==="dented")assert(markup.includes("damage_crush.webp"),"dented carton carries a real crush texture");
   if(parcel.issue==="missing")assert(markup.includes("qc-empty-field")&&!markup.includes(parcel.sku),"missing SKU shows a visibly empty field without revealing the generated value");
   if(parcel.issue==="wrong-label")assert(markup.includes('qc-carrier">OTHER</span>'),"wrong-label displays OTHER while retaining the task's actual carrier");
   if(parcel.issue==="wrong-sku")assert(markup.includes("SKU-ERROR"),"wrong SKU keeps its visible error text");
@@ -355,9 +355,9 @@ for(let mask=0;mask<256;mask++){
 const detectiveRender=MINIGAME_CLASSES.detective.prototype.render.toString();
 assert(!detectiveRender.includes("solution")&&!/MATCH|MISMATCH|row_result|status_match|status_mismatch/.test(detectiveRoot.innerHTML),"WMS rendering never reads the solution or emits answer-dependent labels and artwork");
 detectiveGame.selected=new Set(detectiveData.solution);detectiveConfirm.dispatchEvent(new Event("click"));detectiveConfirm.dispatchEvent(new Event("click"));
-assert(detectiveFinishes===1&&detectiveGame.liveScore===95,"WMS confirm calls finish exactly once and exposes the existing score only after submission");
+assert(detectiveFinishes===1&&detectiveGame.liveScore===100,"WMS confirm calls finish exactly once and exposes the existing score only after submission");
 const detectiveResult=detectiveGame.complete();
-assert(detectiveResult.correct===8&&detectiveResult.mistakes===0&&detectiveResult.attempts===8&&detectiveResult.score===95,"WMS perfect submission preserves accuracy, attempts, speed points and score");
+assert(detectiveResult.correct===8&&detectiveResult.mistakes===0&&detectiveResult.attempts===8&&detectiveResult.score===100,"WMS perfect submission preserves accuracy, attempts, speed points and score");
 const selectedBeforeCleanup=[...detectiveGame.selected].join();detectiveGame.cleanup();detectiveButtons[0].dispatchEvent(new Event("click"));detectiveConfirm.dispatchEvent(new Event("click"));
 assert([...detectiveGame.selected].join()===selectedBeforeCleanup&&detectiveFinishes===1&&detectiveGame.cleanups.length===0,"WMS cleanup detaches record and confirm handlers");
 assert(game.includes("this.active.liveScore??this.active.score()"),"only minigames explicitly overriding liveScore change their score presentation");
@@ -388,26 +388,26 @@ for(let mask=0;mask<256;mask++){
  assert(memoryGame.score()===scoreClassification({selected:[...memoryGame.selected],solution:memoryData.shipment,universe:memoryData.options,timeRemaining:10,timeLimit:15})&&memoryGame.liveScore===0,`Memory selection ${mask} preserves grading without live correctness feedback`);
 }
 memoryGame.selected=new Set(memoryData.shipment);memoryConfirm.dispatchEvent(new Event("click"));memoryConfirm.dispatchEvent(new Event("click"));assert(memoryFinishes===1,"Memory lock ends the stage exactly once");
-const memoryResult=memoryGame.complete();assert(memoryResult.score===95&&memoryResult.correct===8&&memoryResult.mistakes===0&&memoryResult.attempts===8,"Memory perfect score and accuracy remain identical");
+const memoryResult=memoryGame.complete();assert(memoryResult.score===100&&memoryResult.correct===8&&memoryResult.mistakes===0&&memoryResult.attempts===8,"Memory perfect score and accuracy remain identical");
 memoryGame.cleanup();memoryGame.locked=false;const memoryBefore=[...memoryGame.selected].join();memoryButtons[0].dispatchEvent(new Event("click"));memoryConfirm.dispatchEvent(new Event("click"));assert(memoryBefore===[...memoryGame.selected].join()&&memoryFinishes===1,"Memory cleanup actually detaches selection and confirm listeners");
 // Final: all values come from the generated shipment and every selection grades identically.
-const finalData=snapshotA.final,finalHold=new FakeElement();let finalFinishes=0,finalTimer=null,finalDelay=null;const finalClasses=new Set();
+const finalData=Array.from({length:100},(_,i)=>buildCompetition(`UNIT-FINAL-${i}`,new SeededRandom(`UNIT-FINAL-${i}`)).final).find(d=>d.action==="HOLD"),finalHold=new FakeElement(),finalRelease=new FakeElement();finalHold.dataset.action="HOLD";finalRelease.dataset.action="RELEASE";let finalFinishes=0,finalTimer=null,finalDelay=null;const finalClasses=new Set();
 const finalButtons=finalData.options.map(issue=>{const b=new FakeElement();b.dataset.issue=issue;b.attributes={};b.setAttribute=(name,value)=>{b.attributes[name]=value;};b.classList.toggle=name=>{b.classes.has(name)?b.classes.delete(name):b.classes.add(name);};return b;});
-const finalRoot={innerHTML:"",closest:()=>({classList:{add:name=>finalClasses.add(name),remove:name=>finalClasses.delete(name)}}),querySelector:()=>finalHold,querySelectorAll:()=>finalButtons};
+const finalRoot={innerHTML:"",closest:()=>({classList:{add:name=>finalClasses.add(name),remove:name=>finalClasses.delete(name)}}),querySelector:()=>finalHold,querySelectorAll:selector=>selector==="[data-action]"?[finalHold,finalRelease]:finalButtons};
 const finalGame=new MINIGAME_CLASSES.final().init({root:finalRoot,data:finalData,config:GAME_CONFIGS.at(-1),remaining:()=>25,finish:()=>{finalFinishes++;}});finalGame.render();
 assert(finalClasses.has("final-stage")&&finalRoot.innerHTML.includes("PACKED SHIPMENT")&&finalRoot.innerHTML.includes('aria-label="ORDER"'),"Final keeps the final-stage shell and both comparison panels");
 for(const value of [finalData.order.id,finalData.order.sku,finalData.actual.sku,finalData.order.quantity,finalData.actual.quantity,finalData.order.carrier,finalData.actual.carrier,`${finalData.order.serials} / ${finalData.order.serials}`,`${finalData.actual.serials} / ${finalData.order.serials}`])assert(finalRoot.innerHTML.includes(String(value)),`Final displays generated value ${value}`);
 assert(!/destination|weight|dimensions|Berlin|Express|Standard|thumbnail_train/i.test(finalRoot.innerHTML),"Final adds no destination, product, shipping-service or package facts absent from tasks.js");
-assert((finalRoot.innerHTML.match(/data-issue=/g)||[]).length===4&&(finalRoot.innerHTML.match(/data-action=/g)||[]).length===1,"Final has four issues and only the HOLD action");
+assert((finalRoot.innerHTML.match(/data-issue=/g)||[]).length===4&&(finalRoot.innerHTML.match(/data-action=/g)||[]).length===2,"Final has four issues and both shipment actions");
 for(const asset of [...finalRoot.innerHTML.matchAll(/src="([^"]+)"/g)].map(m=>m[1]))assert(readFileSync(asset).length>0,`Final artwork exists: ${asset}`);
 assert(!MINIGAME_CLASSES.final.prototype.render.toString().includes("solution")&&!MINIGAME_CLASSES.final.prototype.render.toString().includes("!==actual"),"Final rendering never consults the solution or auto-highlights differences");
 finalButtons[0].dispatchEvent(new Event("click"));assert(finalGame.selected.has(finalData.options[0])&&finalButtons[0].attributes["aria-pressed"]==="true","Final issue click updates selection and ARIA");finalButtons[0].dispatchEvent(new Event("click"));assert(finalGame.selected.size===0&&finalButtons[0].attributes["aria-pressed"]==="false","Final second click deselects the issue");
 for(let mask=0;mask<16;mask++)for(const action of [null,"HOLD"]){
- finalGame.selected=new Set(finalData.options.filter((_,i)=>mask&(1<<i)));finalGame.action=action;
+ finalGame.locked=false;finalGame.selected=new Set(finalData.options.filter((_,i)=>mask&(1<<i)));finalGame.action=action;
  const expected=scoreClassification({selected:[...finalGame.selected],solution:finalData.solution,universe:finalData.options,timeRemaining:25,timeLimit:25,max:180})+(action==="HOLD"?20:0);
  assert(finalGame.score()===expected&&finalGame.liveScore===0,`Final selection ${mask}, ${action}, preserves the 180 + 20 scoring rule without live answers`);
 }
-finalGame.selected=new Set(finalData.solution);finalGame.action=null;finalGame.timeout=(callback,delay)=>{finalTimer=callback;finalDelay=delay;};finalHold.dispatchEvent(new Event("click"));finalHold.dispatchEvent(new Event("click"));assert(finalGame.action==="HOLD"&&finalHold.disabled&&finalDelay===180,"HOLD retains its existing action and 180ms transition while rejecting duplicate submissions");finalTimer();assert(finalFinishes===1,"Final finish runs exactly once");const finalResult=finalGame.complete();assert(finalResult.score===200&&finalResult.correct===5&&finalResult.mistakes===0&&finalResult.attempts===5,"perfect Final still scores a maximum of 200 with unchanged attempt counts");
+finalGame.selected=new Set(finalData.solution);finalGame.action=null;finalGame.timeout=(callback,delay)=>{finalTimer=callback;finalDelay=delay;};finalHold.dispatchEvent(new Event("click"));finalHold.dispatchEvent(new Event("click"));assert(finalGame.action==="HOLD"&&finalHold.disabled,"HOLD completes immediately and rejects duplicate submissions");assert(finalFinishes===1,"Final finish runs exactly once");const finalResult=finalGame.complete();assert(finalResult.score===200&&finalResult.correct===5&&finalResult.mistakes===0&&finalResult.attempts===5,"perfect Final still scores a maximum of 200 with unchanged attempt counts");
 finalGame.cleanup();assert(!finalClasses.has("final-stage")&&finalGame.cleanups.length===0,"Final cleanup removes its shell class and listeners");
 assert(Object.keys(FINAL_ISSUE_ASSETS).sort().join()===finalData.options.slice().sort().join(),"all four Final issue names map deterministically to the corresponding supplied artwork");
 // Truck Loading: gameplay data and order semantics do not depend on artwork.
@@ -446,3 +446,5 @@ draggingCard.dispatchEvent(pointer("pointerdown",30,30));draggingCard.dispatchEv
 for(const [index,id] of snapshotA.loading.solution.entries())renderedTruck.place(id,index);
 assert(!truckLock.disabled&&renderedTruck.slots.join()===snapshotA.loading.solution.join()&&renderedTruck.score()===100,"all seven occupied slots enable lock and a perfect reverse delivery order still scores 100");truckLock.dispatchEvent(new Event("click"));truckLock.dispatchEvent(new Event("click"));assert(truckFinishes===1,"Truck lock confirms a complete load exactly once");renderedTruck.cleanup();renderedTruck.locked=false;const beforeTruckSelection=renderedTruck.selected;firstTruckCard.dispatchEvent(new Event("click"));assert(renderedTruck.selected===beforeTruckSelection&&renderedTruck.cleanups.length===0,"Truck cleanup detaches card/slot click handlers, pointer controllers and feedback timers");delete global.document;
 console.log(`Competition validation passed: ${checks.toLocaleString()} checks.`);
+
+await import("./competition-tests.mjs");
