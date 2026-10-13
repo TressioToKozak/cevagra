@@ -323,4 +323,42 @@ for(const [index,parcel] of qualityData.parcels.entries()){
  }
 }
 assert(!css.includes("mix-blend-mode:multiply")&&css.includes("width:52%;height:84%")&&css.includes("clamp(30px,3vw,45px)"),"damage and issue markers have substantially stronger visible coverage");
+// WMS Detective: real buttons, dynamic barcodes and neutral selection.
+const detectiveData=snapshotA.detective,detectiveCount={textContent:""},detectiveConfirm=new FakeElement();let detectiveFinishes=0,detectiveUpdates=0;
+const detectiveButtons=detectiveData.rows.map(data=>{
+ const row=new FakeElement();row.dataset.row=data.id;row.attributes={};row.flag={textContent:"MARK"};
+ row.setAttribute=(name,value)=>{row.attributes[name]=value;};
+ row.classList.toggle=(name,enabled)=>{enabled?row.classes.add(name):row.classes.delete(name);};
+ row.querySelector=()=>row.flag;
+ return row;
+});
+const detectiveRoot={innerHTML:"",querySelector:selector=>selector==="#lock-detective"?detectiveConfirm:detectiveCount,querySelectorAll:()=>detectiveButtons};
+const detectiveGame=new MINIGAME_CLASSES.detective().init({root:detectiveRoot,data:detectiveData,config:GAME_CONFIGS.find(game=>game.id==="detective"),remaining:()=>10,finish:()=>{detectiveFinishes++;},update:()=>{detectiveUpdates++;}});
+detectiveGame.render();
+assert((detectiveRoot.innerHTML.match(/data-row=/g)||[]).length===8&&(detectiveRoot.innerHTML.match(/aria-pressed="false"/g)||[]).length===8,"WMS renders eight neutral, accessible record buttons");
+for(const asset of [...detectiveRoot.innerHTML.matchAll(/src="([^"]+)"/g)].map(match=>match[1]))assert(readFileSync(asset).length>0,`WMS artwork exists: ${asset}`);
+assert((detectiveRoot.innerHTML.match(/class="carton-barcode"/g)||[]).length===16,"both SKUs in every WMS record use the existing Code128 SVG generator");
+for(const row of detectiveData.rows){
+ assert(detectiveRoot.innerHTML.includes(`data-row="${row.id}"`)&&detectiveRoot.innerHTML.includes(`Rack ${row.location}, WMS ${row.expected}, physical scan ${row.actual}`),`${row.id} keeps its generated location and both exact SKU values`);
+ assert(detectiveRoot.innerHTML.includes(code128Svg(row.expected).replace('viewBox=', 'preserveAspectRatio="none" viewBox='))&&detectiveRoot.innerHTML.includes(code128Svg(row.actual).replace('viewBox=', 'preserveAspectRatio="none" viewBox=')),`${row.id} barcodes encode the corresponding expected and actual values`);
+}
+detectiveButtons[0].dispatchEvent(new Event("click"));
+assert(detectiveGame.selected.has(detectiveData.rows[0].id)&&detectiveButtons[0].classes.has("selected")&&detectiveButtons[0].attributes["aria-pressed"]==="true"&&detectiveButtons[0].flag.textContent==="FLAGGED"&&detectiveCount.textContent==="1 SELECTED","WMS click flags the selected record, ARIA state and selected counter together");
+detectiveButtons[0].dispatchEvent(new Event("click"));
+assert(detectiveGame.selected.size===0&&!detectiveButtons[0].classes.has("selected")&&detectiveButtons[0].attributes["aria-pressed"]==="false"&&detectiveButtons[0].flag.textContent==="MARK"&&detectiveCount.textContent==="0 SELECTED"&&detectiveUpdates===2,"second WMS click restores the unflagged record without revealing accuracy");
+for(let mask=0;mask<256;mask++){
+ detectiveGame.selected=new Set(detectiveData.rows.filter((_,index)=>mask&(1<<index)).map(row=>row.id));
+ const expected=scoreClassification({selected:[...detectiveGame.selected],solution:detectiveData.solution,universe:detectiveData.rows.map(row=>row.id),timeRemaining:10,timeLimit:15});
+ assert(detectiveGame.score()===expected,`WMS combination ${mask} preserves classification scoring`);
+ assert(detectiveGame.liveScore===0,`WMS combination ${mask} cannot leak correctness through live HUD points`);
+}
+const detectiveRender=MINIGAME_CLASSES.detective.prototype.render.toString();
+assert(!detectiveRender.includes("solution")&&!/MATCH|MISMATCH|row_result|status_match|status_mismatch/.test(detectiveRoot.innerHTML),"WMS rendering never reads the solution or emits answer-dependent labels and artwork");
+detectiveGame.selected=new Set(detectiveData.solution);detectiveConfirm.dispatchEvent(new Event("click"));detectiveConfirm.dispatchEvent(new Event("click"));
+assert(detectiveFinishes===1&&detectiveGame.liveScore===95,"WMS confirm calls finish exactly once and exposes the existing score only after submission");
+const detectiveResult=detectiveGame.complete();
+assert(detectiveResult.correct===8&&detectiveResult.mistakes===0&&detectiveResult.attempts===8&&detectiveResult.score===95,"WMS perfect submission preserves accuracy, attempts, speed points and score");
+const selectedBeforeCleanup=[...detectiveGame.selected].join();detectiveGame.cleanup();detectiveButtons[0].dispatchEvent(new Event("click"));detectiveConfirm.dispatchEvent(new Event("click"));
+assert([...detectiveGame.selected].join()===selectedBeforeCleanup&&detectiveFinishes===1&&detectiveGame.cleanups.length===0,"WMS cleanup detaches record and confirm handlers");
+assert(game.includes("this.active.liveScore??this.active.score()"),"only minigames explicitly overriding liveScore change their score presentation");
 console.log(`Competition validation passed: ${checks.toLocaleString()} checks.`);

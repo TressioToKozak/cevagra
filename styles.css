@@ -533,3 +533,54 @@ body.results-active #app{padding:clamp(8px,1.5vh,16px) clamp(14px,3vw,52px)}
 .qc-damage-tear{left:3%;top:13%;width:42%;height:53%;mask-image:linear-gradient(90deg,#000 90%,transparent)}
 .qc-parcel-left .qc-damage-tear{left:2%;width:34%}
 .qc-parcel-right .qc-damage-tear{left:57%;top:12%;width:40%;height:50%;mask-image:linear-gradient(90deg,transparent,#000 12%)}
+
+/* WMS Detective: stable warehouse software, neutral selection and live DOM data. */
+.competition-shell[data-game="detective"] .minigame-root{padding:8px 0 0;background:transparent;box-shadow:none;backdrop-filter:none}
+.competition-shell[data-game="detective"] .detective-terminal{--wms-record-columns:32px minmax(64px,.52fr) minmax(0,1fr) 24px minmax(0,1fr) 54px;overflow:hidden;border:1px solid #58778a;border-radius:10px;background:#0a1723f5;box-shadow:0 8px 22px #0006,inset 0 1px #c8dce520}
+.competition-shell[data-game="detective"] .terminal-status{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 16px;padding:12px 16px;border-bottom:1px solid #314757;background:linear-gradient(180deg,#182b3b,#122330)}
+.competition-shell[data-game="detective"] .wms-system-heading{display:flex;align-items:center;gap:12px;min-width:0}
+.wms-system-heading>img{width:32px;height:32px;object-fit:contain;opacity:.85}
+.competition-shell[data-game="detective"] .wms-system-heading>div{display:flex;flex-direction:column;gap:5px;min-width:0}
+.competition-shell[data-game="detective"] .wms-system-heading strong{color:#e7f0f6;font:800 clamp(12px,1.1vw,18px)/1.2 var(--sans);letter-spacing:.025em}
+.competition-shell[data-game="detective"] .wms-system-heading span{color:#a8bfce;font:clamp(10px,.85vw,14px)/1.25 var(--sans)}
+.competition-shell[data-game="detective"] #detective-count{grid-column:2;grid-row:1/3;min-width:132px;align-self:center;padding:12px 15px;border:1px solid #b39853;border-radius:5px;background:#0a1825;color:#ffd17b;font:900 clamp(11px,.85vw,15px) var(--mono);text-align:center;white-space:nowrap}
+.competition-shell[data-game="detective"] .wms-scanner-status{display:flex;align-items:center;gap:7px;padding-left:44px}
+.competition-shell[data-game="detective"] .wms-scanner-status i{width:6px;height:6px;box-shadow:none;background:#74c89d}
+.competition-shell[data-game="detective"] .wms-scanner-status span{color:#92aebf;font:700 8px var(--mono);letter-spacing:.08em}
+.competition-shell[data-game="detective"] .detective-columns{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;padding:0 12px;border-bottom:1px solid #304858;background:#0d1d2b;color:#9db7c9}
+.wms-column-set{display:grid;grid-template-columns:var(--wms-record-columns);align-items:center;gap:7px;padding:8px 10px;text-align:center;font:800 clamp(7px,.65vw,10px)/1.3 var(--sans);letter-spacing:.03em}
+.wms-column-set small{display:block;color:#7993a6;font-size:.9em}
+.wms-column-location{grid-column:2;text-align:left}.wms-column-expected{grid-column:3}.wms-column-actual{grid-column:5}.wms-column-flag{grid-column:6}
+.competition-shell[data-game="detective"] .detective-records{grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(4,1fr);gap:8px 10px;padding:10px 12px;overflow:hidden}
+.competition-shell[data-game="detective"] .detective-row{grid-template-columns:var(--wms-record-columns);align-items:center;gap:7px;padding:9px 10px;border:1px solid #345063;border-radius:5px;background:#102331 url("assets/wms-detective/rows/row_normal.png") center/100% 100% no-repeat;box-shadow:inset 0 1px #ccddeb08;transition:border-color .12s,background-color .12s;transform:none}
+.competition-shell[data-game="detective"] .detective-row:before{content:none}
+.competition-shell[data-game="detective"] .detective-row:hover{border-color:#689dbf;background-color:#152f43;background-image:url("assets/wms-detective/rows/row_hover.png")}
+.competition-shell[data-game="detective"] .detective-row.selected{border-color:#6aafd9;background-color:#183b55;background-image:url("assets/wms-detective/rows/row_selected.png");box-shadow:inset 0 0 0 1px #61b4eb33;transform:none}
+.competition-shell[data-game="detective"] .detective-row:focus-visible{outline:2px solid #d1eaff;outline-offset:-3px}
+.competition-shell[data-game="detective"] .wms-checkbox{display:block;width:28px;height:28px;background:url("assets/wms-detective/controls/checkbox_empty.png") center/contain no-repeat;pointer-events:none}
+.competition-shell[data-game="detective"] .detective-row:hover .wms-checkbox{background-image:url("assets/wms-detective/controls/checkbox_hover.png")}
+.competition-shell[data-game="detective"] .detective-row.selected .wms-checkbox{background-image:url("assets/wms-detective/controls/checkbox_checked.png")}
+.competition-shell[data-game="detective"] .record-location,.competition-shell[data-game="detective"] .record-code,.competition-shell[data-game="detective"] .record-flag{min-width:0;padding:0;background:transparent;border:0}
+.competition-shell[data-game="detective"] .record-location small,.competition-shell[data-game="detective"] .record-code small{margin:0 0 5px;color:#9eb7c8;font:700 clamp(7px,.65vw,10px)/1.1 var(--sans);letter-spacing:.05em;white-space:nowrap}
+.competition-shell[data-game="detective"] .record-location b{color:#ffd078;font:900 clamp(20px,1.7vw,30px)/1.1 var(--mono);white-space:nowrap}
+.competition-shell[data-game="detective"] .record-code{gap:2px;align-items:center;text-align:center}
+.competition-shell[data-game="detective"] .record-code b{color:#f3f7fb;font:800 clamp(18px,1.65vw,28px)/1.15 var(--mono);letter-spacing:0;white-space:nowrap;font-variant-numeric:tabular-nums}
+.competition-shell[data-game="detective"] .compare-arrow{width:24px;height:28px;align-self:center}
+.compare-arrow>img{display:block;width:100%;height:100%;object-fit:contain;opacity:.75}
+.competition-shell[data-game="detective"] .record-flag{align-items:center;justify-content:center;align-self:stretch;border-left:1px solid #49697b55}
+.competition-shell[data-game="detective"] .record-flag b{margin:0;color:#aac0cf;font:800 clamp(7px,.65vw,10px) var(--sans);letter-spacing:.02em}
+.competition-shell[data-game="detective"] .selected .record-flag b{color:#d6efff}
+.wms-barcode{display:block;width:min(88%,142px);height:20px;margin-top:5px;padding:1px 3px;border-radius:2px;background:#d1dce2;opacity:.75;pointer-events:none}
+.wms-barcode svg{display:block;width:100%;height:100%}.wms-barcode svg text{display:none}
+.competition-shell[data-game="detective"] .detective-footer{padding:11px 14px;gap:14px;border-top:1px solid #395467;background:#112330}
+.competition-shell[data-game="detective"] .detective-footer>span{display:flex;align-items:center;gap:9px;color:#bdd0dd;font:clamp(10px,.85vw,14px)/1.4 var(--sans)}
+.detective-footer>span>img{width:22px;height:22px;object-fit:contain;opacity:.85}
+.competition-shell[data-game="detective"] .terminal-confirm{position:relative;display:flex;align-items:center;justify-content:center;gap:12px;width:clamp(280px,28vw,430px);min-width:0;min-height:48px;margin:0;padding:10px 18px 10px 60px;border:0;border-radius:5px;background:transparent url("assets/wms-detective/ui/button_confirm.png") center/100% 100% no-repeat;color:#161e26;font:900 clamp(10px,.9vw,15px) var(--sans);letter-spacing:.015em;box-shadow:0 4px 8px #0004;transform:none}
+.terminal-confirm>img{position:absolute;left:6%;top:50%;width:20px;height:22px;object-fit:contain;transform:translateY(-50%)}
+.competition-shell[data-game="detective"] .terminal-confirm:hover{background-image:url("assets/wms-detective/ui/button_confirm_hover.png");transform:none}
+.competition-shell[data-game="detective"] .terminal-confirm:active{filter:brightness(.94)}
+.competition-shell[data-game="detective"] .terminal-confirm:focus-visible{outline:3px solid #d6edff;outline-offset:2px}
+@media(max-height:760px){.competition-shell[data-game="detective"] .terminal-status{padding:8px 12px;gap:4px 12px}.competition-shell[data-game="detective"] .detective-row{padding:6px 8px}.competition-shell[data-game="detective"] .detective-footer{padding:7px 12px}.competition-shell[data-game="detective"] .terminal-confirm{min-height:40px}.wms-barcode{height:17px;margin-top:2px}}
+@media(max-width:1100px){.competition-shell[data-game="detective"] .detective-terminal{--wms-record-columns:26px 58px minmax(0,1fr) 18px minmax(0,1fr) 44px}.competition-shell[data-game="detective"] .detective-row{gap:4px;padding:7px 5px}.wms-column-set{gap:4px;padding-left:5px;padding-right:5px}.competition-shell[data-game="detective"] .record-code b{font-size:clamp(13px,1.7vw,18px)}.competition-shell[data-game="detective"] .record-location b{font-size:20px}.competition-shell[data-game="detective"] .wms-checkbox{width:24px;height:24px}.competition-shell[data-game="detective"] .compare-arrow{width:18px}.competition-shell[data-game="detective"] .record-flag b{font-size:7px}}
+@media(max-width:760px){.competition-shell[data-game="detective"] .detective-terminal{--wms-record-columns:24px 48px minmax(0,1fr) 16px minmax(0,1fr) 40px}.competition-shell[data-game="detective"] .detective-records{grid-template-columns:1fr;grid-template-rows:repeat(8,minmax(0,1fr));gap:4px;padding:5px}.competition-shell[data-game="detective"] .detective-columns{display:none}.competition-shell[data-game="detective"] .terminal-status{padding:8px;gap:5px}.competition-shell[data-game="detective"] .wms-system-heading{gap:7px}.wms-system-heading>img{width:23px;height:23px}.competition-shell[data-game="detective"] .wms-system-heading strong{font-size:10px}.competition-shell[data-game="detective"] .wms-system-heading span{font-size:8px}.competition-shell[data-game="detective"] #detective-count{min-width:70px;padding:8px 5px;font-size:9px}.competition-shell[data-game="detective"] .wms-scanner-status{padding-left:30px}.competition-shell[data-game="detective"] .wms-scanner-status span{font-size:6px}.competition-shell[data-game="detective"] .record-location b{font-size:15px}.competition-shell[data-game="detective"] .record-location small,.competition-shell[data-game="detective"] .record-code small{font-size:6px;margin-bottom:2px}.competition-shell[data-game="detective"] .record-code b{font-size:clamp(10px,2.5vw,15px)}.competition-shell[data-game="detective"] .detective-row{padding:3px 4px}.wms-barcode{height:10px;margin:1px 0 0;padding:0 2px}.competition-shell[data-game="detective"] .detective-footer{flex-direction:column;gap:5px;padding:6px}.competition-shell[data-game="detective"] .detective-footer>span{font-size:8px}.detective-footer>span>img{width:14px;height:14px}.competition-shell[data-game="detective"] .terminal-confirm{width:min(100%,320px);min-height:36px}.competition-shell[data-game="detective"] .wms-checkbox{width:22px;height:22px}}
+@media(prefers-reduced-motion:reduce){.competition-shell[data-game="detective"] .detective-row{transition:none}}
