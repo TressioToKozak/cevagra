@@ -1,0 +1,295 @@
+{
+  "name": "WMS Detective TRUE Codex-ready assets",
+  "version": 2,
+  "basePath": "assets/wms-detective/",
+  "assetCount": 34,
+  "assets": [
+    {
+      "path": "ui/hud_panel_blank.png",
+      "size": [
+        1200,
+        92
+      ],
+      "transparent": true
+    },
+    {
+      "path": "ui/instruction_panel_blank.png",
+      "size": [
+        1040,
+        84
+      ],
+      "transparent": true
+    },
+    {
+      "path": "ui/system_header_blank.png",
+      "size": [
+        1240,
+        86
+      ],
+      "transparent": true
+    },
+    {
+      "path": "ui/table_header_blank.png",
+      "size": [
+        1200,
+        58
+      ],
+      "transparent": true
+    },
+    {
+      "path": "ui/hint_panel_blank.png",
+      "size": [
+        760,
+        62
+      ],
+      "transparent": true
+    },
+    {
+      "path": "ui/selected_counter_blank.png",
+      "size": [
+        190,
+        58
+      ],
+      "transparent": true
+    },
+    {
+      "path": "ui/button_confirm.png",
+      "size": [
+        460,
+        72
+      ],
+      "transparent": true
+    },
+    {
+      "path": "ui/button_confirm_hover.png",
+      "size": [
+        460,
+        72
+      ],
+      "transparent": true
+    },
+    {
+      "path": "ui/button_confirm_disabled.png",
+      "size": [
+        460,
+        72
+      ],
+      "transparent": true
+    },
+    {
+      "path": "rows/row_normal.png",
+      "size": [
+        1200,
+        142
+      ],
+      "transparent": true
+    },
+    {
+      "path": "rows/row_hover.png",
+      "size": [
+        1200,
+        142
+      ],
+      "transparent": true
+    },
+    {
+      "path": "rows/row_selected.png",
+      "size": [
+        1200,
+        142
+      ],
+      "transparent": true
+    },
+    {
+      "path": "rows/row_result_error.png",
+      "size": [
+        1200,
+        142
+      ],
+      "transparent": true
+    },
+    {
+      "path": "rows/row_result_success.png",
+      "size": [
+        1200,
+        142
+      ],
+      "transparent": true
+    },
+    {
+      "path": "ui/rack_badge_blank.png",
+      "size": [
+        172,
+        96
+      ],
+      "transparent": true
+    },
+    {
+      "path": "ui/sku_field_blank.png",
+      "size": [
+        350,
+        98
+      ],
+      "transparent": true
+    },
+    {
+      "path": "ui/barcode_plate_blank.png",
+      "size": [
+        300,
+        92
+      ],
+      "transparent": true
+    },
+    {
+      "path": "controls/checkbox_empty.png",
+      "size": [
+        96,
+        96
+      ],
+      "transparent": true
+    },
+    {
+      "path": "controls/checkbox_hover.png",
+      "size": [
+        96,
+        96
+      ],
+      "transparent": true
+    },
+    {
+      "path": "controls/checkbox_checked.png",
+      "size": [
+        96,
+        96
+      ],
+      "transparent": true
+    },
+    {
+      "path": "icons/compare_arrow.png",
+      "size": [
+        110,
+        80
+      ],
+      "transparent": true
+    },
+    {
+      "path": "icons/info.png",
+      "size": [
+        96,
+        96
+      ],
+      "transparent": true
+    },
+    {
+      "path": "icons/lock.png",
+      "size": [
+        96,
+        96
+      ],
+      "transparent": true
+    },
+    {
+      "path": "icons/monitor.png",
+      "size": [
+        96,
+        96
+      ],
+      "transparent": true
+    },
+    {
+      "path": "icons/scanner.png",
+      "size": [
+        96,
+        96
+      ],
+      "transparent": true
+    },
+    {
+      "path": "icons/status_match.png",
+      "size": [
+        96,
+        96
+      ],
+      "transparent": true
+    },
+    {
+      "path": "icons/status_mismatch.png",
+      "size": [
+        96,
+        96
+      ],
+      "transparent": true
+    },
+    {
+      "path": "icons/mark_ring.png",
+      "size": [
+        96,
+        96
+      ],
+      "transparent": true
+    },
+    {
+      "path": "effects/scan_line.png",
+      "size": [
+        300,
+        90
+      ],
+      "transparent": true
+    },
+    {
+      "path": "effects/scan_frame.png",
+      "size": [
+        300,
+        150
+      ],
+      "transparent": true
+    },
+    {
+      "path": "decor/garland.png",
+      "size": [
+        720,
+        110
+      ],
+      "transparent": true
+    },
+    {
+      "path": "decor/shelf_edge.png",
+      "size": [
+        700,
+        64
+      ],
+      "transparent": true
+    },
+    {
+      "path": "decor/bow.png",
+      "size": [
+        120,
+        90
+      ],
+      "transparent": true
+    },
+    {
+      "path": "effects/screen_vignette.png",
+      "size": [
+        1536,
+        1024
+      ],
+      "transparent": true
+    }
+  ],
+  "dynamicContent": [
+    "location/rack",
+    "registered SKU",
+    "physical scan SKU",
+    "selected count",
+    "barcodes",
+    "all labels and captions"
+  ],
+  "rules": [
+    "Do not bake runtime SKU/location text into PNGs.",
+    "Do not show match/mismatch correctness before confirmation.",
+    "Rows are blank PNG backgrounds; overlay content with HTML/CSS.",
+    "Generate barcodes dynamically from the SKU (SVG/CSS/Code128 helper).",
+    "Use row_selected as neutral player selection state before confirmation."
+  ]
+}
