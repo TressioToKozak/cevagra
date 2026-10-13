@@ -254,18 +254,24 @@ export class WmsDetective extends BaseMinigame {
 export class TruckLoading extends BaseMinigame {
   render(){
     this.slots=Array(this.data.pallets.length).fill(null);this.selected=null;this.cards=new Map();
-    this.root.innerHTML=`<div class="loading-guide"><strong>LAST DELIVERY → LOAD FIRST</strong><span>Deepest position is unloaded last</span></div><div class="truck-scene"><div class="truck-cab">TRUCK<br>FRONT</div><div class="truck-body"><div class="load-arrow"><span>DEEPEST · LOAD FIRST</span><b>←</b><span>REAR DOOR</span></div><div class="truck-slots">${this.slots.map((_,index)=>`<div class="truck-slot" data-slot="${index}"><small>POSITION ${index+1}</small><span class="slot-placeholder">DROP HERE</span></div>`).join("")}</div></div><div class="rear-door">OPEN<br>REAR</div></div><div class="pallet-yard"><span>PALLETS WAITING</span><div class="pallet-yard-cards"></div></div><button class="lock-answer" id="lock-loading" disabled>LOCK LOAD ORDER</button>`;
+    const art="assets/truck_loading/";
+    this.root.innerHTML=`<div class="loading-layout"><div class="loading-guide"><img src="${art}ui/08_last_delivery_load_first_banner.png" alt="" draggable="false"><strong class="visually-hidden">LAST DELIVERY → LOAD FIRST</strong><span>Deepest position is unloaded last</span></div><div class="truck-scene"><div class="truck-cab"><img src="${art}scene/02_truck_front_marker.png" alt="" draggable="false"><span>TRUCK FRONT</span></div><div class="truck-body"><img class="trailer-art" src="${art}scene/01_trailer_interior_7_bays.png" alt="" draggable="false"><div class="load-arrow"><span>DEEPEST · LOAD FIRST</span><b>←</b><span>REAR DOOR</span></div><div class="truck-slots">${this.slots.map((_,index)=>`<div class="truck-slot" data-slot="${index}" role="group" aria-label="Position ${index+1}${index===0?", deepest, load first":index===6?", rear door":""}"><small>POSITION ${index+1}</small><span class="slot-placeholder">DROP HERE</span></div>`).join("")}</div></div><div class="rear-door"><img src="${art}scene/03_rear_door_marker.png" alt="" draggable="false"><span>REAR DOOR</span></div></div><div class="pallet-yard"><div class="pallet-yard-sign"><img src="${art}ui/04_pallets_waiting_panel.png" alt="" draggable="false"><span class="visually-hidden">PALLETS WAITING</span></div><div class="pallet-yard-cards"></div></div><div class="loading-footer"><button class="lock-answer" id="lock-loading" disabled>LOCK LOAD ORDER</button></div></div>`;
     const yard=this.root.querySelector(".pallet-yard-cards");
-    this.data.pallets.forEach(pallet=>{const card=document.createElement("button");card.className="load-pallet";card.dataset.palletId=pallet.id;card.innerHTML=`<i aria-hidden="true">⠿</i><b>${pallet.city}</b><span>${this.deliveryLabel(pallet)}</span>`;yard.append(card);this.cards.set(pallet.id,card);this.bindPallet(card,pallet.id);});
-    this.listen(this.root.querySelector("#lock-loading"),"click",()=>this.ctx.finish());
+    this.data.pallets.forEach(pallet=>{
+      const card=document.createElement("button");card.className="load-pallet pallet-art";card.dataset.palletId=pallet.id;
+      card.setAttribute("aria-pressed","false");card.setAttribute("aria-label",`${pallet.city}, ${this.deliveryLabel(pallet)}, ${pallet.id}`);
+      card.innerHTML=`<img class="pallet-crate" src="${art}pallets/05_pallet_crate_base.png" alt="" draggable="false"><img class="pallet-label-art" src="${art}pallets/06_blank_label_overlay.png" alt="" draggable="false"><span class="pallet-copy"><b>${pallet.city}</b><span>${this.deliveryLabel(pallet).split(" · ").join("<br>")}</span><small>${pallet.id}</small></span>`;
+      yard.append(card);this.cards.set(pallet.id,card);this.bindPallet(card,pallet.id);
+    });
+    this.listen(this.root.querySelector("#lock-loading"),"click",()=>{if(this.locked||this.slots.some(value=>!value))return;this.locked=true;this.ctx.finish();});
     this.root.querySelectorAll("[data-slot]").forEach(slot=>this.listen(slot,"click",event=>{if(event.target.closest(".load-pallet"))return;this.place(this.selected,Number(slot.dataset.slot));}));
   }
   deliveryLabel(pallet){const last=this.data.pallets.length;if(pallet.stop===last)return `STOP ${pallet.stop} · LAST DELIVERY · LOAD FIRST`;if(pallet.stop===1)return "STOP 1 · FIRST DELIVERY · LOAD LAST";return `STOP ${pallet.stop} · DELIVERY ${pallet.stop}`;}
   bindPallet(card,id){
     this.listen(card,"click",event=>{event.stopPropagation();if(!card.dataset.dragged)this.selectPallet(id);});
-    this.cleanups.push(attachPointerDrag({element:card,targets:()=>this.root.querySelectorAll("[data-slot]"),hitPadding:12,onStart:()=>{this.selectPallet(id);this.root.classList.add("is-dragging");card.closest(".truck-slot")?.classList.add("source-slot");},onDrop:({target})=>{this.root.classList.remove("is-dragging");this.root.querySelectorAll(".source-slot").forEach(slot=>slot.classList.remove("source-slot"));if(target)this.place(id,Number(target.dataset.slot));},onCancel:()=>{this.root.classList.remove("is-dragging");this.root.querySelectorAll(".source-slot").forEach(slot=>slot.classList.remove("source-slot"));}}));
+    this.cleanups.push(attachPointerDrag({element:card,targets:()=>this.root.querySelectorAll("[data-slot]"),hitPadding:12,onStart:()=>{this.root.classList.add("is-dragging");card.closest(".truck-slot")?.classList.add("source-slot");},onDrop:({target})=>{this.root.classList.remove("is-dragging");this.root.querySelectorAll(".source-slot").forEach(slot=>slot.classList.remove("source-slot"));if(target)this.place(id,Number(target.dataset.slot));},onCancel:()=>{this.root.classList.remove("is-dragging");this.root.querySelectorAll(".source-slot").forEach(slot=>slot.classList.remove("source-slot"));}}));
   }
-  selectPallet(id){this.selected=this.selected===id?null:id;this.cards.forEach((card,key)=>card.classList.toggle("picked",key===this.selected));}
+  selectPallet(id){this.selected=this.selected===id?null:id;this.cards.forEach((card,key)=>{card.classList.toggle("picked",key===this.selected);card.setAttribute("aria-pressed",String(key===this.selected));});}
   setSlot(index,id){this.slots[index]=id;const slot=this.root.querySelector(`[data-slot="${index}"]`),card=id?this.cards.get(id):null;slot.classList.toggle("occupied",Boolean(id));slot.querySelector(".slot-placeholder").hidden=Boolean(id);if(card){slot.append(card);card.classList.remove("picked");}}
   place(id,index){
     if(!id||index<0||index>=this.slots.length)return;
@@ -273,18 +279,42 @@ export class TruckLoading extends BaseMinigame {
     if(sourceIndex===index){this.selectPallet(null);return;}
     if(sourceIndex>=0)this.setSlot(sourceIndex,null);
     if(occupant&&occupant!==id){if(sourceIndex>=0)this.setSlot(sourceIndex,occupant);else{this.slots[index]=null;this.root.querySelector(".pallet-yard-cards").append(this.cards.get(occupant));}}
-    this.setSlot(index,id);this.selected=null;this.cards.forEach(card=>card.classList.remove("picked"));
-    const slot=this.root.querySelector(`[data-slot="${index}"]`);slot.classList.remove("placed-pop");void slot.offsetWidth;slot.classList.add("placed-pop");const note=document.createElement("span");note.className="slot-feedback";note.textContent=occupant?"✓ SWAPPED":"✓ LOADED";slot.append(note);this.timeout(()=>{slot.classList.remove("placed-pop");note.remove();},360);
+    this.setSlot(index,id);this.selected=null;this.cards.forEach(card=>{card.classList.remove("picked");card.setAttribute("aria-pressed","false");});
+    const slot=this.root.querySelector(`[data-slot="${index}"]`);slot.classList.remove("placed-pop");void slot.offsetWidth;slot.classList.add("placed-pop");const note=document.createElement("span");note.className="slot-feedback";note.textContent=occupant?"SWAPPED":"LOADED";slot.append(note);this.timeout(()=>{slot.classList.remove("placed-pop");note.remove();},360);
     this.root.querySelector("#lock-loading").disabled=this.slots.some(value=>!value);this.ctx.update();
   }
+  get liveScore(){return this.locked?this.score():0;}
   score(){const correct=this.slots.filter((id,index)=>id===this.data.solution[index]).length;return scoreStandard({correct,total:this.slots.length,mistakes:0,completed:correct===this.slots.length,timeRemaining:this.remaining,timeLimit:this.ctx.config.time});}
   complete(){const result=super.complete(),correct=this.slots.filter((id,index)=>id===this.data.solution[index]).length;return {...result,correct,mistakes:this.slots.length-correct,attempts:this.slots.length,score:this.score()};}
 }
 
+// One permanent visual identity per generated gift; never consume gameplay RNG.
+export const MEMORY_GIFT_ASSETS=Object.freeze({
+  "TEDDY BEAR":"gift_red_snowflake.png","TRAIN SET":"gift_red_tartan.png",
+  "SNOW GLOBE":"gift_blue_snowflakes.png","PUZZLE":"gift_white_gold_stars.png",
+  "ROBOT":"gift_green_red_ribbon.png","RED SLED":"gift_white_red_dots.png",
+  "DRUM":"gift_purple_diagonal.png","DOLL":"gift_green_trees.png",
+  "SKATES":"gift_gold_stripes.png","BLOCKS":"gift_blue_stars.png"
+});
+
 export class MemoryChallenge extends BaseMinigame {
-  render(){this.selected=new Set();this.revealed=false;this.root.innerHTML=`<div class="memory-stage"><p>MEMORIZE THESE GIFTS</p><div class="gift-memory">${this.data.shipment.map(gift=>`<span>🎁 <b>${gift}</b></span>`).join("")}</div><strong>THE MANIFEST HIDES IN 4 SECONDS</strong></div>`;}
+  render(){
+    this.selected=new Set();this.revealed=false;const art="assets/memory_challenge/";
+    this.root.innerHTML=`<section class="memory-stage memory-memorize" data-memory-phase="1"><header class="memory-heading"><img class="memory-phase-pill" src="${art}ui/phase_1_2_pill.png" alt="" draggable="false"><span class="visually-hidden">PHASE 1 / 2</span><h2>STUDY THE GIFTS</h2><span>${this.data.shipment.length} GIFTS TO REMEMBER</span></header><div class="memory-progress" role="img" aria-label="Gifts disappear after four seconds"><span></span></div><div class="memory-display"><div class="memory-platform" aria-hidden="true"><img src="${art}scene/memory_conveyor_platform.png" alt="" draggable="false"></div><div class="gift-memory">${this.data.shipment.map(gift=>`<figure class="memory-gift" data-remember-gift="${gift}"><img src="${art}gifts/${MEMORY_GIFT_ASSETS[gift]}" alt="" draggable="false"><figcaption>${gift}</figcaption></figure>`).join("")}</div></div><p class="memory-info"><img src="${art}ui/info_icon.png" alt="" draggable="false">Memorize these gifts. They will disappear soon…</p></section>`;
+  }
   start(){this.timeout(()=>this.hide(),4000);}
-  hide(){if(this.locked)return;this.revealed=true;this.root.innerHTML=`<div class="memory-stage"><p>WHICH GIFTS WERE ON SANTA’S MANIFEST?</p><div class="memory-options">${this.data.options.map(gift=>`<button data-gift="${gift}">🎁 <b>${gift}</b></button>`).join("")}</div><button class="lock-answer" id="lock-memory">LOCK MANIFEST</button></div>`;this.listen(this.root.querySelector("#lock-memory"),"click",()=>this.ctx.finish());this.root.querySelectorAll("[data-gift]").forEach(button=>this.listen(button,"click",()=>{this.selected.has(button.dataset.gift)?this.selected.delete(button.dataset.gift):this.selected.add(button.dataset.gift);button.classList.toggle("selected");}));}
+  hide(){
+    if(this.locked||this.revealed)return;this.revealed=true;const art="assets/memory_challenge/";
+    // Replace the complete memorization screen. Only the shuffled options remain.
+    this.root.innerHTML=`<section class="memory-stage memory-select" data-memory-phase="2"><header class="memory-heading"><img class="memory-phase-pill" src="${art}ui/phase_2_2_pill.png" alt="" draggable="false"><span class="visually-hidden">PHASE 2 / 2</span><h2>SELECT THE SAME GIFTS</h2><b id="memory-count" aria-live="polite">0 SELECTED</b></header><div class="memory-options">${this.data.options.map(gift=>`<button class="memory-option" data-gift="${gift}" aria-pressed="false" aria-label="${gift}"><img class="memory-gift-art" src="${art}gifts/${MEMORY_GIFT_ASSETS[gift]}" alt="" draggable="false"><b>${gift}</b><span class="memory-checkbox" aria-hidden="true"></span></button>`).join("")}</div><footer class="memory-footer"><span>Select the gifts you remember.</span><button class="lock-answer" id="lock-memory">LOCK MANIFEST</button></footer></section>`;
+    this.listen(this.root.querySelector("#lock-memory"),"click",()=>{if(this.locked)return;this.locked=true;this.ctx.finish();});
+    this.root.querySelectorAll("[data-gift]").forEach(button=>this.listen(button,"click",()=>{
+      if(this.locked)return;const gift=button.dataset.gift;this.selected.has(gift)?this.selected.delete(gift):this.selected.add(gift);
+      button.classList.toggle("selected");button.setAttribute("aria-pressed",String(this.selected.has(gift)));
+      this.root.querySelector("#memory-count").textContent=`${this.selected.size} SELECTED`;
+    }));
+  }
+  get liveScore(){return this.locked?this.score():0;}
   score(){return scoreClassification({selected:[...this.selected],solution:this.data.shipment,universe:this.data.options,timeRemaining:this.remaining,timeLimit:this.ctx.config.time});}
   complete(){const result=super.complete(),answers=new Set(this.data.shipment),correct=this.data.options.filter(gift=>this.selected.has(gift)===answers.has(gift)).length;return {...result,correct,mistakes:this.data.options.length-correct,attempts:this.data.options.length,score:this.score()};}
 }
@@ -308,8 +338,27 @@ export class QualityControl extends BaseMinigame {
   complete(){const result=super.complete(),answers=new Set(this.data.solution),correct=this.data.parcels.filter(parcel=>this.selected.has(parcel.id)===answers.has(parcel.id)).length;return {...result,correct,mistakes:this.data.parcels.length-correct,attempts:this.data.parcels.length,score:this.score()};}
 }
 
+export const FINAL_ISSUE_ASSETS=Object.freeze({
+  "WRONG QUANTITY":"05_issue_wrong_quantity.png","WRONG CARRIER":"06_issue_wrong_carrier.png",
+  "WRONG SKU":"07_issue_wrong_sku.png","MISSING SERIALS":"08_issue_missing_serials.png"
+});
+
 export class FinalDispatch extends BaseMinigame {
-  render(){this.selected=new Set();this.action=null;const {order,actual}=this.data;this.root.closest(".competition-shell")?.classList.add("final-stage");this.root.innerHTML=`<div class="final-alert">FINAL SLEIGH CLEARANCE · CHECK ALL DETAILS</div><div class="dispatch-compare"><section><h3>CHRISTMAS ORDER</h3><dl><dt>SHIPMENT</dt><dd>${order.id}</dd><dt>SKU</dt><dd>${order.sku}</dd><dt>QUANTITY</dt><dd>${order.quantity}</dd><dt>CARRIER</dt><dd>${order.carrier}</dd><dt>SERIALS</dt><dd>${order.serials} / ${order.serials}</dd></dl></section><section><h3>PACKED SHIPMENT</h3><dl><dt>SHIPMENT</dt><dd>${order.id}</dd><dt>SKU</dt><dd>${actual.sku}</dd><dt>QUANTITY</dt><dd>${actual.quantity}</dd><dt>CARRIER</dt><dd>${actual.carrier}</dd><dt>SERIALS</dt><dd>${actual.serials} / ${order.serials}</dd></dl></section></div><div class="final-issues">${this.data.options.map(issue=>`<button data-issue="${issue}">${issue}</button>`).join("")}</div><div class="dispatch-actions"><button class="confirm-hold" data-action="HOLD">CONFIRM · HOLD SHIPMENT</button></div>`;this.root.querySelectorAll("[data-issue]").forEach(button=>this.listen(button,"click",()=>{this.selected.has(button.dataset.issue)?this.selected.delete(button.dataset.issue):this.selected.add(button.dataset.issue);button.classList.toggle("selected");}));this.listen(this.root.querySelector("[data-action=HOLD]"),"click",button=>{this.action="HOLD";button.currentTarget.classList.add("selected");this.timeout(()=>this.ctx.finish(),180);});}
+  render(){
+    this.selected=new Set();this.action=null;const {order,actual}=this.data,art="assets/final_dispatch/";
+    this.root.closest(".competition-shell")?.classList.add("final-stage");
+    const panel=(title,kind,values)=>`<section class="dispatch-panel dispatch-${kind}" aria-label="${title}"><h3><img src="${art}icons/${kind==="order"?"15_icon_order_clipboard_tile.png":"16_icon_shipment_carton_tile.png"}" alt="" draggable="false">${title}</h3><dl class="dispatch-data"><dt>SHIPMENT</dt><dd>${order.id}</dd><dt>SKU</dt><dd>${values.sku}</dd><dt>QUANTITY</dt><dd>${values.quantity}</dd><dt>CARRIER</dt><dd>${values.carrier}</dd><dt>SERIALS</dt><dd>${values.serials} / ${order.serials}</dd></dl></section>`;
+    this.root.innerHTML=`<div class="final-layout"><div class="final-inspect"><strong>INSPECT</strong><span>Compare the order with the packed shipment.</span></div><div class="dispatch-compare">${panel("ORDER","order",order)}${panel("PACKED SHIPMENT","packed",actual)}</div><div class="final-issues" aria-label="Shipment issues">${this.data.options.map(issue=>`<button data-issue="${issue}" aria-pressed="false" aria-label="${issue}"><img src="${art}buttons/${FINAL_ISSUE_ASSETS[issue]}" alt="" draggable="false"><span class="visually-hidden">${issue}</span><span class="final-issue-selected" aria-hidden="true">✓</span></button>`).join("")}</div><footer class="final-footer"><p>Flag every discrepancy before holding the shipment.</p><button class="confirm-hold" data-action="HOLD" aria-label="HOLD SHIPMENT"><img src="${art}buttons/04_hold_shipment_button.png" alt="" draggable="false"><span class="visually-hidden">CONFIRM · HOLD SHIPMENT</span></button></footer></div>`;
+    this.root.querySelectorAll("[data-issue]").forEach(button=>this.listen(button,"click",()=>{
+      if(this.locked)return;const issue=button.dataset.issue;this.selected.has(issue)?this.selected.delete(issue):this.selected.add(issue);
+      button.classList.toggle("selected");button.setAttribute("aria-pressed",String(this.selected.has(issue)));
+    }));
+    this.listen(this.root.querySelector("[data-action=HOLD]"),"click",event=>{
+      if(this.locked||this.action!==null)return;this.action="HOLD";event.currentTarget.classList.add("selected");event.currentTarget.disabled=true;
+      this.timeout(()=>this.ctx.finish(),180);
+    });
+  }
+  get liveScore(){return this.locked?this.score():0;}
   score(){const base=scoreClassification({selected:[...this.selected],solution:this.data.solution,universe:this.data.options,timeRemaining:this.remaining,timeLimit:this.ctx.config.time,max:180});return Math.min(200,base+(this.action===this.data.action?20:0));}
   complete(){const result=super.complete(),answers=new Set(this.data.solution),issueCorrect=this.data.options.filter(issue=>this.selected.has(issue)===answers.has(issue)).length,actionCorrect=this.action===this.data.action;return {...result,score:this.score(),correct:issueCorrect+(actionCorrect?1:0),mistakes:this.data.options.length-issueCorrect+(actionCorrect?0:1),attempts:this.data.options.length+1};}
   cleanup(){this.root.closest(".competition-shell")?.classList.remove("final-stage");super.cleanup();}

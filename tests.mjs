@@ -4,7 +4,7 @@ import { ACTIVE_SECONDS, COMPETITION_SECONDS, GAME_CONFIGS, TRANSITION_SECONDS, 
 import { scoreClassification, scoreStandard, sumScores } from "./scoring.js";
 import { StageGuard } from "./lifecycle.js";
 import { LeaderboardManager, normalizeName } from "./storage.js";
-import { MINIGAME_CLASSES, BaseMinigame, code128Svg, code128Values, gridDragAnchor, offsetGridCoordinate, packingBoxAsset, packingInventoryLayout, planPalletMove } from "./minigames.js";
+import { MINIGAME_CLASSES, MEMORY_GIFT_ASSETS, FINAL_ISSUE_ASSETS, BaseMinigame, code128Svg, code128Values, gridDragAnchor, offsetGridCoordinate, packingBoxAsset, packingInventoryLayout, planPalletMove } from "./minigames.js";
 import { attachPointerDrag } from "./interactions.js";
 
 let checks=0;
@@ -361,4 +361,88 @@ assert(detectiveResult.correct===8&&detectiveResult.mistakes===0&&detectiveResul
 const selectedBeforeCleanup=[...detectiveGame.selected].join();detectiveGame.cleanup();detectiveButtons[0].dispatchEvent(new Event("click"));detectiveConfirm.dispatchEvent(new Event("click"));
 assert([...detectiveGame.selected].join()===selectedBeforeCleanup&&detectiveFinishes===1&&detectiveGame.cleanups.length===0,"WMS cleanup detaches record and confirm handlers");
 assert(game.includes("this.active.liveScore??this.active.score()"),"only minigames explicitly overriding liveScore change their score presentation");
+// Memory: permanent artwork mapping and distinct data owners for both phases.
+const giftNames=["TEDDY BEAR","TRAIN SET","SNOW GLOBE","PUZZLE","ROBOT","RED SLED","DRUM","DOLL","SKATES","BLOCKS"];
+assert(Object.isFrozen(MEMORY_GIFT_ASSETS)&&giftNames.every(gift=>MEMORY_GIFT_ASSETS[gift])&&new Set(Object.values(MEMORY_GIFT_ASSETS)).size===10,"all ten gifts have a permanent unique artwork identity without extra RNG");
+for(const file of Object.values(MEMORY_GIFT_ASSETS))assert(readFileSync(`assets/memory_challenge/gifts/${file}`).length>0,`Memory gift artwork exists: ${file}`);
+const memoryData=snapshotA.memory,memoryConfirm=new FakeElement(),memoryCount={textContent:""};let memoryFinishes=0;
+const memoryButtons=memoryData.options.map(gift=>{
+ const button=new FakeElement();button.dataset.gift=gift;button.attributes={};button.setAttribute=(name,value)=>{button.attributes[name]=value;};
+ button.classList.toggle=name=>{button.classes.has(name)?button.classes.delete(name):button.classes.add(name);};return button;
+});
+const memoryRoot={innerHTML:"",querySelector:selector=>selector==="#lock-memory"?memoryConfirm:memoryCount,querySelectorAll:()=>memoryButtons};
+const memoryGame=new MINIGAME_CLASSES.memory().init({root:memoryRoot,data:memoryData,config:GAME_CONFIGS.find(c=>c.id==="memory"),remaining:()=>10,finish:()=>{memoryFinishes++;}});
+memoryGame.render();const memorizeMarkup=memoryRoot.innerHTML;
+assert((memorizeMarkup.match(/data-remember-gift=/g)||[]).length===5&&!memorizeMarkup.includes("data-gift="),"Memory memorize phase shows only five shipment gifts and no selectable options");
+for(const gift of memoryData.options.filter(gift=>!memoryData.shipment.includes(gift)))assert(!memorizeMarkup.includes(gift)&&!memorizeMarkup.includes(MEMORY_GIFT_ASSETS[gift]),`${gift} decoy is absent from the memorization screen`);
+let memoryDelay=null,memoryReveal=null;memoryGame.timeout=(callback,delay)=>{memoryDelay=delay;memoryReveal=callback;};memoryGame.start();
+assert(memoryDelay===4000&&memoryGame.revealed===false,"Memory keeps the existing four-second managed reveal timeout");memoryReveal();
+assert((memoryRoot.innerHTML.match(/data-gift=/g)||[]).length===8&&!memoryRoot.innerHTML.includes("data-remember-gift")&&!memoryRoot.innerHTML.includes("memory-platform")&&!memoryRoot.innerHTML.includes("memory-memorize"),"Memory select phase completely replaces the shipment display with eight options");
+assert(!MINIGAME_CLASSES.memory.prototype.hide.toString().includes("this.data.shipment"),"Memory selection rendering does not access the answer list");
+for(const asset of [...memoryRoot.innerHTML.matchAll(/src="([^"]+)"/g)].map(m=>m[1]))assert(readFileSync(asset).length>0,`Memory phase-two asset exists: ${asset}`);
+memoryButtons[0].dispatchEvent(new Event("click"));assert(memoryGame.selected.has(memoryData.options[0])&&memoryButtons[0].attributes["aria-pressed"]==="true"&&memoryCount.textContent==="1 SELECTED","Memory click selects an option and updates ARIA and count");
+memoryButtons[0].dispatchEvent(new Event("click"));assert(memoryGame.selected.size===0&&memoryButtons[0].attributes["aria-pressed"]==="false"&&memoryCount.textContent==="0 SELECTED","Memory second click deselects normally");
+for(const button of memoryButtons)button.dispatchEvent(new Event("click"));assert(memoryGame.selected.size===8&&memoryCount.textContent==="8 SELECTED","Memory still permits selecting more than five gifts");
+for(let mask=0;mask<256;mask++){
+ memoryGame.selected=new Set(memoryData.options.filter((_,i)=>mask&(1<<i)));
+ assert(memoryGame.score()===scoreClassification({selected:[...memoryGame.selected],solution:memoryData.shipment,universe:memoryData.options,timeRemaining:10,timeLimit:15})&&memoryGame.liveScore===0,`Memory selection ${mask} preserves grading without live correctness feedback`);
+}
+memoryGame.selected=new Set(memoryData.shipment);memoryConfirm.dispatchEvent(new Event("click"));memoryConfirm.dispatchEvent(new Event("click"));assert(memoryFinishes===1,"Memory lock ends the stage exactly once");
+const memoryResult=memoryGame.complete();assert(memoryResult.score===95&&memoryResult.correct===8&&memoryResult.mistakes===0&&memoryResult.attempts===8,"Memory perfect score and accuracy remain identical");
+memoryGame.cleanup();memoryGame.locked=false;const memoryBefore=[...memoryGame.selected].join();memoryButtons[0].dispatchEvent(new Event("click"));memoryConfirm.dispatchEvent(new Event("click"));assert(memoryBefore===[...memoryGame.selected].join()&&memoryFinishes===1,"Memory cleanup actually detaches selection and confirm listeners");
+// Final: all values come from the generated shipment and every selection grades identically.
+const finalData=snapshotA.final,finalHold=new FakeElement();let finalFinishes=0,finalTimer=null,finalDelay=null;const finalClasses=new Set();
+const finalButtons=finalData.options.map(issue=>{const b=new FakeElement();b.dataset.issue=issue;b.attributes={};b.setAttribute=(name,value)=>{b.attributes[name]=value;};b.classList.toggle=name=>{b.classes.has(name)?b.classes.delete(name):b.classes.add(name);};return b;});
+const finalRoot={innerHTML:"",closest:()=>({classList:{add:name=>finalClasses.add(name),remove:name=>finalClasses.delete(name)}}),querySelector:()=>finalHold,querySelectorAll:()=>finalButtons};
+const finalGame=new MINIGAME_CLASSES.final().init({root:finalRoot,data:finalData,config:GAME_CONFIGS.at(-1),remaining:()=>25,finish:()=>{finalFinishes++;}});finalGame.render();
+assert(finalClasses.has("final-stage")&&finalRoot.innerHTML.includes("PACKED SHIPMENT")&&finalRoot.innerHTML.includes('aria-label="ORDER"'),"Final keeps the final-stage shell and both comparison panels");
+for(const value of [finalData.order.id,finalData.order.sku,finalData.actual.sku,finalData.order.quantity,finalData.actual.quantity,finalData.order.carrier,finalData.actual.carrier,`${finalData.order.serials} / ${finalData.order.serials}`,`${finalData.actual.serials} / ${finalData.order.serials}`])assert(finalRoot.innerHTML.includes(String(value)),`Final displays generated value ${value}`);
+assert(!/destination|weight|dimensions|Berlin|Express|Standard|thumbnail_train/i.test(finalRoot.innerHTML),"Final adds no destination, product, shipping-service or package facts absent from tasks.js");
+assert((finalRoot.innerHTML.match(/data-issue=/g)||[]).length===4&&(finalRoot.innerHTML.match(/data-action=/g)||[]).length===1,"Final has four issues and only the HOLD action");
+for(const asset of [...finalRoot.innerHTML.matchAll(/src="([^"]+)"/g)].map(m=>m[1]))assert(readFileSync(asset).length>0,`Final artwork exists: ${asset}`);
+assert(!MINIGAME_CLASSES.final.prototype.render.toString().includes("solution")&&!MINIGAME_CLASSES.final.prototype.render.toString().includes("!==actual"),"Final rendering never consults the solution or auto-highlights differences");
+finalButtons[0].dispatchEvent(new Event("click"));assert(finalGame.selected.has(finalData.options[0])&&finalButtons[0].attributes["aria-pressed"]==="true","Final issue click updates selection and ARIA");finalButtons[0].dispatchEvent(new Event("click"));assert(finalGame.selected.size===0&&finalButtons[0].attributes["aria-pressed"]==="false","Final second click deselects the issue");
+for(let mask=0;mask<16;mask++)for(const action of [null,"HOLD"]){
+ finalGame.selected=new Set(finalData.options.filter((_,i)=>mask&(1<<i)));finalGame.action=action;
+ const expected=scoreClassification({selected:[...finalGame.selected],solution:finalData.solution,universe:finalData.options,timeRemaining:25,timeLimit:25,max:180})+(action==="HOLD"?20:0);
+ assert(finalGame.score()===expected&&finalGame.liveScore===0,`Final selection ${mask}, ${action}, preserves the 180 + 20 scoring rule without live answers`);
+}
+finalGame.selected=new Set(finalData.solution);finalGame.action=null;finalGame.timeout=(callback,delay)=>{finalTimer=callback;finalDelay=delay;};finalHold.dispatchEvent(new Event("click"));finalHold.dispatchEvent(new Event("click"));assert(finalGame.action==="HOLD"&&finalHold.disabled&&finalDelay===180,"HOLD retains its existing action and 180ms transition while rejecting duplicate submissions");finalTimer();assert(finalFinishes===1,"Final finish runs exactly once");const finalResult=finalGame.complete();assert(finalResult.score===200&&finalResult.correct===5&&finalResult.mistakes===0&&finalResult.attempts===5,"perfect Final still scores a maximum of 200 with unchanged attempt counts");
+finalGame.cleanup();assert(!finalClasses.has("final-stage")&&finalGame.cleanups.length===0,"Final cleanup removes its shell class and listeners");
+assert(Object.keys(FINAL_ISSUE_ASSETS).sort().join()===finalData.options.slice().sort().join(),"all four Final issue names map deterministically to the corresponding supplied artwork");
+// Truck Loading: gameplay data and order semantics do not depend on artwork.
+const truckGame=new MINIGAME_CLASSES.loading().init({root:{},data:snapshotA.loading,config:GAME_CONFIGS.find(c=>c.id==="loading"),remaining:()=>20});
+assert(snapshotA.loading.solution.map(id=>snapshotA.loading.pallets.find(p=>p.id===id).stop).join() === "7,6,5,4,3,2,1","Truck solution remains descending stop order from deepest bay to rear door");
+for(const pallet of snapshotA.loading.pallets){const label=truckGame.deliveryLabel(pallet);assert(label.includes(`STOP ${pallet.stop}`),`${pallet.city} retains its generated stop`);if(pallet.stop===7)assert(label.includes("LAST DELIVERY · LOAD FIRST"),"last delivery remains deepest/load first");else if(pallet.stop===1)assert(label.includes("FIRST DELIVERY · LOAD LAST"),"first delivery remains load last");else assert(label.includes(`DELIVERY ${pallet.stop}`),"middle pallet keeps its own delivery number");}
+for(const slots of [Array(7).fill(null),snapshotA.loading.solution,[...snapshotA.loading.solution].reverse(),[...snapshotA.loading.solution.slice(0,4),null,null,null]]){
+ truckGame.slots=slots;const correct=slots.filter((id,i)=>id===snapshotA.loading.solution[i]).length;
+ assert(truckGame.score()===scoreStandard({correct,total:7,mistakes:0,completed:correct===7,timeRemaining:20,timeLimit:20})&&truckGame.liveScore===0,"Truck scoring is unchanged and placements cannot expose correctness through live points");
+}
+// A small DOM fixture runs Truck's real render, click, drag and swap methods.
+const truckNode=(rect)=>{
+ const node=new FakeElement(rect);node.children=[];node.attributes={};node.parentNode=null;
+ node.setAttribute=(name,value)=>{node.attributes[name]=value;};
+ node.classList.toggle=(name,enabled)=>{const next=enabled??!node.classes.has(name);next?node.classes.add(name):node.classes.delete(name);return next;};
+ Object.defineProperty(node,"className",{get:()=>[...node.classes].join(" "),set:value=>{node.classes=new Set(value.split(/\s+/));}});
+ node.append=child=>{if(child.parentNode)child.parentNode.children=child.parentNode.children.filter(n=>n!==child);node.children.push(child);child.parentNode=node;};
+ node.closest=selector=>{let current=node;while(current){if(current.classes?.has(selector.slice(1)))return current;current=current.parentNode;}return null;};
+ node.remove=()=>{if(node.parentNode)node.parentNode.children=node.parentNode.children.filter(n=>n!==node);node.removed=true;};
+ node.cloneNode=()=>{const copy=truckNode(node.rect);copy.className=node.className;copy.innerHTML=node.innerHTML;return copy;};
+ return node;
+};
+const truckYard=truckNode(),truckLock=truckNode(),truckBody=truckNode();let truckSlots=[],truckFinishes=0;
+const truckRoot={classList:{add:()=>{},remove:()=>{}},get innerHTML(){return this.markup;},set innerHTML(value){this.markup=value;truckSlots=[...value.matchAll(/data-slot="(\d+)"/g)].map(match=>{const slot=truckNode({left:100+Number(match[1])*100,top:100,width:90,height:150});slot.className="truck-slot";slot.dataset.slot=match[1];slot.placeholder={hidden:false};slot.querySelector=()=>slot.placeholder;return slot;});truckLock.disabled=/id="lock-loading" disabled/.test(value);},querySelector:selector=>selector===".pallet-yard-cards"?truckYard:selector==="#lock-loading"?truckLock:truckSlots.find(n=>n.dataset.slot===selector.match(/data-slot="(\d+)"/)?.[1]),querySelectorAll:selector=>selector==="[data-slot]"?truckSlots:truckSlots.filter(n=>n.classes.has("source-slot"))};
+global.document={createElement:()=>truckNode(),body:truckBody,documentElement:{classList:{add:()=>{},remove:()=>{}}}};
+const renderedTruck=new MINIGAME_CLASSES.loading().init({root:truckRoot,data:snapshotA.loading,config:GAME_CONFIGS.find(c=>c.id==="loading"),remaining:()=>20,finish:()=>{truckFinishes++;},update:()=>{}});
+renderedTruck.render();assert(truckSlots.length===7&&renderedTruck.cards.size===7&&truckYard.children.length===7,"Truck renders exactly seven logical slots and seven persistent physical pallet buttons");
+for(const asset of [...truckRoot.innerHTML.matchAll(/src="([^"]+)"/g),...[...renderedTruck.cards.values()].flatMap(card=>[...card.innerHTML.matchAll(/src="([^"]+)"/g)])].map(match=>match[1]))assert(readFileSync(asset).length>0,`Truck artwork exists: ${asset}`);
+assert(truckLock.disabled===true,"Truck lock starts disabled");truckLock.dispatchEvent(new Event("click"));assert(truckFinishes===0,"incomplete Truck cannot be submitted");
+const firstTruckId=snapshotA.loading.pallets[0].id,secondTruckId=snapshotA.loading.pallets[1].id,firstTruckCard=renderedTruck.cards.get(firstTruckId);
+firstTruckCard.dispatchEvent(new Event("click"));assert(renderedTruck.selected===firstTruckId&&firstTruckCard.attributes["aria-pressed"]==="true","Truck click selects the pallet without affecting its stop data");truckSlots[0].dispatchEvent(new Event("click"));assert(renderedTruck.slots[0]===firstTruckId&&truckSlots[0].children.includes(firstTruckCard)&&truckLock.disabled,"clicking an empty slot moves the same pallet node and keeps partial loading disabled");
+renderedTruck.place(secondTruckId,1);renderedTruck.place(firstTruckId,1);assert(renderedTruck.slots[0]===secondTruckId&&renderedTruck.slots[1]===firstTruckId,"moving an occupied-slot pallet swaps both original persistent cards");
+const yardTruckId=snapshotA.loading.pallets[2].id;renderedTruck.place(yardTruckId,1);assert(renderedTruck.slots[1]===yardTruckId&&truckYard.children.includes(firstTruckCard),"a yard pallet returns the displaced occupied pallet to the waiting queue");
+const draggingCard=renderedTruck.cards.get(yardTruckId);draggingCard.dispatchEvent(pointer("pointerdown",30,30));assert(truckSlots[1].classes.has("source-slot")&&truckBody.children.length===1,"Truck drag creates a physical ghost and marks its source slot");draggingCard.dispatchEvent(pointer("pointercancel",30,30));assert(renderedTruck.slots[1]===yardTruckId&&!truckSlots[1].classes.has("source-slot")&&truckBody.children.length===0,"Truck drag cancellation retains placement and clears the source marker and ghost");
+draggingCard.dispatchEvent(pointer("pointerdown",30,30));draggingCard.dispatchEvent(pointer("pointermove",345,150));draggingCard.dispatchEvent(pointer("pointerup",345,150));assert(renderedTruck.slots[2]===yardTruckId&&renderedTruck.slots[1]===null,"the original pointer controller drops a pallet into an empty slot");
+for(const [index,id] of snapshotA.loading.solution.entries())renderedTruck.place(id,index);
+assert(!truckLock.disabled&&renderedTruck.slots.join()===snapshotA.loading.solution.join()&&renderedTruck.score()===100,"all seven occupied slots enable lock and a perfect reverse delivery order still scores 100");truckLock.dispatchEvent(new Event("click"));truckLock.dispatchEvent(new Event("click"));assert(truckFinishes===1,"Truck lock confirms a complete load exactly once");renderedTruck.cleanup();renderedTruck.locked=false;const beforeTruckSelection=renderedTruck.selected;firstTruckCard.dispatchEvent(new Event("click"));assert(renderedTruck.selected===beforeTruckSelection&&renderedTruck.cleanups.length===0,"Truck cleanup detaches card/slot click handlers, pointer controllers and feedback timers");delete global.document;
 console.log(`Competition validation passed: ${checks.toLocaleString()} checks.`);
