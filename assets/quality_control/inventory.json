@@ -1,0 +1,356 @@
+[
+  {
+    "file": "boxes/box_front.png",
+    "width": 153,
+    "height": 108,
+    "mode": "RGBA"
+  },
+  {
+    "file": "boxes/box_left.png",
+    "width": 118,
+    "height": 113,
+    "mode": "RGBA"
+  },
+  {
+    "file": "boxes/box_right.png",
+    "width": 124,
+    "height": 119,
+    "mode": "RGBA"
+  },
+  {
+    "file": "damage/damage_crush.png",
+    "width": 72,
+    "height": 88,
+    "mode": "RGBA"
+  },
+  {
+    "file": "damage/damage_dent.png",
+    "width": 76,
+    "height": 89,
+    "mode": "RGBA"
+  },
+  {
+    "file": "damage/damage_dirty.png",
+    "width": 77,
+    "height": 90,
+    "mode": "RGBA"
+  },
+  {
+    "file": "damage/damage_scratch.png",
+    "width": 77,
+    "height": 89,
+    "mode": "RGBA"
+  },
+  {
+    "file": "damage/damage_tear.png",
+    "width": 76,
+    "height": 89,
+    "mode": "RGBA"
+  },
+  {
+    "file": "decor/decor_bow.png",
+    "width": 66,
+    "height": 56,
+    "mode": "RGBA"
+  },
+  {
+    "file": "decor/decor_garland.png",
+    "width": 180,
+    "height": 50,
+    "mode": "RGBA"
+  },
+  {
+    "file": "decor/decor_lights.png",
+    "width": 140,
+    "height": 39,
+    "mode": "RGBA"
+  },
+  {
+    "file": "decor/sticker_candy_cane.png",
+    "width": 38,
+    "height": 64,
+    "mode": "RGBA"
+  },
+  {
+    "file": "decor/sticker_gift.png",
+    "width": 45,
+    "height": 56,
+    "mode": "RGBA"
+  },
+  {
+    "file": "decor/sticker_holly.png",
+    "width": 38,
+    "height": 51,
+    "mode": "RGBA"
+  },
+  {
+    "file": "decor/sticker_snowflake.png",
+    "width": 53,
+    "height": 51,
+    "mode": "RGBA"
+  },
+  {
+    "file": "decor/sticker_star.png",
+    "width": 43,
+    "height": 46,
+    "mode": "RGBA"
+  },
+  {
+    "file": "decor/sticker_tree.png",
+    "width": 44,
+    "height": 66,
+    "mode": "RGBA"
+  },
+  {
+    "file": "examples/quality_control_reference.png",
+    "width": 1536,
+    "height": 1024,
+    "mode": "RGB"
+  },
+  {
+    "file": "issues/issue_damage.png",
+    "width": 39,
+    "height": 69,
+    "mode": "RGBA"
+  },
+  {
+    "file": "issues/issue_missing_data.png",
+    "width": 61,
+    "height": 65,
+    "mode": "RGBA"
+  },
+  {
+    "file": "issues/issue_wrong_carrier.png",
+    "width": 70,
+    "height": 74,
+    "mode": "RGBA"
+  },
+  {
+    "file": "issues/issue_wrong_sku.png",
+    "width": 65,
+    "height": 69,
+    "mode": "RGBA"
+  },
+  {
+    "file": "labels/carrier_bringcargo.png",
+    "width": 163,
+    "height": 54,
+    "mode": "RGBA"
+  },
+  {
+    "file": "labels/carrier_dhl.png",
+    "width": 149,
+    "height": 53,
+    "mode": "RGBA"
+  },
+  {
+    "file": "labels/carrier_klg.png",
+    "width": 149,
+    "height": 54,
+    "mode": "RGBA"
+  },
+  {
+    "file": "labels/carrier_other.png",
+    "width": 113,
+    "height": 41,
+    "mode": "RGBA"
+  },
+  {
+    "file": "labels/carrier_tnt.png",
+    "width": 149,
+    "height": 54,
+    "mode": "RGBA"
+  },
+  {
+    "file": "labels/carrier_tof.png",
+    "width": 147,
+    "height": 54,
+    "mode": "RGBA"
+  },
+  {
+    "file": "labels/carrier_ups.png",
+    "width": 150,
+    "height": 54,
+    "mode": "RGBA"
+  },
+  {
+    "file": "labels/icon_fragile.png",
+    "width": 26,
+    "height": 39,
+    "mode": "RGBA"
+  },
+  {
+    "file": "labels/icon_gift_small.png",
+    "width": 33,
+    "height": 36,
+    "mode": "RGBA"
+  },
+  {
+    "file": "labels/icon_this_side_up.png",
+    "width": 41,
+    "height": 39,
+    "mode": "RGBA"
+  },
+  {
+    "file": "labels/icon_umbrella.png",
+    "width": 46,
+    "height": 50,
+    "mode": "RGBA"
+  },
+  {
+    "file": "labels/icon_warning.png",
+    "width": 54,
+    "height": 47,
+    "mode": "RGBA"
+  },
+  {
+    "file": "labels/label_barcode.png",
+    "width": 84,
+    "height": 36,
+    "mode": "RGBA"
+  },
+  {
+    "file": "labels/label_base.png",
+    "width": 154,
+    "height": 106,
+    "mode": "RGBA"
+  },
+  {
+    "file": "labels/label_carrier_bg.png",
+    "width": 146,
+    "height": 106,
+    "mode": "RGBA"
+  },
+  {
+    "file": "labels/label_paper.png",
+    "width": 142,
+    "height": 71,
+    "mode": "RGBA"
+  },
+  {
+    "file": "labels/label_qr.png",
+    "width": 46,
+    "height": 46,
+    "mode": "RGBA"
+  },
+  {
+    "file": "scene/hazard_strip.png",
+    "width": 173,
+    "height": 36,
+    "mode": "RGBA"
+  },
+  {
+    "file": "scene/lamp.png",
+    "width": 110,
+    "height": 62,
+    "mode": "RGBA"
+  },
+  {
+    "file": "scene/warehouse_shelf.png",
+    "width": 189,
+    "height": 44,
+    "mode": "RGBA"
+  },
+  {
+    "file": "states/box_error.png",
+    "width": 133,
+    "height": 66,
+    "mode": "RGBA"
+  },
+  {
+    "file": "states/box_highlight.png",
+    "width": 133,
+    "height": 66,
+    "mode": "RGBA"
+  },
+  {
+    "file": "states/box_selected.png",
+    "width": 131,
+    "height": 66,
+    "mode": "RGBA"
+  },
+  {
+    "file": "states/box_success.png",
+    "width": 145,
+    "height": 66,
+    "mode": "RGBA"
+  },
+  {
+    "file": "states/error_cross.png",
+    "width": 65,
+    "height": 61,
+    "mode": "RGBA"
+  },
+  {
+    "file": "states/frame_box.png",
+    "width": 108,
+    "height": 122,
+    "mode": "RGBA"
+  },
+  {
+    "file": "states/pulse_ring.png",
+    "width": 121,
+    "height": 69,
+    "mode": "RGBA"
+  },
+  {
+    "file": "states/scan_sweep.png",
+    "width": 131,
+    "height": 71,
+    "mode": "RGBA"
+  },
+  {
+    "file": "states/success_check.png",
+    "width": 67,
+    "height": 61,
+    "mode": "RGBA"
+  },
+  {
+    "file": "ui/button_lock.png",
+    "width": 228,
+    "height": 44,
+    "mode": "RGBA"
+  },
+  {
+    "file": "ui/button_select.png",
+    "width": 130,
+    "height": 40,
+    "mode": "RGBA"
+  },
+  {
+    "file": "ui/button_select_disabled.png",
+    "width": 130,
+    "height": 43,
+    "mode": "RGBA"
+  },
+  {
+    "file": "ui/button_tooltip.png",
+    "width": 144,
+    "height": 63,
+    "mode": "RGBA"
+  },
+  {
+    "file": "ui/panel_instruction.png",
+    "width": 231,
+    "height": 101,
+    "mode": "RGBA"
+  },
+  {
+    "file": "ui/progress_bg.png",
+    "width": 285,
+    "height": 35,
+    "mode": "RGBA"
+  },
+  {
+    "file": "ui/progress_fill.png",
+    "width": 285,
+    "height": 16,
+    "mode": "RGBA"
+  },
+  {
+    "file": "ui/progress_marker.png",
+    "width": 48,
+    "height": 67,
+    "mode": "RGBA"
+  }
+]

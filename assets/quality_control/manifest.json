@@ -1,0 +1,93 @@
+{
+  "pack": "quality-control-codex-ready",
+  "version": 1,
+  "purpose": "Layered visual assets for the existing QualityControl minigame. Dynamic gameplay text remains HTML/CSS.",
+  "recommended_target": "assets/quality-control/",
+  "boxes": {
+    "front": "boxes/box_front.png",
+    "left": "boxes/box_left.png",
+    "right": "boxes/box_right.png"
+  },
+  "damage_overlays": {
+    "tear": "damage/damage_tear.png",
+    "dent": "damage/damage_dent.png",
+    "crush": "damage/damage_crush.png",
+    "scratch": "damage/damage_scratch.png",
+    "dirty": "damage/damage_dirty.png"
+  },
+  "carrier_badges": {
+    "DHL": "labels/carrier_dhl.png",
+    "UPS": "labels/carrier_ups.png",
+    "TNT": "labels/carrier_tnt.png",
+    "TOF": "labels/carrier_tof.png",
+    "KLG": "labels/carrier_klg.png",
+    "BRINGCARGO": "labels/carrier_bringcargo.png",
+    "OTHER": "labels/carrier_other.png"
+  },
+  "labels": {
+    "paper": "labels/label_paper.png",
+    "base": "labels/label_base.png",
+    "carrier_background": "labels/label_carrier_bg.png",
+    "barcode": "labels/label_barcode.png",
+    "qr": "labels/label_qr.png",
+    "gift": "labels/icon_gift_small.png",
+    "fragile": "labels/icon_fragile.png",
+    "this_side_up": "labels/icon_this_side_up.png",
+    "umbrella": "labels/icon_umbrella.png",
+    "warning": "labels/icon_warning.png"
+  },
+  "issue_icons": {
+    "dented": "issues/issue_damage.png",
+    "missing": "issues/issue_missing_data.png",
+    "wrong-sku": "issues/issue_wrong_sku.png",
+    "wrong-label": "issues/issue_wrong_carrier.png"
+  },
+  "states": {
+    "hover": "states/box_highlight.png",
+    "selected": "states/box_selected.png",
+    "error": "states/box_error.png",
+    "success": "states/box_success.png",
+    "frame": "states/frame_box.png",
+    "success_check": "states/success_check.png",
+    "error_cross": "states/error_cross.png",
+    "pulse_ring": "states/pulse_ring.png",
+    "scan_sweep": "states/scan_sweep.png"
+  },
+  "ui": {
+    "button_select": "ui/button_select.png",
+    "button_select_disabled": "ui/button_select_disabled.png",
+    "button_lock": "ui/button_lock.png",
+    "button_tooltip": "ui/button_tooltip.png",
+    "instruction_panel": "ui/panel_instruction.png",
+    "progress_bg": "ui/progress_bg.png",
+    "progress_fill": "ui/progress_fill.png",
+    "progress_marker": "ui/progress_marker.png"
+  },
+  "decor": {
+    "tree": "decor/sticker_tree.png",
+    "gift": "decor/sticker_gift.png",
+    "candy_cane": "decor/sticker_candy_cane.png",
+    "snowflake": "decor/sticker_snowflake.png",
+    "star": "decor/sticker_star.png",
+    "holly": "decor/sticker_holly.png",
+    "lights": "decor/decor_lights.png",
+    "garland": "decor/decor_garland.png",
+    "bow": "decor/decor_bow.png"
+  },
+  "scene_optional": {
+    "lamp": "scene/lamp.png",
+    "hazard_strip": "scene/hazard_strip.png",
+    "warehouse_shelf": "scene/warehouse_shelf.png"
+  },
+  "reference": "examples/quality_control_reference.png",
+  "integration_notes": [
+    "Keep player name, GIFT id, carrier name, SKU and barcodes dynamic in DOM; do not bake them into parcel PNGs.",
+    "Use the same real hitboxes as the current QualityControl buttons. Artwork should not shrink click targets.",
+    "Do not show success/error correctness before the player locks the quality check. Use only hover/selected states during play.",
+    "For issue=dented, compose one damage overlay over a base box. Choose a deterministic overlay by parcel index if desired.",
+    "For issue=wrong-label, show OTHER carrier badge but keep the actual parcel carrier data unchanged.",
+    "For issue=missing, render the SKU value as missing/blank and optionally show the missing-data icon.",
+    "For issue=wrong-sku, render SKU-ERROR and optionally show the wrong-SKU icon.",
+    "Reuse the existing assets/backgrounds/08_quality_control.png unless visual testing clearly shows a better fit."
+  ]
+}
