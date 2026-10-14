@@ -1,7 +1,7 @@
 {
-  "count": 165,
-  "before": 115103155,
-  "after": 9822540,
+  "count": 158,
+  "before": 115092809,
+  "after": 9812194,
   "assets": [
     {
       "source": "assets/backgrounds/02_conveyor_rush.png",
@@ -1410,18 +1410,6 @@
       "after": 152008
     },
     {
-      "source": "assets/results/buttons/leaderboard.svg",
-      "runtime": "assets/results/buttons/leaderboard.svg",
-      "before": 1347,
-      "after": 1347
-    },
-    {
-      "source": "assets/results/buttons/return-to-start.svg",
-      "runtime": "assets/results/buttons/return-to-start.svg",
-      "before": 1347,
-      "after": 1347
-    },
-    {
       "source": "assets/results/icons/accuracy.svg",
       "runtime": "assets/results/icons/accuracy.svg",
       "before": 1270,
@@ -1504,36 +1492,6 @@
       "runtime": "assets/results/icons/wms-detective.svg",
       "before": 1226,
       "after": 1226
-    },
-    {
-      "source": "assets/results/panels/challenge-card.svg",
-      "runtime": "assets/results/panels/challenge-card.svg",
-      "before": 1336,
-      "after": 1336
-    },
-    {
-      "source": "assets/results/panels/final-score-panel.svg",
-      "runtime": "assets/results/panels/final-score-panel.svg",
-      "before": 1589,
-      "after": 1589
-    },
-    {
-      "source": "assets/results/panels/player-rank-panel.svg",
-      "runtime": "assets/results/panels/player-rank-panel.svg",
-      "before": 1804,
-      "after": 1804
-    },
-    {
-      "source": "assets/results/panels/stat-card.svg",
-      "runtime": "assets/results/panels/stat-card.svg",
-      "before": 1272,
-      "after": 1272
-    },
-    {
-      "source": "assets/results/panels/title-run-complete.svg",
-      "runtime": "assets/results/panels/title-run-complete.svg",
-      "before": 1651,
-      "after": 1651
     },
     {
       "source": "assets/speed-picking/background-speed-picking.png",

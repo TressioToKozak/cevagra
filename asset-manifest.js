@@ -31,8 +31,6 @@ export const COMMON_ASSETS=[
   "assets/menu/background.webp",
   "assets/menu/logo-light.webp",
   "assets/results/background/results-background.webp",
-  "assets/results/buttons/leaderboard.svg",
-  "assets/results/buttons/return-to-start.svg",
   "assets/results/icons/accuracy.svg",
   "assets/results/icons/barcode-hunt.svg",
   "assets/results/icons/challenges.svg",
@@ -46,12 +44,7 @@ export const COMMON_ASSETS=[
   "assets/results/icons/score-star.svg",
   "assets/results/icons/speed-picking.svg",
   "assets/results/icons/truck-loading.svg",
-  "assets/results/icons/wms-detective.svg",
-  "assets/results/panels/challenge-card.svg",
-  "assets/results/panels/final-score-panel.svg",
-  "assets/results/panels/player-rank-panel.svg",
-  "assets/results/panels/stat-card.svg",
-  "assets/results/panels/title-run-complete.svg"
+  "assets/results/icons/wms-detective.svg"
 ];
 export const GAME_ASSETS={
   "picking": [

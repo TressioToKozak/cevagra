@@ -1,7 +1,7 @@
-import { SeededRandom } from "./rng.js?v=17";
-import { CARRIERS } from "./tasks.js?v=17";
-import { scoreClassification, scoreStandard } from "./scoring.js?v=17";
-import { attachPointerDrag } from "./interactions.js?v=17";
+import { SeededRandom } from "./rng.js?v=18";
+import { CARRIERS } from "./tasks.js?v=18";
+import { scoreClassification, scoreStandard } from "./scoring.js?v=18";
+import { attachPointerDrag } from "./interactions.js?v=18";
 
 export function planPalletMove(slots,id,targetIndex){
   const next=[...slots],sourceIndex=next.indexOf(id),occupant=next[targetIndex]||null;

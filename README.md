@@ -118,3 +118,27 @@ NODE_PATH=/opt/codex/runtimes/codex-primary-runtime/dependencies/node/node_modul
 
 Screenshots are written to `/tmp/ceva-*.png`. Set `TEST_ORIGIN` for a local Pages
 subdirectory test; Node tests include a 5,000-seed Final distribution check.
+
+Mission Briefings and Mission Reports share the industrial navy/blue/gold HUD.
+The briefing is a single configuration-driven template: original background/icon,
+nine progress markers, objective/hint, action/time, and a real keyboard-accessible
+Ready button. The Results summary and 3×3 cards use CSS Grid and DOM text, without
+text-bearing decorative panel assets or absolute positioning of player/rank/score.
+Original artwork stays in the repository; unused result panels are no longer preloaded.
+
+Non-editable UI under `#app` and `#modal` prevents text selection. Input, textarea
+and contenteditable selection is explicitly restored. Rendered images use
+`draggable="false"` and `-webkit-user-drag:none`; a targeted `dragstart` listener
+cancels native image drags only. There is no blanket mouse/pointer cancellation.
+
+```bash
+NODE_PATH=/opt/codex/runtimes/codex-primary-runtime/dependencies/node/node_modules node scripts/mission-tests.cjs
+```
+
+This browser suite checks 27 briefing layouts, nine Results scenarios (70/665/1000,
+long names and rank #1/#101), consistent cards and progress ratios, rapid clicking
+through all nine games, custom drags, native image prevention, name editing/mouse
+selection, textarea/contenteditable editing, organizer inputs and keyboard focus.
+Set `TEST_ORIGIN` for a local `/cevagra/` deployment. PNG captures use
+`/tmp/ceva-mission-*.png` and `/tmp/ceva-report-*.png`; reviewed evidence is kept in
+[`docs/mission-ui/report.md`](docs/mission-ui/report.md).

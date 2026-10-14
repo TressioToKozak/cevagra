@@ -1,4 +1,4 @@
-import { createRunId } from "./rng.js?v=17";
+import { createRunId } from "./rng.js?v=18";
 const STORAGE_KEY = "christmas-logistics-leaderboard-v1";
 const legacyRunId=(playerIndex,runIndex,timestamp)=>`legacy-${playerIndex+1}-${runIndex+1}-${String(timestamp||"unknown")}`;
 const newRunId=createRunId;
