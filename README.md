@@ -156,3 +156,17 @@ NODE_PATH=/opt/codex/runtimes/codex-primary-runtime/dependencies/node/node_modul
 ```
 
 Reviewed before/after captures and limitations: [report](docs/input-leaderboard/report.md).
+
+Gameplay motion uses local feedback with fixed interactive geometry. No entrance
+animation delays active targets or stage timers. Decorative animations pause when
+the document is hidden and respect reduced motion; Memory still lasts four seconds.
+
+```bash
+NODE_PATH=/opt/codex/runtimes/codex-primary-runtime/dependencies/node/node_modules node scripts/animation-tests.cjs
+```
+
+Set `TEST_ORIGIN` for the local `/cevagra/` path. The suite checks all nine activation
+timings at three viewport sizes, records 16 live effect scenes via Chromium CDP,
+and verifies neutral classifications, cleanup and reduced motion. Raw frames and
+timestamps are saved under `/tmp/ceva-motion/`; the reviewed recording, chapters,
+performance measurements and limitations are in [the motion report](docs/motion/report.md).

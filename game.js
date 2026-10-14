@@ -1,13 +1,13 @@
-import {installEditingCursor} from "./editing-cursor.js?v=19";
-import { CompetitionSettings, LeaderboardManager, leaderboardCsv, normalizeName } from "./storage.js?v=19";
-import { ArcadeEffects, animateNumber } from "./effects.js?v=19";
-import { SeededRandom, createRunId, createRunSeed } from "./rng.js?v=19";
-import { ACTIVE_SECONDS, GAME_CONFIGS, TRANSITION_SECONDS, buildCompetition, buildGameOrder } from "./tasks.js?v=19";
-import { MINIGAME_CLASSES } from "./minigames.js?v=19";
-import { sumScores } from "./scoring.js?v=19";
-import { StageGuard } from "./lifecycle.js?v=19";
-import { assetLoader, ASSET_PRIORITY } from "./asset-loader.js?v=19";
-import { COMMON_ASSETS, GAME_ASSETS, COMPETITION_ASSETS, GAMEPLAY_BACKGROUNDS } from "./asset-manifest.js?v=19";
+import {installEditingCursor} from "./editing-cursor.js?v=20";
+import { CompetitionSettings, LeaderboardManager, leaderboardCsv, normalizeName } from "./storage.js?v=20";
+import { ArcadeEffects, animateNumber } from "./effects.js?v=20";
+import { SeededRandom, createRunId, createRunSeed } from "./rng.js?v=20";
+import { ACTIVE_SECONDS, GAME_CONFIGS, TRANSITION_SECONDS, buildCompetition, buildGameOrder } from "./tasks.js?v=20";
+import { MINIGAME_CLASSES } from "./minigames.js?v=20";
+import { sumScores } from "./scoring.js?v=20";
+import { StageGuard } from "./lifecycle.js?v=20";
+import { assetLoader, ASSET_PRIORITY } from "./asset-loader.js?v=20";
+import { COMMON_ASSETS, GAME_ASSETS, COMPETITION_ASSETS, GAMEPLAY_BACKGROUNDS } from "./asset-manifest.js?v=20";
 
 const $=(selector,root=document)=>root.querySelector(selector);
 const esc=value=>String(value).replace(/[&<>'"]/g,char=>({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[char]));
@@ -15,6 +15,7 @@ const esc=value=>String(value).replace(/[&<>'"]/g,char=>({"&":"&amp;","<":"&lt;"
 document.addEventListener("dragstart",event=>{
   if(event.target.closest?.("#app img,#modal img,.drag-ghost")&&!event.target.closest('[contenteditable]:not([contenteditable="false"])'))event.preventDefault();
 });
+document.addEventListener("visibilitychange",()=>document.documentElement.classList.toggle("motion-suspended",document.hidden));
 const organizerEnabled=new URLSearchParams(location.search).get("organizer")==="1";
 const requestedSeed=new URLSearchParams(location.search).get("seed");
 const settings=new CompetitionSettings();
@@ -33,7 +34,7 @@ const RESULT_ICONS={
 
 export class CompetitionManager {
   constructor({root=app,seed=requestedSeed,loader=assetLoader}={}){this.root=root;this.debugSeed=seed;this.loader=loader;this.flowSerial=0;this.guard=new StageGuard();this.reset();}
-  reset(){this.flowSerial++;this.briefingVersion=(this.briefingVersion||0)+1;this.preparedStage?.wrapper.remove();this.preparedStage=null;this.stageReady=false;this.state="menu";this.runId=null;this.cancelScoreAnimation?.();this.stopTimer();this.active?.cleanup();this.effects?.destroy();this.active=null;this.playerName="";this.index=-1;this.scores={};this.results=[];this.totalCorrect=0;this.totalAttempts=0;this.totalMistakes=0;this.transitioning=false;}
+  reset(){this.flowSerial++;this.briefingVersion=(this.briefingVersion||0)+1;this.preparedStage?.wrapper.remove();this.preparedStage=null;this.stageReady=false;this.state="menu";this.runId=null;this.cancelScoreAnimation?.();this.cancelScoreAnimation=null;this.stopTimer();this.active?.cleanup();this.effects?.destroy();this.active=null;this.playerName="";this.index=-1;this.scores={};this.results=[];this.totalCorrect=0;this.totalAttempts=0;this.totalMistakes=0;this.transitioning=false;}
   landing(prefill="") {this.state="menu";this.stopTimer();this.active?.cleanup();document.body.classList.remove("results-active");document.body.classList.add("menu-active");this.root.innerHTML=`<section class="menu-screen" aria-labelledby="menu-title"><div class="menu-content"><img draggable="false" class="menu-logo" fetchpriority="high" decoding="async" src="assets/menu/logo-light.webp" alt="CEVA Logistics"><h1 id="menu-title"><span>CHRISTMAS</span><strong>LOGISTICS CHALLENGE</strong></h1><p class="menu-details">9 GAMES <i>•</i> 3 MINUTES <i>•</i> 1,000 POINTS</p><form class="menu-form" id="start-form" autocomplete="off"><label class="visually-hidden" for="player-name">Participant name</label><div class="menu-input-wrap"><span aria-hidden="true"></span><input id="player-name" name="competition-participant" maxlength="24" value="${esc(prefill)}" placeholder="Enter your name..." autocomplete="one-time-code" data-lpignore="true" data-form-type="other" spellcheck="false"></div><div class="menu-error" id="name-error" aria-live="polite"></div><button class="menu-start" type="submit"><i aria-hidden="true"></i><span>START GAME</span></button><button class="menu-leaderboard" type="button" id="leaderboard-button"><span aria-hidden="true">🏆</span> VIEW LEADERBOARD</button></form></div></section>`;$("#start-form").onsubmit=event=>{event.preventDefault();const input=$("#player-name"),name=input.value.trim().replace(/\s+/g," ");if(!name){$("#name-error").textContent="Enter a participant name to begin.";return input.focus();}this.playerName=name;this.prepare();};$("#leaderboard-button").onclick=()=>showLeaderboard();this.preloadInBackground();if(organizerEnabled&&!this.organizerOpened){this.organizerOpened=true;showOrganizer();}}
   preloadInBackground(){
     this.loader.preload([...COMMON_ASSETS.filter(path=>path.includes("/menu/")),...COMMON_ASSETS.filter(path=>path.includes("/cursor/"))],()=>{},{priority:ASSET_PRIORITY.HIGH}).catch(()=>{});
@@ -103,7 +104,7 @@ export class CompetitionManager {
     const GameClass=MINIGAME_CLASSES[config.id],container=document.createElement("div");let token;
     container.innerHTML=`<section class="competition-shell stage-preparing" data-game="${config.id}" style="--game-background:url('${GAMEPLAY_BACKGROUNDS[config.id]}')"><div class="competition-hud"><div><small>PLAYER</small><strong>${esc(this.playerName)}</strong></div><div><small>MINIGAME</small><strong>${this.index+1} / 9 · ${config.name}</strong></div><div><small>SCORE</small><strong id="score-value">${sumScores(this.scores)} / 1000</strong></div><div class="clock"><small>TIME</small><strong id="stage-time">${config.time.toFixed(1)}</strong></div></div><div class="overall"><span>ACTIVE TIME REMAINING</span><div class="overall-progress"><i id="overall-bar"></i></div><b id="overall-time">${ACTIVE_SECONDS}s</b></div><header class="minigame-head"><div><div class="eyebrow">CHALLENGE ${String(this.index+1).padStart(2,"0")}</div><h1>${config.name}</h1></div><div class="instruction-card"><strong>${config.action}</strong><span>${config.instruction}</span><small>${config.hint}</small></div></header><div class="minigame-root" id="minigame-root"></div><div class="score-flash" id="score-flash" aria-live="polite"></div></section>`;
     const shell=container.firstElementChild,wrapper=document.createElement("div");wrapper.className="stage-preparation";wrapper.setAttribute("aria-hidden","true");wrapper.inert=true;wrapper.append(shell);this.root.append(wrapper);
-    this.effects=new ArcadeEffects($("#minigame-root",shell));const context={isActive:()=>this.state==="playing",root:$("#minigame-root",shell),data:this.tasks[config.id],config,remaining:()=>this.deadline===null?config.time:Math.max(0,(this.deadline-performance.now())/1000),flash:(symbol,text)=>this.flash(symbol,text),feedback:(kind,text,anchor)=>this.effects.feedback(kind,text,anchor),selection:text=>this.effects.selection(text),update:()=>this.updateHud(),finish:()=>this.completeGame(token)};
+    this.effects=new ArcadeEffects($("#minigame-root",shell));const context={isActive:()=>this.state==="playing",root:$("#minigame-root",shell),data:this.tasks[config.id],config,remaining:()=>this.deadline===null?config.time:Math.max(0,(this.deadline-performance.now())/1000),flash:(symbol,text)=>this.flash(symbol,text),feedback:(kind,text,anchor)=>this.effects.feedback(kind,text,anchor),selection:text=>this.effects.selection(text),motion:(node,kind,duration)=>this.effects.pulse(node,kind,duration),transfer:(source,target)=>this.effects.transfer(source,target),update:()=>this.updateHud(),finish:()=>this.completeGame(token)};
     const active=this.active=new GameClass().init(context);active.render();
     return {wrapper,shell,active,effects:this.effects,activate:newToken=>{token=newToken;}};
   }
@@ -114,8 +115,9 @@ export class CompetitionManager {
       if(serial!==this.flowSerial||!stage)return;
       this.root.replaceChildren(stage.shell);this.preparedStage=null;
       stage.active.syncGeometry?.();stage.active.measureTrack?.(true);
+      stage.shell.classList.remove("stage-preparing");
       const token=this.guard.begin(config.time);this.deadline=this.guard.deadline;this.stageToken=token;stage.activate(token);this.state="playing";
-      stage.shell.classList.remove("stage-preparing");stage.active.start();
+      stage.active.start();
       this.timer=setInterval(()=>{if(this.stageToken!==token||this.state!=="playing")return;this.updateHud();if(performance.now()>=this.deadline)this.completeGame(token);},50);this.updateHud();
     }catch{
       if(serial!==this.flowSerial)return;this.briefing();
@@ -132,8 +134,8 @@ export class CompetitionManager {
 
   flash(symbol,text){const node=$("#score-flash");if(!node)return;node.textContent=`${symbol} ${text}`;node.classList.remove("show");cancelAnimationFrame(this.flashFrame);this.flashFrame=requestAnimationFrame(()=>{if(this.state==="playing")node.classList.add("show");});}
 
-  completeGame(token=this.stageToken){if(this.state!=="playing"||this.transitioning||!this.guard.complete(token))return;this.transitioning=true;this.state="transition";const config=this.gameConfigs[this.index],result=this.pendingResult||this.active.complete();this.stopTimer();this.active.cleanup();this.effects?.destroy();this.scores[config.id]=Math.min(config.max,result.score);this.results.push({...result,id:config.id,name:config.name,max:config.max});this.totalCorrect+=result.correct;this.totalAttempts+=result.attempts;this.totalMistakes+=result.mistakes;if(this.index===this.gameConfigs.length-1)return this.finish();const total=sumScores(this.scores);this.root.innerHTML=`<section class="stage-transition"><div class="eyebrow">${config.name} COMPLETE</div><strong>+${this.scores[config.id]}</strong><span>/ ${config.max} POINTS</span><div class="transition-track"><i></i></div><small>${this.index===this.gameConfigs.length-1?"CALCULATING FINAL RESULT":"NEXT: "+this.gameConfigs[this.index+1].name}</small><b>TOTAL ${total} / 1000</b></section>`;const serial=this.flowSerial;this.transitionHandle=setTimeout(()=>{if(serial!==this.flowSerial)return;this.transitioning=false;this.state="between";this.next();},TRANSITION_SECONDS*1000);}
-  stopTimer(){cancelAnimationFrame(this.flashFrame);this.flashFrame=null;if(this.timer)clearInterval(this.timer);this.timer=null;if(this.transitionHandle)clearTimeout(this.transitionHandle);this.transitionHandle=null;this.stageToken=null;this.guard?.cancel();}
+  completeGame(token=this.stageToken){if(this.state!=="playing"||this.transitioning||!this.guard.complete(token))return;this.transitioning=true;this.state="transition";const config=this.gameConfigs[this.index],result=this.pendingResult||this.active.complete();this.stopTimer();this.active.cleanup();this.effects?.destroy();this.scores[config.id]=Math.min(config.max,result.score);this.results.push({...result,id:config.id,name:config.name,max:config.max});this.totalCorrect+=result.correct;this.totalAttempts+=result.attempts;this.totalMistakes+=result.mistakes;if(this.index===this.gameConfigs.length-1)return this.finish();const total=sumScores(this.scores);this.root.innerHTML=`<section class="stage-transition" style="--transition-background:url('${GAMEPLAY_BACKGROUNDS[config.id]}')"><div class="eyebrow">MISSION COMPLETE</div><h1>${config.name}</h1><p class="completion-note">${({detective:"REPORT SUBMITTED",quality:"REPORT SUBMITTED",memory:"MANIFEST LOCKED",loading:"LOAD CONFIRMED",packing:"PALLET COMPLETE"})[config.id]||"TASK CONFIRMED"}</p><strong>+<b id="earned-points">0</b></strong><span>/ ${config.max} POINTS</span><div class="transition-track"><i></i></div><small>${this.index===this.gameConfigs.length-1?"CALCULATING FINAL RESULT":"NEXT: "+this.gameConfigs[this.index+1].name}</small><b>TOTAL ${total} / 1000</b></section>`;this.cancelTransitionScore=animateNumber($("#earned-points"),this.scores[config.id],450);const serial=this.flowSerial;this.transitionHandle=setTimeout(()=>{if(serial!==this.flowSerial)return;this.transitioning=false;this.state="between";this.next();},TRANSITION_SECONDS*1000);}
+  stopTimer(){this.cancelTransitionScore?.();this.cancelTransitionScore=null;cancelAnimationFrame(this.flashFrame);this.flashFrame=null;if(this.timer)clearInterval(this.timer);this.timer=null;if(this.transitionHandle)clearTimeout(this.transitionHandle);this.transitionHandle=null;this.stageToken=null;this.guard?.cancel();}
   finish(){
     if(this.state==="results")return;this.state="results";this.stopTimer();
     const score=sumScores(this.scores),previousRecord=leaderboard.getHighScore(),accuracy=this.totalAttempts?Math.round(this.totalCorrect/this.totalAttempts*100):0,timestamp=new Date().toISOString(),run={id:this.runId,name:this.playerName,normalizedName:normalizeName(this.playerName),score,accuracy,mistakes:this.totalMistakes,averageResponseTime:0,minigameScores:this.scores,timestamp,competitionSeed:this.runSeed,runSeed:this.runSeed,eventId:this.eventId,startedAt:this.startedAt,debugSeed:!!this.debugSeed};
@@ -157,7 +159,9 @@ export class CompetitionManager {
     $("#return-start").onclick=()=>{this.reset();this.landing();};
     $("#view-board").onclick=()=>showLeaderboard(run.id);if($("#export-unsaved"))$("#export-unsaved").onclick=downloadCsv;
     this.cancelScoreAnimation=animateNumber($("#final-score"),score,900);
-    if(isRecord){this.effects=new ArcadeEffects(this.root);this.effects.burst($(".results-final-score"));}
+    this.effects=new ArcadeEffects(this.root);
+    if(isRecord)this.effects.burst($(".results-final-score"));
+    if(this.active?.action)this.effects.acknowledge(this.active.action==="RELEASE"?"SHIPMENT RELEASED":"SHIPMENT ON HOLD",this.active.action==="RELEASE"?"release":"hold");
   }
 }
 

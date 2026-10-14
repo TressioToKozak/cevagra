@@ -1,7 +1,7 @@
-import { SeededRandom } from "./rng.js?v=19";
-import { CARRIERS } from "./tasks.js?v=19";
-import { scoreClassification, scoreStandard } from "./scoring.js?v=19";
-import { attachPointerDrag } from "./interactions.js?v=19";
+import { SeededRandom } from "./rng.js?v=20";
+import { CARRIERS } from "./tasks.js?v=20";
+import { scoreClassification, scoreStandard } from "./scoring.js?v=20";
+import { attachPointerDrag } from "./interactions.js?v=20";
 
 export function planPalletMove(slots,id,targetIndex){
   const next=[...slots],sourceIndex=next.indexOf(id),occupant=next[targetIndex]||null;
@@ -64,7 +64,7 @@ export class BaseMinigame {
   listen(node,event,handler){const guarded=e=>{if(!this.locked&&this.ctx.isActive?.()!==false)handler(e);};node.addEventListener(event,guarded);this.cleanups.push(()=>node.removeEventListener(event,guarded));}
   timeout(handler,delay){const id=setTimeout(handler,delay);this.cleanups.push(()=>clearTimeout(id));return id;}
   cleanup(){this.locked=true;this.dragGhost?.remove();this.dragGhost=null;this.cleanups.splice(0).forEach(fn=>fn());}
-  flash(symbol,text,anchor){this.ctx.flash(symbol,text);this.ctx.feedback?.(symbol==="×"?"error":"success",text,anchor);this.ctx.update();}
+  flash(symbol,text,anchor){if(this.ctx.feedback)this.ctx.feedback(symbol==="×"?"error":"success",text,anchor);else this.ctx.flash(symbol,text);this.ctx.update();}
   get remaining(){return this.ctx.remaining();}
 }
 
@@ -72,7 +72,7 @@ class RapidFind extends BaseMinigame {
   constructor(kind){super();this.kind=kind;}
   render(){this.index=0;this.draw();}
   draw(){const round=this.data.rounds[this.index%this.data.rounds.length],isBarcode=this.kind==="barcode";this.current=round;this.root.innerHTML=`<div class="focus-card"><span>${isBarcode?"SANTA’S BARCODE":"TARGET GIFT SKU"}</span><strong>${round.target}</strong></div><div class="${isBarcode?"barcode-grid":"inventory-grid"}">${round.options.map((value,index)=>`<button class="${isBarcode?"barcode-parcel":"stock-card"}" data-sku="${value}">${isBarcode?'<i class="barcode"></i>':`<small>LOC ${String(index+1).padStart(2,"0")}</small>`}<strong>${value}</strong>${isBarcode?'<span>CEVA GIFT</span>':'<span>READY</span>'}</button>`).join("")}</div>`;this.root.querySelectorAll("[data-sku]").forEach(button=>this.listen(button,"click",()=>this.choose(button)));}
-  choose(button){if(this.locked||button.disabled)return;const round=this.current,correct=button.dataset.sku===round.target;button.classList.remove("choice-correct","choice-wrong");void button.offsetWidth;button.classList.add(correct?"choice-correct":"choice-wrong",this.kind==="barcode"?"scan-result":"pick-result");if(correct){this.correct++;this.index++;this.flash("✓",this.kind==="barcode"?"SCAN CORRECT":"CORRECT SKU",button);if(this.index>=this.data.rounds.length)return this.ctx.finish();this.draw();}else{button.disabled=true;this.mistakes++;this.flash("×",this.kind==="barcode"?"WRONG BARCODE":"WRONG SKU",button);this.timeout(()=>{if(this.current!==round)return;button.classList.remove("choice-wrong","scan-result","pick-result");button.disabled=false;},260);}}
+  choose(button){if(this.locked||button.disabled)return;const round=this.current,correct=button.dataset.sku===round.target;button.classList.remove("choice-correct","choice-wrong");void button.offsetWidth;button.classList.add(correct?"choice-correct":"choice-wrong",this.kind==="barcode"?"scan-result":"pick-result");this.ctx.motion?.(button,this.kind==="barcode"?"scanner-confirm":"pick-confirm",220);if(correct){this.correct++;this.index++;this.flash("✓",this.kind==="barcode"?"SCAN CORRECT":"CORRECT SKU",button);if(this.index>=this.data.rounds.length)return this.ctx.finish();this.draw();}else{button.disabled=true;this.mistakes++;this.flash("×",this.kind==="barcode"?"WRONG BARCODE":"WRONG SKU",button);this.timeout(()=>{if(this.current!==round)return;button.classList.remove("choice-wrong","scan-result","pick-result");button.disabled=false;},260);}}
   score(){return scoreStandard({correct:Math.min(this.correct,10),total:10,mistakes:this.mistakes,completed:this.correct>=10,timeRemaining:this.remaining,timeLimit:this.ctx.config.time});}
   complete(){const result=super.complete(),missed=Math.max(0,10-this.correct);return {...result,correct:this.correct,mistakes:this.mistakes+missed,attempts:10+this.mistakes,score:this.score()};}
 }
@@ -116,7 +116,7 @@ export class SpeedPicking extends RapidFind{
   draw(){
     const round=this.data.rounds[this.index%this.data.rounds.length];this.current=round;
     if(!this.root.querySelector(".picking-locations"))this.root.innerHTML='<div class="picking-target" aria-live="polite"><span>TARGET SKU</span><strong></strong></div><div class="picking-locations"></div>';
-    this.root.querySelector(".picking-target strong").textContent=round.target;
+    this.root.querySelector(".picking-target strong").textContent=round.target;if(this.index)this.ctx.motion?.(this.root.querySelector(".picking-target"),"digital-refresh",150);
     const grid=this.root.querySelector(".picking-locations");
     round.options.forEach((value,index)=>{
       let button=grid.children[index];
@@ -132,7 +132,7 @@ export class BarcodeHunt extends RapidFind{
   draw(){
     const round=this.data.rounds[this.index%this.data.rounds.length];this.current=round;
     if(!this.root.querySelector(".barcode-grid"))this.root.innerHTML='<div class="barcode-target" aria-live="polite"><span>SANTA’S BARCODE</span><strong></strong></div><div class="barcode-grid"></div>';
-    this.root.querySelector(".barcode-target strong").textContent=round.target;
+    this.root.querySelector(".barcode-target strong").textContent=round.target;if(this.index)this.ctx.motion?.(this.root.querySelector(".barcode-target"),"digital-refresh",150);
     const grid=this.root.querySelector(".barcode-grid");grid.classList.toggle("barcode-grid-max",round.options.length>8);grid.classList.toggle("barcode-grid-many",round.options.length>6&&round.options.length<=8);
     round.options.forEach((value,index)=>{
       const carton=BARCODE_CARTONS[round.variants?.[index]??index%BARCODE_CARTONS.length];let button=grid.children[index];
@@ -156,7 +156,7 @@ export class ConveyorRush extends BaseMinigame {
     const belt=this.root.querySelector(".conveyor");if(belt)this.resizeObserver?.observe(belt);
     this.cleanups.push(()=>this.resizeObserver?.disconnect());
   }
-  prepare(){this.spawn();}
+  prepare(){this.spawn();this.x=this.trackStart;this.position();}
   start(){if(!this.active)this.spawn();this.measureTrack(true);this.lastFrame=performance.now();const tick=now=>{if(this.locked)return;const seconds=(now-this.lastFrame)/1000;this.lastFrame=now;if(this.active&&!this.dragging&&!this.settling){this.x+=this.speed*seconds;this.position();if(this.box&&this.x>this.endX)this.miss();}if(!this.locked)this.raf=requestAnimationFrame(tick);};this.raf=requestAnimationFrame(tick);this.cleanups.push(()=>cancelAnimationFrame(this.raf));}
   spawn(){
     if(this.locked||this.index>=this.data.parcels.length)return;
@@ -166,7 +166,7 @@ export class ConveyorRush extends BaseMinigame {
     const host=this.root.querySelector("#moving-parcel");
     host.innerHTML=`<div class="moving-box conveyor-parcel parcel-${variant}${this.active.carrier==="BRINGCARGO"?" parcel-long-carrier":""}" data-moving-box role="group" aria-label="${this.active.carrier}, ${this.active.id}, ${this.active.gift}"><img class="parcel-art" src="${art}boxes/parcel-${variant}.webp" alt="" draggable="false"><div class="parcel-label"><img src="${art}labels/shipping-label-${variant}.webp" alt="" draggable="false"><div class="parcel-copy"><b>${this.active.carrier}</b><span>${this.active.id}</span><small>${this.active.gift}</small></div></div></div>`;
     this.box=host.firstElementChild;this.measureTrack();this.position();
-    this.boxDragCleanup=attachPointerDrag({element:this.box,targets:()=>this.root.querySelectorAll("[data-chute]"),hitPadding:12,createGhost:({element})=>{const node=element.cloneNode(true);node.style.transform="none";return node;},onStart:()=>{this.dragging=true;},onDrop:({target})=>{this.dragging=false;if(target)this.sort(target);else if(this.geometryPending)this.measureTrack(true);},onCancel:()=>{this.dragging=false;if(this.geometryPending)this.measureTrack(true);this.position();}});
+    this.boxDragCleanup=attachPointerDrag({element:this.box,targets:()=>this.root.querySelectorAll("[data-chute]"),hitPadding:12,createGhost:({element})=>{const node=element.cloneNode(true);node.style.transform="none";return node;},onStart:()=>{this.dragging=true;},onDrop:({target,ghost})=>{this.dragging=false;if(target)this.sort(target,ghost);else if(this.geometryPending)this.measureTrack(true);},onCancel:()=>{this.dragging=false;if(this.geometryPending)this.measureTrack(true);this.position();}});
     this.cleanups.push(this.boxDragCleanup);
   }
   measureTrack(preserveProgress=false){
@@ -185,15 +185,15 @@ export class ConveyorRush extends BaseMinigame {
     this.geometryPending=false;this.position();
   }
   position(){if(this.box&&!this.dragging)this.box.style.transform=`translate3d(${this.x}px,0,0)`;}
-  sort(zone){
+  sort(zone,visualSource=this.box){
     if(this.locked||!this.active||this.settling)return;
     this.settling=true;const correct=zone.dataset.chute===this.active.carrier;
-    zone.classList.add(correct?"accepted":"rejected");
+    zone.classList.add(correct?"accepted":"rejected");this.ctx.motion?.(zone,correct?"accepted":"rejected",240);
     // Routine sort feedback stays on the chute instead of shaking all hit targets.
-    if(correct){this.correct++;this.ctx.flash("✓","PERFECT SORT");}
+    if(correct){this.ctx.transfer?.(visualSource,zone);this.correct++;this.ctx.flash("✓","PERFECT SORT");}
     else{this.mistakes++;this.ctx.flash("×","WRONG CARRIER");}
     this.ctx.update();this.box?.remove?.();this.box=null;this.advance();
-    this.timeout(()=>zone.classList.remove("accepted","rejected"),240);
+    if(!this.ctx.motion)this.timeout(()=>zone.classList.remove("accepted","rejected"),240);
   }
   advance(){this.boxDragCleanup?.();this.boxDragCleanup=null;this.index++;this.active=null;this.settling=false;if(this.index>=this.data.parcels.length)return this.ctx.finish();this.spawn();}
   miss(){if(this.locked||!this.active||this.settling)return;this.mistakes++;this.flash("×","MISSED BOX");this.advance();}
@@ -238,9 +238,9 @@ export class PackingTetris extends BaseMinigame {
     for(let dy=0;dy<box.h;dy++)for(let dx=0;dx<box.w;dx++)this.cells[y+dy][x+dx]=id;
     this.placed[id]={x,y};this.correct++;this.selected=null;
     const source=this.root.querySelector(`[data-shape="${id}"]`);source?.classList.add("packed-away");
-    const block=document.createElement("div");block.className="placed-box placed-pop";block.dataset.placed=id;block.innerHTML=`<img src="${source?.querySelector("img")?.src||packingBoxAsset(box)}" alt=""><span><b>${id}</b><small>${box.w} × ${box.h}</small></span>`;this.root.querySelector(".placed-layer").append(block);this.positionPlaced(id);
+    const block=document.createElement("div");block.className="placed-box placed-pop";block.dataset.placed=id;block.innerHTML=`<img src="${source?.querySelector("img")?.src||packingBoxAsset(box)}" alt="" draggable="false"><span><b>${id}</b><small>${box.w} × ${box.h}</small></span>`;this.root.querySelector(".placed-layer").append(block);this.positionPlaced(id);
     this.clearPreview();this.flash("✓","BOX PACKED");
-    if(this.correct===this.data.boxes.length)this.ctx.finish();
+    this.ctx.motion?.(this.root.querySelector(".pallet-grid"),"pallet-confirm",220);if(this.correct===this.data.boxes.length)this.ctx.finish();
   }
   score(){const occupied=this.cells.flat().filter(Boolean).length,total=this.data.boxes.reduce((sum,box)=>sum+box.w*box.h,0);return scoreStandard({correct:occupied,total,mistakes:this.mistakes,completed:this.correct===this.data.boxes.length,timeRemaining:this.remaining,timeLimit:this.ctx.config.time});}
   complete(){const result=super.complete(),missed=this.data.boxes.length-this.correct;return {...result,mistakes:this.mistakes+missed,attempts:this.data.boxes.length+this.mistakes,score:this.score()};}
@@ -256,7 +256,7 @@ export class WmsDetective extends BaseMinigame {
     this.root.querySelectorAll("[data-row]").forEach(row=>this.listen(row,"click",()=>{
       if(this.locked)return;
       const id=row.dataset.row,selected=!this.selected.has(id);selected?this.selected.add(id):this.selected.delete(id);
-      row.classList.toggle("selected",selected);row.setAttribute("aria-pressed",String(selected));
+      this.ctx.motion?.(row,"scan-pulse",280);row.classList.toggle("selected",selected);row.setAttribute("aria-pressed",String(selected));
       row.querySelector(".record-flag b").textContent=selected?"FLAGGED":"MARK";
       this.root.querySelector("#detective-count").textContent=`${this.selected.size} SELECTED`;
       this.ctx.update();
@@ -295,7 +295,7 @@ export class TruckLoading extends BaseMinigame {
     const {sourceIndex,occupant}=planPalletMove(this.slots,id,index);
     if(sourceIndex===index){this.selectPallet(null);return;}
     if(sourceIndex>=0)this.setSlot(sourceIndex,null);
-    if(occupant&&occupant!==id){if(sourceIndex>=0)this.setSlot(sourceIndex,occupant);else{this.slots[index]=null;this.root.querySelector(".pallet-yard-cards").append(this.cards.get(occupant));}}
+    if(occupant&&occupant!==id){if(sourceIndex>=0){this.setSlot(sourceIndex,occupant);this.ctx.motion?.(this.root.querySelector(`[data-slot="${sourceIndex}"]`),"slot-confirm",220);}else{this.slots[index]=null;this.root.querySelector(".pallet-yard-cards").append(this.cards.get(occupant));}}
     this.setSlot(index,id);this.selected=null;this.cards.forEach(card=>{card.classList.remove("picked");card.setAttribute("aria-pressed","false");});
     const slot=this.root.querySelector(`[data-slot="${index}"]`);slot.classList.remove("placed-pop");void slot.offsetWidth;slot.classList.add("placed-pop");const note=document.createElement("span");note.className="slot-feedback";note.textContent=occupant?"SWAPPED":"LOADED";slot.append(note);this.timeout(()=>{slot.classList.remove("placed-pop");note.remove();},360);
     this.root.querySelector("#lock-loading").disabled=this.slots.some(value=>!value);this.ctx.update();
@@ -327,7 +327,7 @@ export class MemoryChallenge extends BaseMinigame {
     this.listen(this.root.querySelector("#lock-memory"),"click",()=>{if(this.locked)return;this.locked=true;this.ctx.finish();});
     this.root.querySelectorAll("[data-gift]").forEach(button=>this.listen(button,"click",()=>{
       if(this.locked)return;const gift=button.dataset.gift;this.selected.has(gift)?this.selected.delete(gift):this.selected.add(gift);
-      button.classList.toggle("selected");button.setAttribute("aria-pressed",String(this.selected.has(gift)));
+      this.ctx.motion?.(button,"inspection-pulse",180);button.classList.toggle("selected");button.setAttribute("aria-pressed",String(this.selected.has(gift)));
       this.root.querySelector("#memory-count").textContent=`${this.selected.size} SELECTED`;
     }));
   }
@@ -347,7 +347,7 @@ export class QualityControl extends BaseMinigame {
     this.listen(this.root.querySelector("#lock-quality"),"click",()=>{if(this.locked)return;this.locked=true;this.ctx.finish();});
     this.root.querySelectorAll("[data-quality]").forEach(box=>this.listen(box,"click",()=>{
       const id=box.dataset.quality;this.selected.has(id)?this.selected.delete(id):this.selected.add(id);
-      box.classList.toggle("selected");box.setAttribute("aria-pressed",String(this.selected.has(id)));
+      this.ctx.motion?.(box,"inspection-pulse",200);this.ctx.selection?.(this.selected.has(id)?"PARCEL MARKED":"PARCEL UNMARKED");box.classList.toggle("selected");box.setAttribute("aria-pressed",String(this.selected.has(id)));
     }));
   }
   get liveScore(){return this.locked?this.score():0;}

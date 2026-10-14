@@ -7,7 +7,7 @@ const origin=process.env.TEST_ORIGIN||'http://127.0.0.1:8002';
  try{
   const page=await browser.newPage({viewport:{width:1920,height:1080}}),errors=[],requests=[];
   page.on('pageerror',e=>errors.push(e.message));page.on('response',r=>{if(r.status()>=400)errors.push(`${r.status()} ${r.url()}`);});page.on('request',r=>{if(/\.(webp|png|svg)(\?|$)/.test(r.url()))requests.push(r.url());});
-  await page.goto(origin);await page.evaluate(async()=>{window.qa=(await import('./game.js?v=19')).manager;});
+  await page.goto(origin);await page.evaluate(async()=>{window.qa=(await import('./game.js?v=20')).manager;});
   assert.equal(await page.locator('#player-name').inputValue(),'');
   await page.clock.install();await page.clock.pauseAt(new Date(Date.now()+1000));
   const click=async selector=>page.locator(selector).evaluate(e=>e.click());
@@ -24,7 +24,7 @@ const origin=process.env.TEST_ORIGIN||'http://127.0.0.1:8002';
    const id=await page.evaluate(()=>qa.gameConfigs[qa.index].id),token=await page.evaluate(()=>qa.stageToken);
    if(id==='picking'||id==='barcode'){const first=await page.locator('[data-sku]').first().evaluate(e=>{e.dataset.qaPersistent='yes';return e.dataset.sku;});for(let i=0;i<10;i++){const target=await page.evaluate(()=>qa.active.current.target);await click(`[data-sku="${target}"]`);if(i===1)assert.equal(await page.locator('[data-qa-persistent]').count(),1,'rapid rounds reuse card nodes');}}
    if(id==='conveyor'){for(let i=0;i<12;i++)await page.evaluate(()=>qa.active.sort(document.querySelector(`[data-chute="${qa.active.active.carrier}"]`)));}
-   if(id==='packing'){const layout=await page.evaluate(async()=>{const {packingInventoryLayout}=await import('./minigames.js?v=19');return packingInventoryLayout(qa.active.data.boxes);});for(const [id,pos] of Object.entries(layout)){await click(`[data-shape="${id}"]`);await click(`[data-cell="${pos.x}:${pos.y}"]`);}}
+   if(id==='packing'){const layout=await page.evaluate(async()=>{const {packingInventoryLayout}=await import('./minigames.js?v=20');return packingInventoryLayout(qa.active.data.boxes);});for(const [id,pos] of Object.entries(layout)){await click(`[data-shape="${id}"]`);await click(`[data-cell="${pos.x}:${pos.y}"]`);}}
    if(id==='detective'||id==='quality'){const solution=await page.evaluate(()=>qa.active.data.solution);const attr=id==='detective'?'row':'quality';for(const value of solution)await click(`[data-${attr}="${value}"]`);const before=await page.locator('#score-value').textContent();await page.evaluate(()=>qa.updateHud());assert.equal(await page.locator('#score-value').textContent(),before);await click(id==='detective'?'#lock-detective':'#lock-quality');}
    if(id==='loading'){const solution=await page.evaluate(()=>qa.active.data.solution);for(const [i,id] of solution.entries()){await click(`[data-pallet-id="${id}"]`);await page.locator(`[data-slot="${i}"]`).evaluate(e=>e.click());}await click('#lock-loading');}
    if(id==='memory'){assert.equal(await page.locator('[data-remember-gift]').count(),5);const elapsed=await page.evaluate(()=>qa.gameConfigs[qa.index].time-qa.guard.remaining());await page.clock.runFor(Math.max(0,Math.floor(3999-elapsed*1000)));assert.equal(await page.locator('[data-gift]').count(),0);await page.clock.runFor(2);await waitState('playing');assert.equal(await page.locator('[data-remember-gift]').count(),0);assert.equal(await page.locator('[data-gift]').count(),8);const gifts=await page.evaluate(()=>qa.active.data.shipment);for(const gift of gifts)await click(`[data-gift="${gift}"]`);await click('#lock-memory');}

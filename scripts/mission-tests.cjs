@@ -10,11 +10,11 @@ const origin = process.env.TEST_ORIGIN || 'http://127.0.0.1:8003/cevagra/';
     page.on('response', r => { if(r.status()>=400) errors.push(`${r.status()} ${r.url()}`); });
     await page.goto(origin);
     await page.evaluate(async () => {
-      window.qa = (await import('./game.js?v=19')).manager;
-      window.configs = (await import('./tasks.js?v=19')).GAME_CONFIGS;
-      window.make = (await import('./tasks.js?v=19')).buildCompetition;
-      window.RNG = (await import('./rng.js?v=19')).SeededRandom;
-      await (await import('./asset-loader.js?v=19')).assetLoader.preload((await import('./asset-manifest.js?v=19')).COMPETITION_ASSETS);
+      window.qa = (await import('./game.js?v=20')).manager;
+      window.configs = (await import('./tasks.js?v=20')).GAME_CONFIGS;
+      window.make = (await import('./tasks.js?v=20')).buildCompetition;
+      window.RNG = (await import('./rng.js?v=20')).SeededRandom;
+      await (await import('./asset-loader.js?v=20')).assetLoader.preload((await import('./asset-manifest.js?v=20')).COMPETITION_ASSETS);
       window.nativeDrags = 0;
       document.addEventListener('dragstart', () => nativeDrags++);
     });

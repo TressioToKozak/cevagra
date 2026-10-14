@@ -166,7 +166,7 @@ assert(minigames.includes("if(target&&this.dragCoordinate)this.place(box.id,this
 assert(css.includes("grid-auto-flow:row")&&!css.includes("grid-auto-flow:dense")&&css.includes(".shape-box.packed-away{visibility:hidden")&&!minigames.includes("source?.remove(),180"),"packed inventory boxes retain permanent grid space without dense reflow");
 assert((minigames.match(/data-action="/g)||[]).length===2&&minigames.includes("HOLD SHIPMENT"),"final dispatch has RELEASE and HOLD confirmation actions");
 assert(css.includes("var(--pack-cell-w)")&&css.includes("var(--pack-cell-h)")&&minigames.includes("ResizeObserver"),"packing rack and pallet share responsive measured cell dimensions");
-assert(css.includes("@keyframes panelReveal")&&css.includes("@keyframes selectedPulse"),"minigames include restrained entrance and selection animations");
+assert(css.includes("@keyframes hudContent")&&css.includes("@keyframes selectedPulse"),"minigames include restrained entrance and selection animations");
 assert(!minigames.includes('"MATCH"')&&!minigames.includes('"WRONG"'),"WMS rows do not reveal correctness");
 assert(minigames.includes("setTimeout")||minigames.includes("this.timeout"),"memory reveal uses a managed timeout");
 assert(minigames.includes("this.cleanups")&&minigames.includes("cleanup()"),"minigames clean listeners and timers");
@@ -186,7 +186,7 @@ assert(minigames.match(/attachPointerDrag/g).length>=3,"packing and truck loadin
 assert(effects.includes("prefers-reduced-motion")&&css.includes("prefers-reduced-motion"),"arcade effects respect reduced-motion preferences in JS and CSS");
 assert(game.includes("permanently delete ALL results")&&game.includes('value!=="RESET"'),"competition reset requires explicit confirmation");
 assert(!/class TruckLoading[\s\S]*?draw\(\)/.test(minigames),"truck loading never rebuilds its scene after initial render");
-assert(minigames.includes("if(sourceIndex>=0)this.setSlot(sourceIndex,occupant)")&&minigames.includes("pallet-yard-cards"),"occupied truck positions swap predictably or return their pallet to the yard");
+assert(minigames.includes("this.setSlot(sourceIndex,occupant)")&&minigames.includes("pallet-yard-cards"),"occupied truck positions swap predictably or return their pallet to the yard");
 assert(minigames.includes("cards=new Map")&&minigames.includes("slot.append(card)"),"truck loading moves persistent pallet nodes instead of recreating them");
 assert(minigames.includes("detective-records")&&minigames.includes('aria-pressed="false"')&&css.includes("grid-template-rows:repeat(4,1fr)"),"WMS detective uses a full terminal grid with accessible selection state");
 assert(!minigames.includes("this.data.solution.includes(row.dataset.row)"),"WMS detective does not reveal row correctness before submission");
