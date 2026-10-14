@@ -1,7 +1,7 @@
-import { SeededRandom } from "./rng.js?v=15";
-import { CARRIERS } from "./tasks.js?v=15";
-import { scoreClassification, scoreStandard } from "./scoring.js?v=15";
-import { attachPointerDrag } from "./interactions.js?v=15";
+import { SeededRandom } from "./rng.js?v=16";
+import { CARRIERS } from "./tasks.js?v=16";
+import { scoreClassification, scoreStandard } from "./scoring.js?v=16";
+import { attachPointerDrag } from "./interactions.js?v=16";
 
 export function planPalletMove(slots,id,targetIndex){
   const next=[...slots],sourceIndex=next.indexOf(id),occupant=next[targetIndex]||null;
@@ -156,7 +156,8 @@ export class ConveyorRush extends BaseMinigame {
     const belt=this.root.querySelector(".conveyor");if(belt)this.resizeObserver?.observe(belt);
     this.cleanups.push(()=>this.resizeObserver?.disconnect());
   }
-  start(){this.spawn();this.lastFrame=performance.now();const tick=now=>{if(this.locked)return;const seconds=(now-this.lastFrame)/1000;this.lastFrame=now;if(this.active&&!this.dragging&&!this.settling){this.x+=this.speed*seconds;this.position();if(this.box&&this.x>this.endX)this.miss();}if(!this.locked)this.raf=requestAnimationFrame(tick);};this.raf=requestAnimationFrame(tick);this.cleanups.push(()=>cancelAnimationFrame(this.raf));}
+  prepare(){this.spawn();}
+  start(){if(!this.active)this.spawn();this.measureTrack(true);this.lastFrame=performance.now();const tick=now=>{if(this.locked)return;const seconds=(now-this.lastFrame)/1000;this.lastFrame=now;if(this.active&&!this.dragging&&!this.settling){this.x+=this.speed*seconds;this.position();if(this.box&&this.x>this.endX)this.miss();}if(!this.locked)this.raf=requestAnimationFrame(tick);};this.raf=requestAnimationFrame(tick);this.cleanups.push(()=>cancelAnimationFrame(this.raf));}
   spawn(){
     if(this.locked||this.index>=this.data.parcels.length)return;
     this.active=this.data.parcels[this.index];
@@ -376,7 +377,7 @@ export class FinalDispatch extends BaseMinigame {
     }));
   }
   get liveScore(){return this.locked?this.score():0;}
-  score(){if(!this.data.solution.length&&this.action===null)return 0;const base=this.data.solution.length?scoreClassification({selected:[...this.selected],solution:this.data.solution,universe:this.data.options,timeRemaining:this.remaining,timeLimit:this.ctx.config.time,max:180}):scoreStandard({correct:this.selected.size===0?1:0,total:1,mistakes:this.selected.size,completed:this.selected.size===0,timeRemaining:this.remaining,timeLimit:this.ctx.config.time,max:180});return Math.min(200,base+(this.action===this.data.action?20:0));}
+  score(){if(!this.data.solution.length&&this.action===null)return 0;const base=this.data.solution.length?scoreClassification({selected:[...this.selected],solution:this.data.solution,universe:this.data.options,timeRemaining:this.remaining,timeLimit:this.ctx.config.time,max:150}):scoreStandard({correct:this.selected.size===0?1:0,total:1,mistakes:this.selected.size,completed:this.selected.size===0,timeRemaining:this.remaining,timeLimit:this.ctx.config.time,max:150});return Math.min(200,base+(this.action===this.data.action?50:0));}
   complete(){const result=super.complete(),answers=new Set(this.data.solution),issueCorrect=this.data.options.filter(issue=>this.selected.has(issue)===answers.has(issue)).length,actionCorrect=this.action===this.data.action;return {...result,score:this.score(),correct:issueCorrect+(actionCorrect?1:0),mistakes:this.data.options.length-issueCorrect+(actionCorrect?0:1),attempts:this.data.options.length+1};}
   cleanup(){this.root.closest(".competition-shell")?.classList.remove("final-stage");super.cleanup();}
 }

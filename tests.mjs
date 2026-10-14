@@ -184,7 +184,7 @@ assert(csv.includes('"Ana ""Ace"", Smith"')&&csv.includes('"999"')&&csv.includes
 assert(interactions.includes("setPointerCapture")&&interactions.includes("pointercancel")&&interactions.includes("requestAnimationFrame"),"shared drag controller captures pointers, cancels safely, and paints on animation frames");
 assert(minigames.match(/attachPointerDrag/g).length>=3,"packing and truck loading use the shared pointer drag controller");
 assert(effects.includes("prefers-reduced-motion")&&css.includes("prefers-reduced-motion"),"arcade effects respect reduced-motion preferences in JS and CSS");
-assert(game.includes("Delete every local competition result?")&&game.includes("confirm("),"competition reset requires explicit confirmation");
+assert(game.includes("permanently delete ALL results")&&game.includes('value!=="RESET"'),"competition reset requires explicit confirmation");
 assert(!/class TruckLoading[\s\S]*?draw\(\)/.test(minigames),"truck loading never rebuilds its scene after initial render");
 assert(minigames.includes("if(sourceIndex>=0)this.setSlot(sourceIndex,occupant)")&&minigames.includes("pallet-yard-cards"),"occupied truck positions swap predictably or return their pallet to the yard");
 assert(minigames.includes("cards=new Map")&&minigames.includes("slot.append(card)"),"truck loading moves persistent pallet nodes instead of recreating them");
@@ -404,8 +404,8 @@ assert(!MINIGAME_CLASSES.final.prototype.render.toString().includes("solution")&
 finalButtons[0].dispatchEvent(new Event("click"));assert(finalGame.selected.has(finalData.options[0])&&finalButtons[0].attributes["aria-pressed"]==="true","Final issue click updates selection and ARIA");finalButtons[0].dispatchEvent(new Event("click"));assert(finalGame.selected.size===0&&finalButtons[0].attributes["aria-pressed"]==="false","Final second click deselects the issue");
 for(let mask=0;mask<16;mask++)for(const action of [null,"HOLD"]){
  finalGame.locked=false;finalGame.selected=new Set(finalData.options.filter((_,i)=>mask&(1<<i)));finalGame.action=action;
- const expected=scoreClassification({selected:[...finalGame.selected],solution:finalData.solution,universe:finalData.options,timeRemaining:25,timeLimit:25,max:180})+(action==="HOLD"?20:0);
- assert(finalGame.score()===expected&&finalGame.liveScore===0,`Final selection ${mask}, ${action}, preserves the 180 + 20 scoring rule without live answers`);
+ const expected=scoreClassification({selected:[...finalGame.selected],solution:finalData.solution,universe:finalData.options,timeRemaining:25,timeLimit:25,max:150})+(action==="HOLD"?50:0);
+ assert(finalGame.score()===expected&&finalGame.liveScore===0,`Final selection ${mask}, ${action}, preserves the 150 + 50 scoring rule without live answers`);
 }
 finalGame.selected=new Set(finalData.solution);finalGame.action=null;finalGame.timeout=(callback,delay)=>{finalTimer=callback;finalDelay=delay;};finalHold.dispatchEvent(new Event("click"));finalHold.dispatchEvent(new Event("click"));assert(finalGame.action==="HOLD"&&finalHold.disabled,"HOLD completes immediately and rejects duplicate submissions");assert(finalFinishes===1,"Final finish runs exactly once");const finalResult=finalGame.complete();assert(finalResult.score===200&&finalResult.correct===5&&finalResult.mistakes===0&&finalResult.attempts===5,"perfect Final still scores a maximum of 200 with unchanged attempt counts");
 finalGame.cleanup();assert(!finalClasses.has("final-stage")&&finalGame.cleanups.length===0,"Final cleanup removes its shell class and listeners");
@@ -448,3 +448,5 @@ assert(!truckLock.disabled&&renderedTruck.slots.join()===snapshotA.loading.solut
 console.log(`Competition validation passed: ${checks.toLocaleString()} checks.`);
 
 await import("./competition-tests.mjs");
+
+await import("./final-tests.mjs");

@@ -1,15 +1,16 @@
-import { CompetitionSettings, LeaderboardManager, leaderboardCsv, normalizeName } from "./storage.js?v=15";
-import { ArcadeEffects, animateNumber } from "./effects.js?v=15";
-import { SeededRandom, createRunId, createRunSeed } from "./rng.js?v=15";
-import { ACTIVE_SECONDS, GAME_CONFIGS, TRANSITION_SECONDS, buildCompetition, buildGameOrder } from "./tasks.js?v=15";
-import { MINIGAME_CLASSES } from "./minigames.js?v=15";
-import { sumScores } from "./scoring.js?v=15";
-import { StageGuard } from "./lifecycle.js?v=15";
-import { assetLoader } from "./asset-loader.js?v=15";
-import { COMPETITION_ASSETS, GAMEPLAY_BACKGROUNDS } from "./asset-manifest.js?v=15";
+import { CompetitionSettings, LeaderboardManager, leaderboardCsv, normalizeName } from "./storage.js?v=16";
+import { ArcadeEffects, animateNumber } from "./effects.js?v=16";
+import { SeededRandom, createRunId, createRunSeed } from "./rng.js?v=16";
+import { ACTIVE_SECONDS, GAME_CONFIGS, TRANSITION_SECONDS, buildCompetition, buildGameOrder } from "./tasks.js?v=16";
+import { MINIGAME_CLASSES } from "./minigames.js?v=16";
+import { sumScores } from "./scoring.js?v=16";
+import { StageGuard } from "./lifecycle.js?v=16";
+import { assetLoader, ASSET_PRIORITY } from "./asset-loader.js?v=16";
+import { COMMON_ASSETS, GAME_ASSETS, COMPETITION_ASSETS, GAMEPLAY_BACKGROUNDS } from "./asset-manifest.js?v=16";
 
 const $=(selector,root=document)=>root.querySelector(selector);
 const esc=value=>String(value).replace(/[&<>'"]/g,char=>({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[char]));
+const organizerEnabled=new URLSearchParams(location.search).get("organizer")==="1";
 const requestedSeed=new URLSearchParams(location.search).get("seed");
 const settings=new CompetitionSettings();
 const app=$("#app"),modal=$("#modal"),modalContent=$("#modal-content"),leaderboard=new LeaderboardManager();
@@ -27,56 +28,82 @@ const RESULT_ICONS={
 
 export class CompetitionManager {
   constructor({root=app,seed=requestedSeed,loader=assetLoader}={}){this.root=root;this.debugSeed=seed;this.loader=loader;this.flowSerial=0;this.guard=new StageGuard();this.reset();}
-  reset(){this.flowSerial++;this.state="menu";this.runId=null;this.cancelScoreAnimation?.();this.stopTimer();this.active?.cleanup();this.effects?.destroy();this.active=null;this.playerName="";this.index=-1;this.scores={};this.results=[];this.totalCorrect=0;this.totalAttempts=0;this.totalMistakes=0;this.transitioning=false;}
-  landing(prefill="") {this.state="menu";this.stopTimer();this.active?.cleanup();document.body.classList.remove("results-active");document.body.classList.add("menu-active");this.root.innerHTML=`<section class="menu-screen" aria-labelledby="menu-title"><div class="menu-content"><img class="menu-logo" src="assets/menu/logo-light.webp" alt="CEVA Logistics"><h1 id="menu-title"><span>CHRISTMAS</span><strong>LOGISTICS CHALLENGE</strong></h1><p class="menu-details">9 GAMES <i>•</i> 3 MINUTES <i>•</i> 1,000 POINTS</p><p class="menu-clock-note">165 seconds of gameplay. Briefings pause the clock.</p><form class="menu-form" id="start-form" autocomplete="off"><label class="visually-hidden" for="player-name">Participant name</label><div class="menu-input-wrap"><span aria-hidden="true"></span><input id="player-name" name="competition-participant" maxlength="24" value="${esc(prefill)}" placeholder="Enter your name..." autocomplete="one-time-code" data-lpignore="true" data-form-type="other" spellcheck="false" autofocus></div><div class="menu-error" id="name-error" aria-live="polite"></div><button class="menu-start" type="submit"><i aria-hidden="true"></i><span>START GAME</span></button><button class="menu-organizer" type="button" id="organizer-button">ORGANIZER TOOLS</button><button class="menu-leaderboard" type="button" id="leaderboard-button"><span aria-hidden="true">🏆</span> VIEW LEADERBOARD</button></form></div></section>`;$("#start-form").onsubmit=event=>{event.preventDefault();const input=$("#player-name"),name=input.value.trim().replace(/\s+/g," ");if(!name){$("#name-error").textContent="Enter a participant name to begin.";return input.focus();}this.playerName=name;this.prepare();};$("#leaderboard-button").onclick=()=>showLeaderboard();$("#organizer-button").onclick=showOrganizer;this.loader.preload(COMPETITION_ASSETS.filter(path=>path.includes("/menu/")||path.includes("/cursor/"))).catch(()=>{});}
-  async prepare(){
+  reset(){this.flowSerial++;this.briefingVersion=(this.briefingVersion||0)+1;this.preparedStage?.wrapper.remove();this.preparedStage=null;this.stageReady=false;this.state="menu";this.runId=null;this.cancelScoreAnimation?.();this.stopTimer();this.active?.cleanup();this.effects?.destroy();this.active=null;this.playerName="";this.index=-1;this.scores={};this.results=[];this.totalCorrect=0;this.totalAttempts=0;this.totalMistakes=0;this.transitioning=false;}
+  landing(prefill="") {this.state="menu";this.stopTimer();this.active?.cleanup();document.body.classList.remove("results-active");document.body.classList.add("menu-active");this.root.innerHTML=`<section class="menu-screen" aria-labelledby="menu-title"><div class="menu-content"><img class="menu-logo" fetchpriority="high" decoding="async" src="assets/menu/logo-light.webp" alt="CEVA Logistics"><h1 id="menu-title"><span>CHRISTMAS</span><strong>LOGISTICS CHALLENGE</strong></h1><p class="menu-details">9 GAMES <i>•</i> 3 MINUTES <i>•</i> 1,000 POINTS</p><p class="menu-clock-note">165 seconds of gameplay. Briefings pause the clock.</p><form class="menu-form" id="start-form" autocomplete="off"><label class="visually-hidden" for="player-name">Participant name</label><div class="menu-input-wrap"><span aria-hidden="true"></span><input id="player-name" name="competition-participant" maxlength="24" value="${esc(prefill)}" placeholder="Enter your name..." autocomplete="one-time-code" data-lpignore="true" data-form-type="other" spellcheck="false" autofocus></div><div class="menu-error" id="name-error" aria-live="polite"></div><button class="menu-start" type="submit"><i aria-hidden="true"></i><span>START GAME</span></button>${organizerEnabled?'<button class="menu-organizer" type="button" id="organizer-button">ORGANIZER TOOLS</button>':""}<button class="menu-leaderboard" type="button" id="leaderboard-button"><span aria-hidden="true">🏆</span> VIEW LEADERBOARD</button></form></div></section>`;$("#start-form").onsubmit=event=>{event.preventDefault();const input=$("#player-name"),name=input.value.trim().replace(/\s+/g," ");if(!name){$("#name-error").textContent="Enter a participant name to begin.";return input.focus();}this.playerName=name;this.prepare();};$("#leaderboard-button").onclick=()=>showLeaderboard();if($("#organizer-button"))$("#organizer-button").onclick=showOrganizer;this.preloadInBackground();}
+  preloadInBackground(){
+    this.loader.preload([...COMMON_ASSETS.filter(path=>path.includes("/menu/")),...COMMON_ASSETS.filter(path=>path.includes("/cursor/"))],()=>{},{priority:ASSET_PRIORITY.HIGH}).catch(()=>{});
+    if(this.backgroundScheduled)return;this.backgroundScheduled=true;
+    const run=()=>{this.backgroundPreload=this.loader.preload(COMPETITION_ASSETS,()=>{},{priority:ASSET_PRIORITY.LOW}).catch(()=>{});};
+    if(globalThis.requestIdleCallback)requestIdleCallback(run,{timeout:500});else setTimeout(run,0);
+  }
+  prepare(){
     if(this.state!=="menu")return;
     this.stopTimer();this.active?.cleanup();this.effects?.destroy();this.active=null;
     document.body.classList.remove("menu-active");this.scores={};this.results=[];this.totalCorrect=0;this.totalAttempts=0;this.totalMistakes=0;this.index=-1;
     this.runId=createRunId();this.runSeed=this.debugSeed||createRunSeed();this.eventId=settings.getEventId();this.startedAt=new Date().toISOString();
     const rng=new SeededRandom(this.runSeed);this.gameConfigs=buildGameOrder(rng.fork("game-order"));this.tasks=buildCompetition(this.runSeed,rng);
-    const serial=++this.flowSerial;await this.prepareAssets(serial);
-  }
-  async prepareAssets(serial){
-    if(serial!==this.flowSerial)return;this.state="loading";
-    this.root.innerHTML=`<section class="warehouse-gate"><div class="gate-panel" aria-busy="true"><img class="gate-logo" src="assets/menu/logo-light.webp" alt="CEVA Logistics"><div class="eyebrow">CHRISTMAS LOGISTICS CHALLENGE</div><h1>PREPARING CHRISTMAS WAREHOUSE</h1><p>Loading your challenges...</p><progress id="asset-progress" max="100" value="0" aria-label="Warehouse image readiness"></progress><b id="asset-status" aria-live="polite">Preparing images...</b><div id="asset-error" role="alert"></div></div></section>`;
-    try{
-      await this.loader.preload(COMPETITION_ASSETS,({completed,total,failed})=>{if(serial!==this.flowSerial||this.state!=="loading")return;$("#asset-progress",this.root).value=total?(completed-failed)/total*100:100;$("#asset-status",this.root).textContent=`${completed-failed} / ${total} images ready${failed?` · ${failed} failed`:""}`;});
-      if(serial!==this.flowSerial)return;this.state="between";this.next();
-    }catch(error){
-      if(serial!==this.flowSerial)return;this.state="load-error";
-      $(".gate-panel",this.root).setAttribute("aria-busy","false");$("#asset-error",this.root).innerHTML=`<p>${esc(error.message)} Check your connection and retry. Your gameplay clock has not started.</p><button class="primary" id="retry-assets">RETRY LOADING</button><button class="secondary" id="cancel-loading">RETURN TO START</button>`;
-      $("#retry-assets",this.root).onclick=()=>{if(this.state==="load-error")this.prepareAssets(serial);};$("#cancel-loading",this.root).onclick=()=>{this.reset();this.landing();};
-    }
+    ++this.flowSerial;this.state="between";this.next();
   }
   next(){
     if(this.state!=="between")return;this.index++;
     if(this.index>=this.gameConfigs.length)return this.finish();this.briefing();
   }
   briefing(){
-    this.state="briefing";this.transitioning=false;const config=this.gameConfigs[this.index];
-    this.root.innerHTML=`<section class="warehouse-gate" style="--gate-background:url('${GAMEPLAY_BACKGROUNDS[config.id]}')"><div class="gate-panel briefing-panel"><img class="gate-logo" src="assets/menu/logo-light.webp" alt="CEVA Logistics"><div class="eyebrow">CHALLENGE ${this.index+1} / 9 · ${config.max} POINTS</div><img class="briefing-icon" src="assets/results/icons/${RESULT_ICONS[config.id]}.svg" alt=""><h1>${config.name}</h1><p class="briefing-objective">${config.instruction}</p><p class="briefing-hint">${config.hint}</p><div class="briefing-facts"><span>${config.action}</span><strong>${config.time} SECONDS</strong><span>THE CLOCK IS PAUSED</span></div><button class="primary" id="ready-button">I'M READY</button><small>Read at your own pace. A 3–2–1 countdown follows.</small></div></section>`;
-    $("#ready-button",this.root).onclick=()=>{if(this.state!=="briefing")return;this.state="countdown";this.countdown(3,this.flowSerial);};$("#ready-button",this.root).focus();
+    this.preparedStage?.wrapper.remove();this.active?.cleanup();this.effects?.destroy();this.preparedStage=null;this.stageReady=false;this.deadline=null;this.state="briefing";this.transitioning=false;const config=this.gameConfigs[this.index];
+    this.root.innerHTML=`<section class="warehouse-gate" style="--gate-background:url('${GAMEPLAY_BACKGROUNDS[config.id]}')"><div class="gate-panel briefing-panel"><img class="gate-logo" src="assets/menu/logo-light.webp" alt="CEVA Logistics"><div class="eyebrow">CHALLENGE ${this.index+1} / 9 · ${config.max} POINTS</div><img class="briefing-icon" src="assets/results/icons/${RESULT_ICONS[config.id]}.svg" alt=""><h1>${config.name}</h1><p class="briefing-objective">${config.instruction}</p><p class="briefing-hint">${config.hint}</p><div class="briefing-facts"><span>${config.action}</span><strong>${config.time} SECONDS</strong><span>THE CLOCK IS PAUSED</span></div><button class="primary" id="ready-button" disabled>I'M READY</button><div class="challenge-readiness" id="challenge-readiness" role="status" aria-live="polite">Preparing challenge...</div><small>Read at your own pace. A 3–2–1 countdown follows.</small></div></section>`;
+    $("#ready-button",this.root).onclick=()=>{if(this.state!=="briefing"||!this.stageReady)return;this.state="countdown";this.countdown(3,this.flowSerial);};this.prepareBriefing();
+  }
+  async prepareBriefing(){
+    const serial=this.flowSerial,index=this.index,version=++this.briefingVersion,config=this.gameConfigs[index];
+    const valid=()=>serial===this.flowSerial&&index===this.index&&version===this.briefingVersion&&this.state==="briefing";
+    this.stageReady=false;$("#ready-button",this.root).disabled=true;$("#challenge-readiness",this.root).textContent="Preparing challenge...";
+    const next=this.gameConfigs[index+1];
+    try{
+      const preparing=this.loadStage(config,valid);
+      if(next)this.loader.preload(GAME_ASSETS[next.id],()=>{},{priority:ASSET_PRIORITY.MEDIUM}).catch(()=>{});
+      const stage=await preparing;if(!valid()||!stage)return;
+      this.stageReady=true;$("#ready-button",this.root).disabled=false;$("#challenge-readiness",this.root).textContent="";
+    }catch{
+      if(!valid())return;this.active?.cleanup();this.effects?.destroy();this.preparedStage?.wrapper.remove();this.preparedStage=null;
+      $("#challenge-readiness",this.root).innerHTML='<span>Challenge images could not be prepared. The clock is paused.</span><button class="secondary" id="retry-challenge">RETRY CHALLENGE</button>';
+      $("#retry-challenge",this.root).onclick=()=>{if(valid())this.prepareBriefing();};
+    }
+  }
+  async loadStage(config,valid=()=>true){
+    await this.loader.preload([...GAME_ASSETS[config.id],"assets/menu/logo-light.webp",`assets/results/icons/${RESULT_ICONS[config.id]}.svg`],()=>{},{priority:ASSET_PRIORITY.HIGH});
+    if(!valid())return null;
+    const stage=this.preparedStage=this.buildStage(config);stage.active.prepare?.();
+    await this.loader.decodeDom(stage.shell);
+    await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+    if(!valid()){stage.active.cleanup();stage.effects.destroy();stage.wrapper.remove();return null;}
+    stage.active.syncGeometry?.();return stage;
   }
   countdown(value,serial=this.flowSerial){
     if(serial!==this.flowSerial||this.state!=="countdown")return;
-    if(value===0){this.root.innerHTML='<div class="countdown go">GO!</div>';this.transitionHandle=setTimeout(()=>this.startGame(),350);return;}
-    this.root.innerHTML=`<div class="countdown">${value}</div>`;this.transitionHandle=setTimeout(()=>this.countdown(value-1,serial),850);
+    this.root.innerHTML=value===0?'<div class="countdown go">GO!</div>':`<div class="countdown">${value}</div>`;
+    if(this.preparedStage)this.root.append(this.preparedStage.wrapper);
+    this.transitionHandle=setTimeout(()=>value===0?this.startGame():this.countdown(value-1,serial),value===0?350:850);
   }
-  async startGame(){if(this.state!=="countdown")return;this.state="building";this.transitioning=false;this.pendingResult=null;this.deadline=null;const serial=this.flowSerial,config=this.gameConfigs[this.index],GameClass=MINIGAME_CLASSES[config.id];let token;this.root.innerHTML=`<section class="competition-shell stage-preparing" data-game="${config.id}" style="--game-background:url('${GAMEPLAY_BACKGROUNDS[config.id]}')"><div class="competition-hud"><div><small>PLAYER</small><strong>${esc(this.playerName)}</strong></div><div><small>MINIGAME</small><strong>${this.index+1} / 9 · ${config.name}</strong></div><div><small>SCORE</small><strong id="score-value">${sumScores(this.scores)} / 1000</strong></div><div class="clock"><small>TIME</small><strong id="stage-time">${config.time.toFixed(1)}</strong></div></div><div class="overall"><span>ACTIVE TIME REMAINING</span><div class="overall-progress"><i id="overall-bar"></i></div><b id="overall-time">${ACTIVE_SECONDS}s</b></div><header class="minigame-head"><div><div class="eyebrow">CHALLENGE ${String(this.index+1).padStart(2,"0")}</div><h1>${config.name}</h1></div><div class="instruction-card"><strong>${config.action}</strong><span>${config.instruction}</span><small>${config.hint}</small></div></header><div class="minigame-root" id="minigame-root"></div><div class="score-flash" id="score-flash" aria-live="polite"></div></section>`;
-    this.effects=new ArcadeEffects($("#minigame-root"));const context={isActive:()=>this.state==="playing",root:$("#minigame-root"),data:this.tasks[config.id],config,remaining:()=>this.deadline===null?config.time:Math.max(0,(this.deadline-performance.now())/1000),flash:(symbol,text)=>this.flash(symbol,text),feedback:(kind,text,anchor)=>this.effects.feedback(kind,text,anchor),selection:text=>this.effects.selection(text),update:()=>this.updateHud(),finish:()=>this.completeGame(token)};
+  buildStage(config){
+    const GameClass=MINIGAME_CLASSES[config.id],container=document.createElement("div");let token;
+    container.innerHTML=`<section class="competition-shell stage-preparing" data-game="${config.id}" style="--game-background:url('${GAMEPLAY_BACKGROUNDS[config.id]}')"><div class="competition-hud"><div><small>PLAYER</small><strong>${esc(this.playerName)}</strong></div><div><small>MINIGAME</small><strong>${this.index+1} / 9 · ${config.name}</strong></div><div><small>SCORE</small><strong id="score-value">${sumScores(this.scores)} / 1000</strong></div><div class="clock"><small>TIME</small><strong id="stage-time">${config.time.toFixed(1)}</strong></div></div><div class="overall"><span>ACTIVE TIME REMAINING</span><div class="overall-progress"><i id="overall-bar"></i></div><b id="overall-time">${ACTIVE_SECONDS}s</b></div><header class="minigame-head"><div><div class="eyebrow">CHALLENGE ${String(this.index+1).padStart(2,"0")}</div><h1>${config.name}</h1></div><div class="instruction-card"><strong>${config.action}</strong><span>${config.instruction}</span><small>${config.hint}</small></div></header><div class="minigame-root" id="minigame-root"></div><div class="score-flash" id="score-flash" aria-live="polite"></div></section>`;
+    const shell=container.firstElementChild,wrapper=document.createElement("div");wrapper.className="stage-preparation";wrapper.setAttribute("aria-hidden","true");wrapper.inert=true;wrapper.append(shell);this.root.append(wrapper);
+    this.effects=new ArcadeEffects($("#minigame-root",shell));const context={isActive:()=>this.state==="playing",root:$("#minigame-root",shell),data:this.tasks[config.id],config,remaining:()=>this.deadline===null?config.time:Math.max(0,(this.deadline-performance.now())/1000),flash:(symbol,text)=>this.flash(symbol,text),feedback:(kind,text,anchor)=>this.effects.feedback(kind,text,anchor),selection:text=>this.effects.selection(text),update:()=>this.updateHud(),finish:()=>this.completeGame(token)};
     const active=this.active=new GameClass().init(context);active.render();
+    return {wrapper,shell,active,effects:this.effects,activate:newToken=>{token=newToken;}};
+  }
+  async startGame(){
+    if(this.state!=="countdown")return;const serial=this.flowSerial,config=this.gameConfigs[this.index];this.state="building";this.pendingResult=null;
     try{
-      await this.loader.decodeDom(context.root);
-      await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
-      if(serial!==this.flowSerial||this.active!==active)return;
-      token=this.guard.begin(config.time);this.deadline=this.guard.deadline;this.stageToken=token;this.state="playing";
-      $(".competition-shell",this.root).classList.remove("stage-preparing");active.start();
+      const stage=this.preparedStage||await this.loadStage(config,()=>serial===this.flowSerial&&this.state==="building");
+      if(serial!==this.flowSerial||!stage)return;
+      this.root.replaceChildren(stage.shell);this.preparedStage=null;
+      stage.active.syncGeometry?.();stage.active.measureTrack?.(true);
+      const token=this.guard.begin(config.time);this.deadline=this.guard.deadline;this.stageToken=token;stage.activate(token);this.state="playing";
+      stage.shell.classList.remove("stage-preparing");stage.active.start();
       this.timer=setInterval(()=>{if(this.stageToken!==token||this.state!=="playing")return;this.updateHud();if(performance.now()>=this.deadline)this.completeGame(token);},50);this.updateHud();
     }catch{
-      if(serial!==this.flowSerial)return;active.cleanup();this.effects?.destroy();this.state="stage-error";
-      this.root.innerHTML='<section class="warehouse-gate"><div class="gate-panel"><h1>WAREHOUSE NOT READY</h1><p>A challenge image could not be decoded. The clock is paused.</p><button class="primary" id="retry-stage">RETRY CHALLENGE</button></div></section>';
-      $("#retry-stage",this.root).onclick=()=>{if(this.state!=="stage-error")return;this.state="countdown";this.countdown(3,serial);};
+      if(serial!==this.flowSerial)return;this.briefing();
     }
   }
   elapsedBeforeCurrent(){return this.gameConfigs.slice(0,this.index).reduce((sum,game)=>sum+game.time,0);}
@@ -118,8 +145,13 @@ export class CompetitionManager {
 }
 
 export const manager=new CompetitionManager();
-function showLeaderboard(current=""){const rows=leaderboard.getLeaderboard();modal.classList.add("leaderboard-modal");$("#modal-kicker").textContent="";modalContent.innerHTML=`<section class="leaderboard-panel"><header class="leaderboard-title"><h2 id="modal-title"><span>CHRISTMAS</span> COMPETITION RESULTS</h2><img src="assets/leaderboard/logo-from-reference.webp" alt="CEVA Logistics"></header><div class="record-banner"><img src="assets/leaderboard/trophy.webp" alt=""><div><strong>COMPETITION RECORD</strong></div><b>${rows[0]?.score??0}</b></div>${rows.length?`<div class="leaderboard-scroll"><table class="leaderboard"><thead><tr><th>RANK</th><th>PLAYER</th><th>SCORE</th><th>ACCURACY</th><th>DATE &amp; TIME</th></tr></thead><tbody>${rows.map((row,index)=>`<tr class="${index<3?`podium podium-${index+1}`:""} ${row.id===current?"current":""}"><td>${index<3?`<img src="assets/leaderboard/medal-${index+1}.webp" alt="${index+1}${index===0?"st":index===1?"nd":"rd"} place">`:index+1}</td><td>${esc(row.name)}</td><td>${row.score}</td><td>${row.accuracy}%</td><td><time datetime="${esc(row.timestamp)}">${new Date(row.timestamp).toLocaleString("en-GB",{year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",second:"2-digit"})}</time></td></tr>`).join("")}</tbody></table></div>`:'<div class="leaderboard-empty">NO COMPLETED RUNS</div>'}</section>`;modal.showModal();}
+function showLeaderboard(current=""){manager.loader.preload(COMMON_ASSETS.filter(path=>path.includes("/leaderboard/")),()=>{},{priority:ASSET_PRIORITY.HIGH}).catch(()=>{});const rows=leaderboard.getLeaderboard();modal.classList.add("leaderboard-modal");$("#modal-kicker").textContent="";modalContent.innerHTML=`<section class="leaderboard-panel"><header class="leaderboard-title"><h2 id="modal-title"><span>CHRISTMAS</span> COMPETITION RESULTS</h2><img src="assets/leaderboard/logo-from-reference.webp" alt="CEVA Logistics"></header><div class="record-banner"><img src="assets/leaderboard/trophy.webp" alt=""><div><strong>COMPETITION RECORD</strong></div><b>${rows[0]?.score??0}</b></div>${rows.length?`<div class="leaderboard-scroll"><table class="leaderboard"><thead><tr><th>RANK</th><th>PLAYER</th><th>SCORE</th><th>ACCURACY</th><th>DATE &amp; TIME</th></tr></thead><tbody>${rows.map((row,index)=>`<tr class="${index<3?`podium podium-${index+1}`:""} ${row.id===current?"current":""}"><td>${index<3?`<img src="assets/leaderboard/medal-${index+1}.webp" alt="${index+1}${index===0?"st":index===1?"nd":"rd"} place">`:index+1}</td><td>${esc(row.name)}</td><td>${row.score}</td><td>${row.accuracy}%</td><td><time datetime="${esc(row.timestamp)}">${new Date(row.timestamp).toLocaleString("en-GB",{year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",second:"2-digit"})}</time></td></tr>`).join("")}</tbody></table></div>`:'<div class="leaderboard-empty">NO COMPLETED RUNS</div>'}</section>`;modal.showModal();}
 function downloadCsv(){const blob=new Blob([leaderboardCsv(leaderboard.getLeaderboard())],{type:"text/csv;charset=utf-8"}),url=URL.createObjectURL(blob),link=document.createElement("a");link.href=url;link.download="ceva-christmas-leaderboard.csv";link.click();URL.revokeObjectURL(url);}
-function showOrganizer(){modal.classList.remove("leaderboard-modal");const seed=settings.getSeed();$("#modal-kicker").textContent="ORGANIZER TOOLS";modalContent.innerHTML=`<h2>COMPETITION CONTROL</h2><p class="local-note">These settings apply only on this computer.</p><label class="field-label" for="competition-seed">EVENT IDENTIFIER</label><input class="name-input" id="competition-seed" maxlength="40" value="${esc(seed)}"><p class="settings-help">Each participant receives a new random run seed. This label identifies the event only. Debug replay: add ?seed=YOUR-SEED to the URL.</p><div class="organizer-actions"><button class="primary" id="save-seed">SAVE EVENT ID</button><button class="secondary" id="export-results">EXPORT CSV</button><button class="danger" id="reset-results">RESET RESULTS</button></div><div id="organizer-status" class="error-text" aria-live="polite"></div>`;$("#save-seed").onclick=()=>{if(settings.setSeed($("#competition-seed").value)){$("#organizer-status").textContent="✓ Event identifier saved.";}};$("#export-results").onclick=downloadCsv;$("#reset-results").onclick=()=>{if(confirm("Delete every local competition result? This cannot be undone.")){$("#organizer-status").textContent=leaderboard.clearLeaderboard()!==false?"✓ Local competition results cleared.":"Results could not be cleared. Browser storage is unavailable.";}};modal.showModal();}
+function showOrganizer(){if(!organizerEnabled)return;modal.classList.remove("leaderboard-modal");const seed=settings.getSeed();$("#modal-kicker").textContent="ORGANIZER TOOLS";modalContent.innerHTML=`<h2>COMPETITION CONTROL</h2><p class="local-note">These settings apply only on this computer.</p><label class="field-label" for="competition-seed">EVENT IDENTIFIER</label><input class="name-input" id="competition-seed" maxlength="40" value="${esc(seed)}"><p class="settings-help">Each participant receives a new random run seed. This label identifies the event only. Debug replay: add ?seed=YOUR-SEED to the URL.</p><div class="organizer-actions"><button class="primary" id="save-seed">SAVE EVENT ID</button><button class="secondary" id="export-results">EXPORT CSV</button><button class="danger" id="reset-results">RESET RESULTS</button></div><div id="organizer-status" class="error-text" aria-live="polite"></div>`;$("#save-seed").onclick=()=>{if(settings.setSeed($("#competition-seed").value)){$("#organizer-status").textContent="✓ Event identifier saved.";}};$("#export-results").onclick=downloadCsv;$("#reset-results").onclick=()=>{
+    $("#organizer-status").innerHTML='<section class="reset-confirmation"><p>This will permanently delete ALL results stored on this computer. Export a CSV backup first.</p><button class="secondary" id="backup-before-reset">EXPORT CSV BACKUP</button><label for="reset-confirmation">Type RESET to confirm deletion</label><input class="name-input" id="reset-confirmation" autocomplete="off"><div><button class="danger" id="confirm-reset" disabled>DELETE ALL LOCAL RESULTS</button><button class="secondary" id="cancel-reset">CANCEL</button></div></section>';
+    $("#backup-before-reset").onclick=downloadCsv;$("#reset-confirmation").oninput=()=>{$("#confirm-reset").disabled=$("#reset-confirmation").value!=="RESET";};
+    $("#cancel-reset").onclick=()=>{$("#organizer-status").textContent="Reset cancelled. Results have been kept.";};
+    $("#confirm-reset").onclick=()=>{if($("#reset-confirmation").value!=="RESET")return;$("#organizer-status").textContent=leaderboard.clearLeaderboard()!==false?"Local competition results cleared.":"Results could not be cleared. Browser storage is unavailable.";};
+  };modal.showModal();}
 $("#modal-close").onclick=()=>modal.close();
 manager.landing();

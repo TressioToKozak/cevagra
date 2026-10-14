@@ -64,7 +64,7 @@ export function buildTask(type,rng){
     return {cols:8,rows:5,set,layoutSeed:rng.int(0,0x7fffffff),boxes:rng.shuffle(PACKING_SETS[set]).map(([w,h],index)=>({id:`BOX-${index+1}`,w,h,gift:rng.pick(GIFTS),variant:visual.int(0,1)}))};
   }
   if(type==="detective"){
-    const locations=rng.shuffle(Array.from({length:8},(_,i)=>`${"ABCD"[i%4]}-${String(rng.int(1,24)).padStart(2,"0")}`)),wrongRows=new Set(rng.shuffle([0,1,2,3,4,5,6,7]).slice(0,3));
+    const locations=rng.shuffle(unique(8,()=>rng.int(1,24)).map((number,i)=>`${"ABCD"[i%4]}-${String(number).padStart(2,"0")}`)),wrongRows=new Set(rng.shuffle([0,1,2,3,4,5,6,7]).slice(0,3));
     const rows=rng.shuffle(Array.from({length:8},(_,index)=>{const expected=sku(rng),actual=wrongRows.has(index)?similarSkus(rng,expected,2).find(value=>value!==expected):expected;return {id:`REC-${index+1}`,location:locations[index],expected,actual};}));
     return {rows,solution:rows.filter(row=>row.expected!==row.actual).map(row=>row.id)};
   }
