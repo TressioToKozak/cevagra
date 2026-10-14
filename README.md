@@ -142,3 +142,17 @@ selection, textarea/contenteditable editing, organizer inputs and keyboard focus
 Set `TEST_ORIGIN` for a local `/cevagra/` deployment. PNG captures use
 `/tmp/ceva-mission-*.png` and `/tmp/ceva-report-*.png`; reviewed evidence is kept in
 [`docs/mission-ui/report.md`](docs/mission-ui/report.md).
+
+Leaderboard/input polish uses content-sized modals and a flexible, sticky-header
+row viewport; long boards fill available height, short boards remain compact.
+The player-name field has no autofocus/background jump and uses a gold native
+caret. Editable fields retain Christmas mouse artwork. Because native CSS cannot
+prevent OS pointer hiding while typing, `editing-cursor.js` supplies an editing-only
+visual fallback at the last known mouse position, with native cursor suppression
+only while the matching overlay is visible. It never intercepts editing or clicks.
+
+```bash
+NODE_PATH=/opt/codex/runtimes/codex-primary-runtime/dependencies/node/node_modules node scripts/input-leaderboard-tests.cjs
+```
+
+Reviewed before/after captures and limitations: [report](docs/input-leaderboard/report.md).
