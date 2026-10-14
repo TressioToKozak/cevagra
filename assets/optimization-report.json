@@ -1,7 +1,7 @@
 {
-  "count": 174,
-  "before": 116302091,
-  "after": 9867326,
+  "count": 165,
+  "before": 115103155,
+  "after": 9822540,
   "assets": [
     {
       "source": "assets/backgrounds/02_conveyor_rush.png",
@@ -596,20 +596,6 @@
       "runtime": "assets/cursor/pointer.png",
       "before": 6687,
       "after": 6687
-    },
-    {
-      "source": "assets/final_dispatch/buttons/04_hold_shipment_button.png",
-      "runtime": "assets/final_dispatch/buttons/04_hold_shipment_button.webp",
-      "before": 1139274,
-      "sourceDimensions": [
-        2172,
-        724
-      ],
-      "runtimeDimensions": [
-        1024,
-        341
-      ],
-      "after": 32368
     },
     {
       "source": "assets/final_dispatch/buttons/05_issue_wrong_quantity.png",
@@ -1366,118 +1352,6 @@
         89
       ],
       "after": 2276
-    },
-    {
-      "source": "assets/quality_control/decor/sticker_gift.png",
-      "runtime": "assets/quality_control/decor/sticker_gift.webp",
-      "before": 7163,
-      "sourceDimensions": [
-        45,
-        56
-      ],
-      "runtimeDimensions": [
-        45,
-        56
-      ],
-      "after": 1856
-    },
-    {
-      "source": "assets/quality_control/decor/sticker_holly.png",
-      "runtime": "assets/quality_control/decor/sticker_holly.webp",
-      "before": 5509,
-      "sourceDimensions": [
-        38,
-        51
-      ],
-      "runtimeDimensions": [
-        38,
-        51
-      ],
-      "after": 1436
-    },
-    {
-      "source": "assets/quality_control/decor/sticker_snowflake.png",
-      "runtime": "assets/quality_control/decor/sticker_snowflake.webp",
-      "before": 8110,
-      "sourceDimensions": [
-        53,
-        51
-      ],
-      "runtimeDimensions": [
-        53,
-        51
-      ],
-      "after": 2016
-    },
-    {
-      "source": "assets/quality_control/decor/sticker_tree.png",
-      "runtime": "assets/quality_control/decor/sticker_tree.webp",
-      "before": 7585,
-      "sourceDimensions": [
-        44,
-        66
-      ],
-      "runtimeDimensions": [
-        44,
-        66
-      ],
-      "after": 1780
-    },
-    {
-      "source": "assets/quality_control/issues/issue_damage.png",
-      "runtime": "assets/quality_control/issues/issue_damage.webp",
-      "before": 6419,
-      "sourceDimensions": [
-        39,
-        69
-      ],
-      "runtimeDimensions": [
-        39,
-        69
-      ],
-      "after": 1448
-    },
-    {
-      "source": "assets/quality_control/issues/issue_missing_data.png",
-      "runtime": "assets/quality_control/issues/issue_missing_data.webp",
-      "before": 7058,
-      "sourceDimensions": [
-        61,
-        65
-      ],
-      "runtimeDimensions": [
-        61,
-        65
-      ],
-      "after": 1408
-    },
-    {
-      "source": "assets/quality_control/issues/issue_wrong_carrier.png",
-      "runtime": "assets/quality_control/issues/issue_wrong_carrier.webp",
-      "before": 8319,
-      "sourceDimensions": [
-        70,
-        74
-      ],
-      "runtimeDimensions": [
-        70,
-        74
-      ],
-      "after": 1528
-    },
-    {
-      "source": "assets/quality_control/issues/issue_wrong_sku.png",
-      "runtime": "assets/quality_control/issues/issue_wrong_sku.webp",
-      "before": 9499,
-      "sourceDimensions": [
-        65,
-        69
-      ],
-      "runtimeDimensions": [
-        65,
-        69
-      ],
-      "after": 946
     },
     {
       "source": "assets/quality_control/labels/label_base.png",

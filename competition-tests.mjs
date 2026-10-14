@@ -35,7 +35,7 @@ for(let i=0;i<500;i++){
  for(let mask=0;mask<16;mask++){game.selected=new Set(task.options.filter((_,j)=>mask&(1<<j)));for(const action of ['HOLD','RELEASE',null]){game.action=action;check(game.score()>=0&&game.score()<=200,'final scores stay bounded');check(game.score()<200||(action===task.action&&[...game.selected].sort().join()===task.solution.slice().sort().join()),'only the correct classification and decision receive full points');}}
 }
 check(lastPositions.size===9,'the growing grid does not force a predictable last-round position');
-check(variants.size===PACKING_SETS.length&&zones.size>100,'multiple packing sets and carrier arrangements are used');check(actions.HOLD>190&&actions.RELEASE>190,'RELEASE and HOLD are both represented fairly across seeds');
+check(variants.size===PACKING_SETS.length&&zones.size>100,'multiple packing sets and carrier arrangements are used');check(actions.HOLD>350&&actions.RELEASE>65,'HOLD predominates while RELEASE remains represented');
 check(sumScores(Object.fromEntries(GAME_CONFIGS.map(c=>[c.id,c.max])))===1000,'maximum total is unchanged');check(scoreStandard({correct:10,total:10,completed:true,timeRemaining:8,timeLimit:15})===100,'perfect fast gameplay can attain its maximum');
 check(Object.keys(GAME_ASSETS).length===9&&Object.keys(GAMEPLAY_BACKGROUNDS).length===9,'manifest covers all nine backgrounds and games');
 for(const path of COMPETITION_ASSETS)check(existsSync(path)&&readFileSync(path).length>0,`runtime asset exists: ${path}`);

@@ -19,14 +19,14 @@ for file in ['styles.css','game.js','minigames.js']:
  for path in re.findall(r'assets/[\w/.-]+\.(?:png|webp|svg)',text):add(path)
 def folder(path,pattern='*.png'):
  for file in Path(path).glob(pattern):add(file)
-for path in ['speed-picking/locations','barcode-hunt/boxes','packing-tetris/boxes','conveyor-rush/belt','conveyor-rush/zones','conveyor-rush/carriers','conveyor-rush/states','conveyor-rush/boxes','conveyor-rush/labels','memory_challenge/gifts','quality_control/boxes','quality_control/issues']:
+for path in ['speed-picking/locations','barcode-hunt/boxes','packing-tetris/boxes','conveyor-rush/belt','conveyor-rush/zones','conveyor-rush/carriers','conveyor-rush/states','conveyor-rush/boxes','conveyor-rush/labels','memory_challenge/gifts','quality_control/boxes']:
  folder('assets/'+path)
 for name in ['monitor','compare_arrow','info','lock']:add('assets/wms-detective/icons/'+name+'.png')
 for name in ['phase_1_2_pill','phase_2_2_pill','selection_card_slot','checkbox_unchecked','checkbox_checked','info_icon']:add('assets/memory_challenge/ui/'+name+'.png')
 add('assets/memory_challenge/scene/memory_conveyor_platform.png')
 for path in ['scene/01_trailer_interior_7_bays','scene/02_truck_front_marker','scene/03_rear_door_marker','pallets/05_pallet_crate_base','pallets/06_blank_label_overlay','ui/04_pallets_waiting_panel','ui/08_last_delivery_load_first_banner']:add('assets/truck_loading/'+path+'.png')
-for path in ['labels/label_base','damage/damage_crush','damage/damage_tear',*[f'decor/sticker_{s}' for s in ['tree','gift','holly','snowflake']]]:add('assets/quality_control/'+path+'.png')
-for path in ['panels/01_order_panel','panels/02_packed_shipment_panel','icons/15_icon_order_clipboard_tile','icons/16_icon_shipment_carton_tile','buttons/04_hold_shipment_button','buttons/05_issue_wrong_quantity','buttons/06_issue_wrong_carrier','buttons/07_issue_wrong_sku','buttons/08_issue_missing_serials']:add('assets/final_dispatch/'+path+'.png')
+for path in ['labels/label_base','damage/damage_crush','damage/damage_tear']:add('assets/quality_control/'+path+'.png')
+for path in ['panels/01_order_panel','panels/02_packed_shipment_panel','icons/15_icon_order_clipboard_tile','icons/16_icon_shipment_carton_tile','buttons/05_issue_wrong_quantity','buttons/06_issue_wrong_carrier','buttons/07_issue_wrong_sku','buttons/08_issue_missing_serials']:add('assets/final_dispatch/'+path+'.png')
 for name in prefixes.values():add('assets/results/icons/'+name.replace('_','-')+'.svg')
 for i in [1,2,3]:add(f'assets/leaderboard/medal-{i}.png')
 # Only these conveyor images are rendered, not unused scan/guide artwork.

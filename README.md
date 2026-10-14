@@ -89,7 +89,7 @@ CSV includes the seed for reproduction. No name-based personal-best claim is
 shown. RETURN TO START clears the participant name.
 
 Organizer Tools are absent from the normal participant menu. Open
-`https://tressiotokozak.github.io/cevagra/?organizer=1`, then click ORGANIZER TOOLS.
+`https://tressiotokozak.github.io/cevagra/?organizer=1`. The organizer dialog opens directly; the menu has no organizer button.
 This deliberate frontend URL prevents accidental access; it is not authentication
 or real security. It allows editing the event identifier, exporting CSV and resetting
 results. RESET RESULTS first opens a warning and a prominent CSV backup action.
@@ -100,3 +100,21 @@ result remains in page
 memory and an English warning asks the organizer to export CSV before closing.
 Malformed existing data is not overwritten. In-memory fallback cannot survive a
 page reload; use a working persistent browser profile for the event.
+
+Final visual polish keeps full-viewport untimed briefings with directional gradients,
+physical parcel labels, and persistent Truck pallets. Truck slots use a border-only
+placement highlight; they never restart an opacity entrance animation. Quality
+Control uses carton damage and shipping fields, without decorative stickers or
+issue badges. RELEASE/HOLD share identical visible button geometry. Final Dispatch
+uses seeded 80% HOLD / 20% RELEASE scenarios and retains 150/50 scoring.
+
+Run the visual-polish regression (27 briefing captures, 18 conveyor labels and
+ghosts, early/late barcode rounds, Truck visibility samples through 500 ms, QC
+seeds, equal action geometry, and cursor states):
+
+```bash
+NODE_PATH=/opt/codex/runtimes/codex-primary-runtime/dependencies/node/node_modules node scripts/polish-tests.cjs
+```
+
+Screenshots are written to `/tmp/ceva-*.png`. Set `TEST_ORIGIN` for a local Pages
+subdirectory test; Node tests include a 5,000-seed Final distribution check.

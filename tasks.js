@@ -4,8 +4,8 @@ export const GAME_CONFIGS=[
   {id:"picking",name:"SPEED PICKING",time:15,max:100,action:"CLICK",instruction:"Find the requested SKU. Click the matching warehouse location.",hint:"A correct SKU immediately brings the next pick."},
   {id:"conveyor",name:"CONVEYOR RUSH",time:20,max:100,action:"DRAG",instruction:"Drag each moving box into its matching carrier zone.",hint:"Sort it before it leaves the conveyor."},
   {id:"barcode",name:"BARCODE HUNT",time:15,max:100,action:"CLICK",instruction:"Find the box matching the displayed SKU.",hint:"Compare every digit before you click."},
-  {id:"packing",name:"PACKING TETRIS",time:25,max:100,action:"DRAG",instruction:"Drag boxes onto the pallet. Fit every box without overlaps.",hint:"Fit every shape without overlaps; green fits, red does not."},
-  {id:"detective",name:"WMS DETECTIVE",time:15,max:100,action:"SELECT",instruction:"Select every row where the WMS SKU differs from the scanner SKU.",hint:"Select every row that does not match, then lock your answer."},
+  {id:"packing",name:"PACKING TETRIS",time:25,max:100,action:"DRAG",instruction:"Drag boxes onto the pallet. Fit every box without overlaps.",hint:"Green placement fits; red means blocked."},
+  {id:"detective",name:"WMS DETECTIVE",time:15,max:100,action:"SELECT",instruction:"Select every row where the WMS SKU differs from the scanner SKU.",hint:"Flag the records, then confirm your selection."},
   {id:"loading",name:"TRUCK LOADING",time:20,max:100,action:"DRAG",instruction:"Load the last delivery deepest inside the truck.",hint:"Click a pallet then a slot, or drag it. Swap pallets to change the load order."},
   {id:"memory",name:"MEMORY CHALLENGE",time:15,max:100,action:"MEMORIZE",instruction:"Remember the five gifts. Then select the same gifts.",hint:"Then select only the gifts from Santa’s manifest."},
   {id:"quality",name:"QUALITY CONTROL",time:15,max:100,action:"SELECT",instruction:"Inspect the parcels and find every visible problem.",hint:"Look for damage, bad labels, missing data and wrong SKUs."},
@@ -70,10 +70,10 @@ export function buildTask(type,rng){
   }
   if(type==="loading"){const ids=unique(7,()=>`PLT-${digits(rng,4)}`),cities=rng.shuffle(["Oslo","Boston","Zurich","Toronto","Helsinki","Edinburgh","Copenhagen"]),pallets=Array.from({length:7},(_,index)=>({id:ids[index],stop:index+1,city:cities[index]}));return {pallets:rng.shuffle(pallets),solution:[...pallets].sort((a,b)=>b.stop-a.stop).map(item=>item.id)};}
   if(type==="memory"){const shipment=rng.shuffle(GIFTS).slice(0,5);return {shipment,options:rng.shuffle([...shipment,...rng.shuffle(GIFTS.filter(gift=>!shipment.includes(gift))).slice(0,3)])};}
-  if(type==="quality"){const issues=rng.shuffle(["dented","wrong-label","missing","wrong-sku",null,null,null,null]),parcels=Array.from({length:8},(_,index)=>({id:`GIFT-${index+1}`,sku:sku(rng),carrier:rng.pick(CARRIERS),issue:issues[index],variant:rng.fork(`parcel-art-${index}`).int(0,2),sticker:rng.fork(`parcel-decor-${index}`).int(0,3)}));return {parcels:rng.shuffle(parcels),solution:parcels.filter(parcel=>parcel.issue).map(parcel=>parcel.id)};}
+  if(type==="quality"){const issues=rng.shuffle(["dented","wrong-label","missing","wrong-sku",null,null,null,null]),parcels=Array.from({length:8},(_,index)=>({id:`GIFT-${index+1}`,sku:sku(rng),carrier:rng.pick(CARRIERS),issue:issues[index],variant:rng.fork(`parcel-art-${index}`).int(0,2)}));return {parcels:rng.shuffle(parcels),solution:parcels.filter(parcel=>parcel.issue).map(parcel=>parcel.id)};}
   if(type==="final"){
     const order={id:`SHP-${digits(rng)}`,sku:sku(rng),quantity:rng.pick([10,12,14]),carrier:rng.pick(CARRIERS),serials:12};
-    const issuePool=rng.shuffle(["WRONG QUANTITY","WRONG CARRIER","WRONG SKU","MISSING SERIALS"]),solution=rng.int(0,1)?issuePool.slice(0,2):[];
+    const issuePool=rng.shuffle(["WRONG QUANTITY","WRONG CARRIER","WRONG SKU","MISSING SERIALS"]),solution=rng.next()<.8?issuePool.slice(0,2):[];
     const actual={sku:solution.includes("WRONG SKU")?similarSkus(rng,order.sku,2).find(value=>value!==order.sku):order.sku,quantity:solution.includes("WRONG QUANTITY")?order.quantity-2:order.quantity,carrier:solution.includes("WRONG CARRIER")?rng.pick(CARRIERS.filter(item=>item!==order.carrier)):order.carrier,serials:solution.includes("MISSING SERIALS")?11:12};
     return {order,actual,options:issuePool,solution,action:solution.length?"HOLD":"RELEASE"};
   }

@@ -39,3 +39,5 @@ for(let step=0;step<10&&loader.jobs.size;step++){
 await Promise.all([background,promoted,inflight,critical]);check(new Set(started).size===started.length&&started.length===7,'all unique resources are prepared exactly once');
 await loader.preload(started);check(started.length===7,'completed cache is reused');check(loader.jobs.size===0&&loader.activeJobs.size===0&&loader.queue.length===0,'completed jobs leave no scheduling references');
 console.log(`Final improvement validation passed: ${checks.toLocaleString('en-US')} checks.`);
+
+let holds=0;for(let i=0;i<5000;i++){const data=buildTask("final",new SeededRandom(`DISTRIBUTION-${i}`));holds+=data.action==="HOLD";}assert(holds>3800&&holds<4200,`80/20 distribution: ${holds}/5000 HOLD`);console.log(`Final distribution: ${holds}/5000 HOLD.`);

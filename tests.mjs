@@ -157,14 +157,14 @@ assert(minigames.includes("pallet-grid")&&minigames.includes("every(value=>!valu
 assert(minigames.includes("invalid-target")&&css.includes(".pallet-cell.invalid-target"),"packing drag previews valid and invalid positions");
 assert(minigames.includes("for(let dy=0;dy<box.h;dy++)for(let dx=0;dx<box.w;dx++)")&&minigames.includes("preview-edge"),"packing preview covers the complete box footprint");
 assert(css.includes(".quality-box.qc-card")&&css.includes("clip-path:none")&&css.includes(".quality-box.qc-card.selected"),"damaged quality boxes retain a full click target and visible selection");
-assert(css.includes(".qc-issue")&&css.includes(".qc-label-copy")&&css.includes("11cqw"),"quality defects use small artwork markers and responsive HTML labels");
+assert(!minigames.includes("qc-sticker")&&!minigames.includes("qc-issue")&&css.includes(".qc-label-copy")&&css.includes("11cqw"),"quality defects use physical damage and responsive labels without decorative markers");
 assert(interactions.includes('element.cloneNode(true)')&&interactions.includes("container.append(ghost)")&&css.includes(".drag-ghost"),"all physical drags use a visible body-level cursor proxy");
 assert(minigames.includes('className="placed-box placed-pop"')&&!/BOX PACKED"\);this\.draw\(\)/.test(minigames),"packing placement creates only its persistent placed-box overlay without rerendering the minigame");
 assert(minigames.includes('className="shape-slot"')&&minigames.includes("source?.classList.add(\"packed-away\")")&&!minigames.includes('querySelector(".shape-rack").innerHTML'),"packing inventory slots remain stable when a box is placed");
 assert(minigames.includes('className="packing-drag-ghost"')&&interactions.includes("createGhost")&&css.includes(".packing-drag-ghost"),"packing uses a dedicated transparent artwork ghost instead of cloning an inventory slot");
 assert(minigames.includes("if(target&&this.dragCoordinate)this.place(box.id,this.dragCoordinate)"),"packing preview and drop commit share one cached grid coordinate");
 assert(css.includes("grid-auto-flow:row")&&!css.includes("grid-auto-flow:dense")&&css.includes(".shape-box.packed-away{visibility:hidden")&&!minigames.includes("source?.remove(),180"),"packed inventory boxes retain permanent grid space without dense reflow");
-assert((minigames.match(/data-action="/g)||[]).length===2&&minigames.includes("CONFIRM · HOLD SHIPMENT"),"final dispatch has RELEASE and HOLD confirmation actions");
+assert((minigames.match(/data-action="/g)||[]).length===2&&minigames.includes("HOLD SHIPMENT"),"final dispatch has RELEASE and HOLD confirmation actions");
 assert(css.includes("var(--pack-cell-w)")&&css.includes("var(--pack-cell-h)")&&minigames.includes("ResizeObserver"),"packing rack and pallet share responsive measured cell dimensions");
 assert(css.includes("@keyframes panelReveal")&&css.includes("@keyframes selectedPulse"),"minigames include restrained entrance and selection animations");
 assert(!minigames.includes('"MATCH"')&&!minigames.includes('"WRONG"'),"WMS rows do not reveal correctness");
@@ -191,7 +191,7 @@ assert(minigames.includes("cards=new Map")&&minigames.includes("slot.append(card
 assert(minigames.includes("detective-records")&&minigames.includes('aria-pressed="false"')&&css.includes("grid-template-rows:repeat(4,1fr)"),"WMS detective uses a full terminal grid with accessible selection state");
 assert(!minigames.includes("this.data.solution.includes(row.dataset.row)"),"WMS detective does not reveal row correctness before submission");
 assert(effects.includes("arcade-effect-layer")&&minigames.includes("CORRECT SKU")&&minigames.includes("WRONG BARCODE"),"immediate games use persistent unmistakable success and failure feedback");
-assert(!/\.shape-box[^\n]*!important/.test(css)&&!/\.load-pallet[^\n]*!important/.test(css),"core packing and loading styles no longer rely on important overrides");
+assert(!/\.shape-box\{[^}]*!important/.test(css)&&!/\.load-pallet\{[^}]*!important/.test(css),"core packing and loading styles no longer rely on important overrides");
 
 assert(!interactions.includes('ghost.classList.add("drag-ghost","dragging")')&&interactions.includes("Cursor-following is deliberately synchronous"),"drag ghosts are not blocked by the legacy dragging transform override and track pointers synchronously");
 assert(interactions.includes("targetRects=targetList().map")&&!interactions.includes("matches.sort"),"drag target geometry is cached once instead of measured and sorted on every pointer move");
@@ -315,14 +315,13 @@ for(const [index,parcel] of qualityData.parcels.entries()){
  if(!parcel.issue)assert(!markup.includes("qc-damage")&&!markup.includes("qc-issue"),`${parcel.id} healthy carton has no damage or issue indicator`);
  else{
   const expected={dented:"issue_damage",missing:"issue_missing_data","wrong-label":"issue_wrong_carrier","wrong-sku":"issue_wrong_sku"}[parcel.issue];
-  assert(markup.includes(expected),`${parcel.issue} keeps its original issue artwork mapping`);
   if(parcel.issue==="dented")assert(markup.includes("damage_crush.webp"),"dented carton carries a real crush texture");
   if(parcel.issue==="missing")assert(markup.includes("qc-empty-field")&&!markup.includes(parcel.sku),"missing SKU shows a visibly empty field without revealing the generated value");
   if(parcel.issue==="wrong-label")assert(markup.includes('qc-carrier">OTHER</span>'),"wrong-label displays OTHER while retaining the task's actual carrier");
   if(parcel.issue==="wrong-sku")assert(markup.includes("SKU-ERROR"),"wrong SKU keeps its visible error text");
  }
 }
-assert(!css.includes("mix-blend-mode:multiply")&&css.includes("width:52%;height:84%")&&css.includes("clamp(30px,3vw,45px)"),"damage and issue markers have substantially stronger visible coverage");
+assert(!css.includes("mix-blend-mode:multiply")&&css.includes("width:52%;height:84%"),"physical damage remains visible without issue icons");
 // WMS Detective: real buttons, dynamic barcodes and neutral selection.
 const detectiveData=snapshotA.detective,detectiveCount={textContent:""},detectiveConfirm=new FakeElement();let detectiveFinishes=0,detectiveUpdates=0;
 const detectiveButtons=detectiveData.rows.map(data=>{
