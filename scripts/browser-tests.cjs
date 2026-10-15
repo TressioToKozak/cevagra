@@ -7,7 +7,7 @@ const origin=process.env.TEST_ORIGIN||'http://127.0.0.1:8002';
  try{
   const page=await browser.newPage({viewport:{width:1920,height:1080}}),errors=[],requests=[];
   page.on('pageerror',e=>errors.push(e.message));page.on('response',r=>{if(r.status()>=400)errors.push(`${r.status()} ${r.url()}`);});page.on('request',r=>{if(/\.(webp|png|svg)(\?|$)/.test(r.url()))requests.push(r.url());});
-  await page.goto(origin);await page.evaluate(async()=>{window.qa=(await import('./game.js?v=20')).manager;});
+  await page.goto(origin);await page.evaluate(async()=>{window.qa=(await import('./game.js?v=21')).manager;});
   assert.equal(await page.locator('#player-name').inputValue(),'');
   await page.clock.install();await page.clock.pauseAt(new Date(Date.now()+1000));
   const click=async selector=>page.locator(selector).evaluate(e=>e.click());

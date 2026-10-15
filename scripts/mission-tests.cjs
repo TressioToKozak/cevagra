@@ -10,7 +10,7 @@ const origin = process.env.TEST_ORIGIN || 'http://127.0.0.1:8003/cevagra/';
     page.on('response', r => { if(r.status()>=400) errors.push(`${r.status()} ${r.url()}`); });
     await page.goto(origin);
     await page.evaluate(async () => {
-      window.qa = (await import('./game.js?v=20')).manager;
+      window.qa = (await import('./game.js?v=21')).manager;
       window.configs = (await import('./tasks.js?v=20')).GAME_CONFIGS;
       window.make = (await import('./tasks.js?v=20')).buildCompetition;
       window.RNG = (await import('./rng.js?v=20')).SeededRandom;

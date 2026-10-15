@@ -170,3 +170,10 @@ timings at three viewport sizes, records 16 live effect scenes via Chromium CDP,
 and verifies neutral classifications, cleanup and reduced motion. Raw frames and
 timestamps are saved under `/tmp/ceva-motion/`; the reviewed recording, chapters,
 performance measurements and limitations are in [the motion report](docs/motion/report.md).
+
+The Arcade Premium pass adds 180 ms visual presses and 220 ms load settling through
+the same `ArcadeEffects`, while keeping control geometry and drag logic unchanged.
+Run `node scripts/premium-tests.cjs` for native press geometry, rapid selections,
+keyboard activation, neutral feedback, cleanup and reduced-motion checks.
+See [the premium report](docs/premium/report.md) for recordings, all-suite results
+and measured performance limitations.

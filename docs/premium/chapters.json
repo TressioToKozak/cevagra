@@ -1,0 +1,66 @@
+[
+  {
+    "name": "Start menu ambient and welcome sweep",
+    "seconds": 0
+  },
+  {
+    "name": "Mission Briefing activation",
+    "seconds": 6.21
+  },
+  {
+    "name": "Speed Picking correct pick and target refresh",
+    "seconds": 7.19
+  },
+  {
+    "name": "Conveyor accepted parcel enters chute",
+    "seconds": 8.78
+  },
+  {
+    "name": "Conveyor rejected drop",
+    "seconds": 10.24
+  },
+  {
+    "name": "Barcode selected-label scanner",
+    "seconds": 11.29
+  },
+  {
+    "name": "Packing carton settles with stable footprint",
+    "seconds": 12.26
+  },
+  {
+    "name": "WMS neutral row scan and repeated selection",
+    "seconds": 12.95
+  },
+  {
+    "name": "Truck placement and occupied-slot swap",
+    "seconds": 13.89
+  },
+  {
+    "name": "Memory: stable full four seconds and immediate phase switch",
+    "seconds": 15.71
+  },
+  {
+    "name": "Quality generic inspection without answers",
+    "seconds": 20.39
+  },
+  {
+    "name": "Mission complete and neutral report submitted",
+    "seconds": 21.16
+  },
+  {
+    "name": "Final RELEASE chosen-action acknowledgement and Results",
+    "seconds": 23.01
+  },
+  {
+    "name": "Final HOLD chosen-action acknowledgement and Results",
+    "seconds": 24.25
+  },
+  {
+    "name": "Final Results: score, nine bars, rank and record",
+    "seconds": 24.59
+  },
+  {
+    "name": "Leaderboard entrance, first medal and current-row highlight",
+    "seconds": 25.62
+  }
+]

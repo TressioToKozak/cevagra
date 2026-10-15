@@ -1,9 +1,9 @@
 import {installEditingCursor} from "./editing-cursor.js?v=20";
 import { CompetitionSettings, LeaderboardManager, leaderboardCsv, normalizeName } from "./storage.js?v=20";
-import { ArcadeEffects, animateNumber } from "./effects.js?v=20";
+import { ArcadeEffects, animateNumber } from "./effects.js?v=21";
 import { SeededRandom, createRunId, createRunSeed } from "./rng.js?v=20";
 import { ACTIVE_SECONDS, GAME_CONFIGS, TRANSITION_SECONDS, buildCompetition, buildGameOrder } from "./tasks.js?v=20";
-import { MINIGAME_CLASSES } from "./minigames.js?v=20";
+import { MINIGAME_CLASSES } from "./minigames.js?v=21";
 import { sumScores } from "./scoring.js?v=20";
 import { StageGuard } from "./lifecycle.js?v=20";
 import { assetLoader, ASSET_PRIORITY } from "./asset-loader.js?v=20";
@@ -33,7 +33,7 @@ const RESULT_ICONS={
 };
 
 export class CompetitionManager {
-  constructor({root=app,seed=requestedSeed,loader=assetLoader}={}){this.root=root;this.debugSeed=seed;this.loader=loader;this.flowSerial=0;this.guard=new StageGuard();this.reset();}
+  constructor({root=app,seed=requestedSeed,loader=assetLoader}={}){this.root=root;this.debugSeed=seed;this.loader=loader;this.flowSerial=0;this.guard=new StageGuard();this.interfaceEffects=new ArcadeEffects();this.interfaceEffects.bindPress(root);this.interfaceEffects.bindPress(modal);this.reset();}
   reset(){this.flowSerial++;this.briefingVersion=(this.briefingVersion||0)+1;this.preparedStage?.wrapper.remove();this.preparedStage=null;this.stageReady=false;this.state="menu";this.runId=null;this.cancelScoreAnimation?.();this.cancelScoreAnimation=null;this.stopTimer();this.active?.cleanup();this.effects?.destroy();this.active=null;this.playerName="";this.index=-1;this.scores={};this.results=[];this.totalCorrect=0;this.totalAttempts=0;this.totalMistakes=0;this.transitioning=false;}
   landing(prefill="") {this.state="menu";this.stopTimer();this.active?.cleanup();document.body.classList.remove("results-active");document.body.classList.add("menu-active");this.root.innerHTML=`<section class="menu-screen" aria-labelledby="menu-title"><div class="menu-content"><img draggable="false" class="menu-logo" fetchpriority="high" decoding="async" src="assets/menu/logo-light.webp" alt="CEVA Logistics"><h1 id="menu-title"><span>CHRISTMAS</span><strong>LOGISTICS CHALLENGE</strong></h1><p class="menu-details">9 GAMES <i>•</i> 3 MINUTES <i>•</i> 1,000 POINTS</p><form class="menu-form" id="start-form" autocomplete="off"><label class="visually-hidden" for="player-name">Participant name</label><div class="menu-input-wrap"><span aria-hidden="true"></span><input id="player-name" name="competition-participant" maxlength="24" value="${esc(prefill)}" placeholder="Enter your name..." autocomplete="one-time-code" data-lpignore="true" data-form-type="other" spellcheck="false"></div><div class="menu-error" id="name-error" aria-live="polite"></div><button class="menu-start" type="submit"><i aria-hidden="true"></i><span>START GAME</span></button><button class="menu-leaderboard" type="button" id="leaderboard-button"><span aria-hidden="true">🏆</span> VIEW LEADERBOARD</button></form></div></section>`;$("#start-form").onsubmit=event=>{event.preventDefault();const input=$("#player-name"),name=input.value.trim().replace(/\s+/g," ");if(!name){$("#name-error").textContent="Enter a participant name to begin.";return input.focus();}this.playerName=name;this.prepare();};$("#leaderboard-button").onclick=()=>showLeaderboard();this.preloadInBackground();if(organizerEnabled&&!this.organizerOpened){this.organizerOpened=true;showOrganizer();}}
   preloadInBackground(){
@@ -55,7 +55,7 @@ export class CompetitionManager {
     if(this.index>=this.gameConfigs.length)return this.finish();this.briefing();
   }
   briefing(){
-    this.preparedStage?.wrapper.remove();this.active?.cleanup();this.effects?.destroy();this.preparedStage=null;this.stageReady=false;this.deadline=null;this.state="briefing";this.transitioning=false;const config=this.gameConfigs[this.index];
+    this.interfaceEffects.clearPress();this.preparedStage?.wrapper.remove();this.active?.cleanup();this.effects?.destroy();this.preparedStage=null;this.stageReady=false;this.deadline=null;this.state="briefing";this.transitioning=false;const config=this.gameConfigs[this.index];
     const words=config.name.split(" "),last=words.pop(),progress=Array.from({length:9},(_,i)=>`<li class="${i<this.index?"completed":i===this.index?"current":"upcoming"}" ${i===this.index?'aria-current="step"':""}><span class="visually-hidden">Challenge ${i+1}: ${i<this.index?"completed":i===this.index?"current":"upcoming"}</span></li>`).join("");
     this.root.innerHTML=`<section class="warehouse-gate" style="--gate-background:url('${GAMEPLAY_BACKGROUNDS[config.id]}')" aria-labelledby="mission-title"><div class="gate-panel briefing-panel">
       <svg class="mission-frame" viewBox="0 0 760 900" preserveAspectRatio="none" aria-hidden="true"><path d="M20 55 L48 24 H300 L330 52 H738 M738 52 H752 M20 55 V275 L34 291 V784 L52 805 H145 L160 825 H710"/><path class="frame-gold" d="M29 130 V232 M29 692 V769"/><path class="frame-detail" d="M328 72 H435 M58 844 H153"/></svg>
@@ -96,7 +96,7 @@ export class CompetitionManager {
   }
   countdown(value,serial=this.flowSerial){
     if(serial!==this.flowSerial||this.state!=="countdown")return;
-    this.root.innerHTML=value===0?'<div class="countdown go">GO!</div>':`<div class="countdown">${value}</div>`;
+    this.interfaceEffects.clearPress();this.root.innerHTML=value===0?'<div class="countdown go">GO!</div>':`<div class="countdown">${value}</div>`;
     if(this.preparedStage)this.root.append(this.preparedStage.wrapper);
     this.transitionHandle=setTimeout(()=>value===0?this.startGame():this.countdown(value-1,serial),value===0?350:850);
   }
@@ -109,7 +109,7 @@ export class CompetitionManager {
     return {wrapper,shell,active,effects:this.effects,activate:newToken=>{token=newToken;}};
   }
   async startGame(){
-    if(this.state!=="countdown")return;const serial=this.flowSerial,config=this.gameConfigs[this.index];this.state="building";this.pendingResult=null;
+    if(this.state!=="countdown")return;this.interfaceEffects.clearPress();const serial=this.flowSerial,config=this.gameConfigs[this.index];this.state="building";this.pendingResult=null;
     try{
       const stage=this.preparedStage||await this.loadStage(config,()=>serial===this.flowSerial&&this.state==="building");
       if(serial!==this.flowSerial||!stage)return;
@@ -128,14 +128,14 @@ export class CompetitionManager {
     if(!this.active||this.state!=="playing")return;
     const remaining=Math.max(0,(this.deadline-performance.now())/1000),elapsed=this.elapsedBeforeCurrent()+(this.gameConfigs[this.index].time-remaining),competitionRemaining=Math.max(0,ACTIVE_SECONDS-elapsed),percent=competitionRemaining/ACTIVE_SECONDS*100;
     const stage=$("#stage-time"),bar=$("#overall-bar"),overall=$("#overall-time"),scoreNode=$("#score-value"),liveScore=Math.min(this.gameConfigs[this.index].max,this.pendingResult?.score??this.active.liveScore??this.active.score()),displayScore=Math.min(1000,sumScores(this.scores)+liveScore);
-    if(scoreNode&&scoreNode.dataset.score!==String(displayScore)){scoreNode.dataset.score=String(displayScore);scoreNode.textContent=`${displayScore} / 1000`;scoreNode.classList.remove("score-changed");void scoreNode.offsetWidth;scoreNode.classList.add("score-changed");}
+    if(scoreNode&&scoreNode.dataset.score!==String(displayScore)){const previous=Number(scoreNode.dataset.score);scoreNode.dataset.score=String(displayScore);scoreNode.textContent=`${displayScore} / 1000`;if(displayScore>previous)this.effects.pulse(scoreNode,"score-changed",250);}
     if(stage){stage.textContent=remaining.toFixed(1);stage.classList.toggle("critical",remaining<5);}if(bar)bar.style.width=`${percent}%`;if(overall)overall.textContent=`${Math.ceil(competitionRemaining)}s`;
   }
 
   flash(symbol,text){const node=$("#score-flash");if(!node)return;node.textContent=`${symbol} ${text}`;node.classList.remove("show");cancelAnimationFrame(this.flashFrame);this.flashFrame=requestAnimationFrame(()=>{if(this.state==="playing")node.classList.add("show");});}
 
   completeGame(token=this.stageToken){if(this.state!=="playing"||this.transitioning||!this.guard.complete(token))return;this.transitioning=true;this.state="transition";const config=this.gameConfigs[this.index],result=this.pendingResult||this.active.complete();this.stopTimer();this.active.cleanup();this.effects?.destroy();this.scores[config.id]=Math.min(config.max,result.score);this.results.push({...result,id:config.id,name:config.name,max:config.max});this.totalCorrect+=result.correct;this.totalAttempts+=result.attempts;this.totalMistakes+=result.mistakes;if(this.index===this.gameConfigs.length-1)return this.finish();const total=sumScores(this.scores);this.root.innerHTML=`<section class="stage-transition" style="--transition-background:url('${GAMEPLAY_BACKGROUNDS[config.id]}')"><div class="eyebrow">MISSION COMPLETE</div><h1>${config.name}</h1><p class="completion-note">${({detective:"REPORT SUBMITTED",quality:"REPORT SUBMITTED",memory:"MANIFEST LOCKED",loading:"LOAD CONFIRMED",packing:"PALLET COMPLETE"})[config.id]||"TASK CONFIRMED"}</p><strong>+<b id="earned-points">0</b></strong><span>/ ${config.max} POINTS</span><div class="transition-track"><i></i></div><small>${this.index===this.gameConfigs.length-1?"CALCULATING FINAL RESULT":"NEXT: "+this.gameConfigs[this.index+1].name}</small><b>TOTAL ${total} / 1000</b></section>`;this.cancelTransitionScore=animateNumber($("#earned-points"),this.scores[config.id],450);const serial=this.flowSerial;this.transitionHandle=setTimeout(()=>{if(serial!==this.flowSerial)return;this.transitioning=false;this.state="between";this.next();},TRANSITION_SECONDS*1000);}
-  stopTimer(){this.cancelTransitionScore?.();this.cancelTransitionScore=null;cancelAnimationFrame(this.flashFrame);this.flashFrame=null;if(this.timer)clearInterval(this.timer);this.timer=null;if(this.transitionHandle)clearTimeout(this.transitionHandle);this.transitionHandle=null;this.stageToken=null;this.guard?.cancel();}
+  stopTimer(){this.interfaceEffects?.clearPress();this.cancelTransitionScore?.();this.cancelTransitionScore=null;cancelAnimationFrame(this.flashFrame);this.flashFrame=null;if(this.timer)clearInterval(this.timer);this.timer=null;if(this.transitionHandle)clearTimeout(this.transitionHandle);this.transitionHandle=null;this.stageToken=null;this.guard?.cancel();}
   finish(){
     if(this.state==="results")return;this.state="results";this.stopTimer();
     const score=sumScores(this.scores),previousRecord=leaderboard.getHighScore(),accuracy=this.totalAttempts?Math.round(this.totalCorrect/this.totalAttempts*100):0,timestamp=new Date().toISOString(),run={id:this.runId,name:this.playerName,normalizedName:normalizeName(this.playerName),score,accuracy,mistakes:this.totalMistakes,averageResponseTime:0,minigameScores:this.scores,timestamp,competitionSeed:this.runSeed,runSeed:this.runSeed,eventId:this.eventId,startedAt:this.startedAt,debugSeed:!!this.debugSeed};

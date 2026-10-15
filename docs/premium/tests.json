@@ -1,0 +1,85 @@
+{
+  "node": {
+    "passed": true,
+    "checks": 122672,
+    "finalSeeds": 5000,
+    "holdSeeds": 4021
+  },
+  "chromium": [
+    {
+      "suite": "interaction",
+      "exitCode": 0,
+      "seconds": 76.7
+    },
+    {
+      "suite": "browser",
+      "exitCode": 0,
+      "seconds": 127.0
+    },
+    {
+      "suite": "visual",
+      "exitCode": 0,
+      "seconds": 119.8
+    },
+    {
+      "suite": "edge",
+      "exitCode": 0,
+      "seconds": 25.0
+    },
+    {
+      "suite": "background",
+      "exitCode": 0,
+      "seconds": 37.5
+    },
+    {
+      "suite": "input-leaderboard",
+      "exitCode": 0,
+      "seconds": 60.7
+    },
+    {
+      "suite": "polish",
+      "exitCode": 0,
+      "seconds": 161.0
+    },
+    {
+      "suite": "mission",
+      "exitCode": 0,
+      "seconds": 155.6
+    },
+    {
+      "suite": "animation",
+      "seconds": 68.8,
+      "firstExitCode": 1,
+      "exitCode": 0,
+      "repeatSeconds": 41.3,
+      "repeatScope": "Full 27-case activation matrix passed before transport recovery; recording/effects/reduced-motion repeated with SKIP_ACTIVATION=1 and confirmed exit 0.",
+      "firstFailure": "QA cursor missed a moving parcel before pointer capture; fixture now freezes coordinate acquisition and resumes the real loop on grab."
+    }
+  ],
+  "premium": {
+    "suite": "premium",
+    "exitCode": 0,
+    "seconds": 46.8
+  },
+  "finalVerification": [
+    {
+      "suite": "premium",
+      "exitCode": 0,
+      "seconds": 46.8
+    },
+    {
+      "suite": "comparison",
+      "exitCode": 0,
+      "seconds": 22.6
+    },
+    {
+      "suite": "animation",
+      "exitCode": 0,
+      "seconds": 41.3
+    }
+  ],
+  "nativePressGameViewports": 27,
+  "rapidSelections": 40,
+  "blocked": [],
+  "skippedSuites": []
+}

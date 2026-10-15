@@ -1,0 +1,68 @@
+{
+  "nativePressRegressionSample": {
+    "viewport": {
+      "width": 1280,
+      "height": 720
+    },
+    "durationMs": 5125,
+    "averageFps": 10.5,
+    "longTasks": 2,
+    "maxLongTaskMs": 805,
+    "frames": 54,
+    "maxFrameGapMs": 4183.199999999997,
+    "retainedPresses": 0,
+    "retainedAnimations": 0
+  },
+  "isolatedComparison": [
+    {
+      "baseline": true,
+      "durationMs": 2279,
+      "frames": 137,
+      "averageFps": 60.1,
+      "maxGapMs": 16.800000000000182
+    },
+    {
+      "baseline": false,
+      "durationMs": 2286,
+      "frames": 136,
+      "averageFps": 59.5,
+      "maxGapMs": 50
+    }
+  ],
+  "conveyorSample": {
+    "longTasks": 0,
+    "maxLongTaskMs": 0,
+    "frames": 114,
+    "maxFrameGapMs": 66.60000000000582
+  },
+  "diagnosticBeforeOptimization": [
+    {
+      "variant": "all",
+      "durationMs": 2376,
+      "frames": 53,
+      "averageFps": 22.3,
+      "maxGapMs": 183.39999999999964
+    },
+    {
+      "variant": "no-ambient",
+      "durationMs": 2399,
+      "frames": 141,
+      "averageFps": 58.8,
+      "maxGapMs": 83.39999999999964
+    },
+    {
+      "variant": "no-glow",
+      "durationMs": 2479,
+      "frames": 114,
+      "averageFps": 46,
+      "maxGapMs": 50
+    },
+    {
+      "variant": "neither",
+      "durationMs": 2447,
+      "frames": 137,
+      "averageFps": 56,
+      "maxGapMs": 116.60000000000036
+    }
+  ]
+}
