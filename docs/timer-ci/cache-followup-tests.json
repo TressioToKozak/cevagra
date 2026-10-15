@@ -1,0 +1,29 @@
+{
+  "cases": [
+    {
+      "case": "standard HTTP server",
+      "command": "CHROMIUM_PATH=/usr/bin/chromium TEST_PORT=8017 node scripts/run-tests.cjs background",
+      "exitCode": 0,
+      "zeroTransferCacheHits": 159,
+      "http304Revalidations": 0
+    },
+    {
+      "case": "forced HTTP revalidation",
+      "command": "CHROMIUM_PATH=/usr/bin/chromium TEST_ORIGIN=http://127.0.0.1:8016/ node scripts/run-tests.cjs background",
+      "fixture": "Python SimpleHTTPRequestHandler with Cache-Control: no-cache",
+      "exitCode": 0,
+      "zeroTransferCacheHits": 1,
+      "http304Revalidations": 158
+    },
+    {
+      "case": "cache disabled negative control",
+      "command": "CHROMIUM_PATH=/usr/bin/chromium TEST_ORIGIN=http://127.0.0.1:8018/ node scripts/run-tests.cjs background",
+      "fixture": "Python SimpleHTTPRequestHandler with Cache-Control: no-store",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "reason": "HTTP 200 responses downloaded image bodies; warm cache assertion rejected them"
+    }
+  ],
+  "productionFilesChanged": [],
+  "githubRerun": "not verified from this environment"
+}

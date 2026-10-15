@@ -3,7 +3,21 @@ const assert=require('node:assert/strict'),{chromium}=require('playwright');
  const origin=process.env.TEST_ORIGIN||'http://127.0.0.1:8002/';const p=await b.newPage({viewport:{width:1920,height:1080}}),requests=[],errors=[];p.on('request',r=>{if(/\.(webp|png|svg)$/.test(r.url()))requests.push(r.url());});p.on('pageerror',e=>errors.push(e.message));
  await p.goto(origin);await p.evaluate(async()=>{window.qa=(await import('./game.js?v=23')).manager;});assert.equal(await p.locator('.menu-screen').count(),1);await p.locator('#player-name').fill('Background QA');await p.waitForTimeout(15000);await p.waitForFunction(()=>qa.backgroundPreload!==undefined);await p.evaluate(()=>qa.backgroundPreload);assert(requests.length>150,'all-nine-game loading begins without START');assert.equal(await p.evaluate(()=>qa.state),'menu');assert(await p.evaluate(()=>qa.guard.closed));
  await p.locator('#start-form').evaluate(f=>f.requestSubmit());assert.equal(await p.evaluate(()=>qa.state),'briefing');assert.equal(await p.locator('progress,#asset-progress').count(),0);await p.waitForFunction(()=>qa.stageReady);assert.equal(await p.locator('#challenge-readiness').textContent(),'');await p.screenshot({path:'/tmp/ceva-ready-briefing-1920.png'});await p.evaluate(()=>{qa.reset();qa.landing();});const warm=requests.length;await p.locator('#player-name').fill('Second');await p.locator('#start-form').evaluate(f=>f.requestSubmit());await p.waitForFunction(()=>qa.stageReady);assert.equal(requests.length,warm,'second run reuses decoded cache');assert.deepEqual(errors,[]);
- await p.reload();await p.evaluate(async()=>{window.qa=(await import('./game.js?v=23')).manager;});await p.waitForFunction(()=>qa.backgroundPreload!==undefined);await p.evaluate(()=>qa.backgroundPreload);const cached=await p.evaluate(()=>performance.getEntriesByType('resource').filter(r=>r.name.includes('/assets/')).map(r=>r.transferSize));assert(cached.length>150&&cached.every(bytes=>bytes===0),'warm reload reuses the browser image cache');
+ // A fresh checkout can require HTTP revalidation: 304 transfers headers, not
+ // the image body. CDP exposes the real status (the high-level response may be 200).
+ const network=await p.context().newCDPSession(p),urls=new Map(),responseCodes=new Map();
+ network.on('Network.requestWillBeSent',e=>urls.set(e.requestId,e.request.url));
+ // ExtraInfo can arrive before requestWillBeSent; join by requestId afterwards.
+ network.on('Network.responseReceivedExtraInfo',e=>responseCodes.set(e.requestId,e.statusCode));
+ await network.send('Network.enable');
+ await p.reload();await p.evaluate(async()=>{window.qa=(await import('./game.js?v=23')).manager;});await p.waitForFunction(()=>qa.backgroundPreload!==undefined);await p.evaluate(()=>qa.backgroundPreload);
+ const cached=await p.evaluate(()=>performance.getEntriesByType('resource').filter(r=>r.name.includes('/assets/')).map(r=>({url:r.name,transferSize:r.transferSize})));
+ assert(cached.length>150,`warm reload records all game images (got ${cached.length})`);
+ const statuses=new Map();for(const [id,code]of responseCodes){const url=urls.get(id),list=statuses.get(url)||[];list.push(code);statuses.set(url,list);}
+ const downloaded=cached.filter(r=>r.transferSize!==0&&!(statuses.get(r.url)?.length&&statuses.get(r.url).every(status=>status===304))).map(r=>({...r,statuses:statuses.get(r.url)||[]}));
+ assert.deepEqual(downloaded,[],'warm reload reuses cached image bodies; only zero-transfer cache hits or HTTP 304 revalidation are allowed');
+ console.log(`Warm reload: ${cached.filter(r=>r.transferSize===0).length} zero-transfer cache hits, ${cached.filter(r=>r.transferSize!==0).length} HTTP 304 revalidations, no image bodies downloaded.`);
+ await network.detach();
  console.log('Cold menu, 15 idle seconds, immediate briefing, cached second run and warm reload passed.');
  const slow=await b.newPage({viewport:{width:1280,height:720}}),held=[];let blocking=true;
  await slow.route('**/*.{webp,svg}',route=>{const path=route.request().url();if(blocking&&!path.includes('/menu/')&&!path.includes('/cursor/'))held.push(route);else route.continue();});

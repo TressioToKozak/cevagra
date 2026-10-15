@@ -110,3 +110,26 @@ nie testowano. W wykonanych testach gry nie wykryto regresji.
 - CI i zależności testowe: `.github/workflows/tests.yml`, `package.json`,
   `package-lock.json`, `.gitignore`.
 - Dokumentacja: `README.md`, `docs/timer-ci/report.md`, `docs/timer-ci/tests.json`.
+
+## Poprawka testu cache po uruchomieniu GitHub Actions
+
+GitHub zgłosił niepowodzenie asercji `warm reload reuses the browser image cache`.
+Stara asercja wymagała `transferSize === 0` dla każdego obrazu. Poprawne HTTP 304
+przesyła jednak nagłówki i może dać `transferSize = 300`, mimo że treść obrazu
+pochodzi z cache. Zwykły serwer Python nie ustala długiego `max-age`; świeżość
+heurystyczna i konieczność rewalidacji zależą m.in. od dat plików po checkout.
+Sam pierwotny log z GitHuba nie zawierał statusów HTTP.
+
+Zmieniono wyłącznie test `scripts/background-tests.cjs`: zachowano wymóg ponad
+150 zasobów i odrzucanie ponownego pobierania ich treści, ale dopuszczono również
+potwierdzone `304 Not Modified`. Rzeczywisty kod HTTP odczytuje CDP
+`Network.responseReceivedExtraInfo`; dane są łączone po `requestId` po zakończeniu
+ładowania, ponieważ zdarzenie ExtraInfo może poprzedzać zdarzenie z URL-em.
+Przypadki `200` z transferem treści nadal powodują błąd. Log rozdziela teraz
+trafienia bez transferu i rewalidacje; błąd podaje URL, transfer i statusy.
+Kod gry, loader, preloading, serwer CI i pozostałe asercje pozostają bez zmian.
+
+Weryfikacja lokalna obejmuje zwykły serwer runnera, serwer wymuszający rewalidację
+(`Cache-Control: no-cache`) i kontrolę negatywną wyłączającą przechowywanie
+(`Cache-Control: no-store`). Szczegółowe wyniki: [cache-followup-tests.json](cache-followup-tests.json).
+Wyniku ponownego uruchomienia na GitHubie nie potwierdzono z tego środowiska.
