@@ -47,7 +47,10 @@ export function attachPointerDrag({
     event.preventDefault();
     state.x=event.clientX;state.y=event.clientY;
     state.ghost.style.transform=`translate3d(${state.x-state.startX}px,${state.y-state.startY}px,0)`;
-    if(frame){cancelAnimationFrame(frame);frame=0;paint();}
+    // Resolve the release position even when the last visual frame has already run.
+    state.moved ||= Math.hypot(state.x-state.startX,state.y-state.startY)>4;
+    if(frame){cancelAnimationFrame(frame);frame=0;}
+    if(!cancelled)paint();
     const completed=state;
     state=null;
     if(completed.moved){element.dataset.dragged="true";setTimeout(()=>delete element.dataset.dragged,0);}
