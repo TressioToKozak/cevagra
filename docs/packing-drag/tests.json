@@ -1,0 +1,65 @@
+{
+  "node": {
+    "exitCode": 0,
+    "assertions": 122697,
+    "finalSeeds": 5000,
+    "holdCount": 4021
+  },
+  "chromium": {
+    "packing": {
+      "exitCode": 0,
+      "nativeShapeGripViewportCases": 63,
+      "viewports": [
+        "1920x1080",
+        "1366x768",
+        "1280x720"
+      ],
+      "additionalCases": [
+        "click",
+        "jitter",
+        "fast move/release same task",
+        "release only",
+        "outside",
+        "8/12px tolerance",
+        "ambiguity",
+        "collision",
+        "cancel",
+        "lost capture",
+        "window resize",
+        "board resize"
+      ]
+    },
+    "interaction": {
+      "exitCode": 0
+    },
+    "browser": {
+      "exitCode": 0,
+      "initialAttempt": {
+        "exitCode": 1,
+        "reason": "Old click-click Packing test driver; updated to drag events without changing score assertions."
+      }
+    },
+    "visual": {
+      "exitCode": 0
+    },
+    "premium": {
+      "exitCode": 0
+    },
+    "mission": {
+      "exitCode": 0
+    }
+  },
+  "notRun": [
+    "animation-tests",
+    "background-tests",
+    "edge-tests",
+    "input-leaderboard-tests",
+    "polish-tests",
+    "other browsers",
+    "physical touch"
+  ],
+  "visualReview": [
+    "/tmp/ceva-packing-preview.png",
+    "/tmp/ceva-packing-placed.png"
+  ]
+}

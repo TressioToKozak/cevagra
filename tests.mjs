@@ -4,7 +4,7 @@ import { ACTIVE_SECONDS, COMPETITION_SECONDS, GAME_CONFIGS, TRANSITION_SECONDS, 
 import { scoreClassification, scoreStandard, sumScores } from "./scoring.js";
 import { StageGuard } from "./lifecycle.js";
 import { LeaderboardManager, normalizeName } from "./storage.js";
-import { MINIGAME_CLASSES, MEMORY_GIFT_ASSETS, FINAL_ISSUE_ASSETS, BaseMinigame, code128Svg, code128Values, gridDragAnchor, offsetGridCoordinate, packingBoxAsset, packingInventoryLayout, planPalletMove } from "./minigames.js";
+import { MINIGAME_CLASSES, MEMORY_GIFT_ASSETS, FINAL_ISSUE_ASSETS, BaseMinigame, code128Svg, code128Values, gridDragAnchor, offsetGridCoordinate, packingDropCoordinate, packingBoxAsset, packingInventoryLayout, planPalletMove } from "./minigames.js";
 import { attachPointerDrag } from "./interactions.js";
 
 let checks=0;
@@ -68,6 +68,15 @@ assert(returned.slots.join(",")==="B,,"&&returned.displacedTo==="yard","a yard p
 assert(offsetGridCoordinate("4:3",{x:1,y:2})==="3:1","packing drop coordinates preserve the cell grabbed inside a multi-cell box");
 assert(JSON.stringify(gridDragAnchor({left:10,top:20},{w:3,h:2},50.5,40.25,119,79))===JSON.stringify({x:2,y:1}),"packing drag anchors handle fractional grid steps and non-leading grab positions");
 assert(offsetGridCoordinate("7:4",gridDragAnchor({left:10,top:20},{w:3,h:2},50.5,40.25,119,79))==="5:3","packing edge drops use the same anchored coordinate as their preview");
+const snapGrid={left:100,top:200,cellW:58,cellH:48,stepX:60,stepY:50};
+for(const box of [{w:1,h:1},{w:1,h:2},{w:2,h:2},{w:3,h:2},{w:3,h:1},{w:1,h:3},{w:2,h:1}])for(const ratio of [.03,.5,.97]){
+  const grab={x:(58+(box.w-1)*60)*ratio,y:(48+(box.h-1)*50)*ratio};
+  assert(packingDropCoordinate(220+grab.x,300+grab.y,grab,snapGrid,box,8,5)?.coordinate==="2:2","pixel grab stays exact for every size and grab ratio");
+}
+assert(packingDropCoordinate(91,201,{x:0,y:1},snapGrid,{w:1,h:1},8,5)?.coordinate==="0:0","nine-pixel edge miss magnetizes to the local grid origin");
+assert(packingDropCoordinate(89,201,{x:0,y:1},snapGrid,{w:1,h:1},8,5)===null,"outside tolerance never magnetizes");
+assert(packingDropCoordinate(130,201,{x:0,y:1},snapGrid,{w:1,h:1},8,5)===null,"equidistant grid origins do not auto-fit");
+assert(packingDropCoordinate(510,201,{x:0,y:1},snapGrid,{w:3,h:2},8,5)?.coordinate==="7:0","nonfitting footprint is passed to the unchanged collision rule, not moved to a free slot");
 const packingDimensions=[[3,2],[2,2],[3,1],[1,3],[2,1],[1,2],[1,1]];
 assert(packingDimensions.every(([w,h])=>packingBoxAsset({w,h}).includes(`box-${w}x${h}`)),"every predefined packing dimension resolves to proportion-compatible artwork");
 assert(new Set(snapshotA.packing.boxes.map(box=>box.id)).size===10&&snapshotA.packing.boxes.every((box,index)=>box.id===`BOX-${index+1}`),"all ten shuffled boxes retain sequential generated identifiers");
@@ -162,7 +171,7 @@ assert(interactions.includes('element.cloneNode(true)')&&interactions.includes("
 assert(minigames.includes('className="placed-box placed-pop"')&&!/BOX PACKED"\);this\.draw\(\)/.test(minigames),"packing placement creates only its persistent placed-box overlay without rerendering the minigame");
 assert(minigames.includes('className="shape-slot"')&&minigames.includes("source?.classList.add(\"packed-away\")")&&!minigames.includes('querySelector(".shape-rack").innerHTML'),"packing inventory slots remain stable when a box is placed");
 assert(minigames.includes('className="packing-drag-ghost"')&&interactions.includes("createGhost")&&css.includes(".packing-drag-ghost"),"packing uses a dedicated transparent artwork ghost instead of cloning an inventory slot");
-assert(minigames.includes("if(target&&this.dragCoordinate)this.place(box.id,this.dragCoordinate)"),"packing preview and drop commit share one cached grid coordinate");
+assert(minigames.includes("this.dropCoordinate(box,x,y)")&&minigames.includes("if(coordinate)this.place(box.id,coordinate)"),"packing preview and release use the same pixel-based resolver");
 assert(css.includes("grid-auto-flow:row")&&!css.includes("grid-auto-flow:dense")&&css.includes(".shape-box.packed-away{visibility:hidden")&&!minigames.includes("source?.remove(),180"),"packed inventory boxes retain permanent grid space without dense reflow");
 assert((minigames.match(/data-action="/g)||[]).length===2&&minigames.includes("HOLD SHIPMENT"),"final dispatch has RELEASE and HOLD confirmation actions");
 assert(css.includes("var(--pack-cell-w)")&&css.includes("var(--pack-cell-h)")&&minigames.includes("ResizeObserver"),"packing rack and pallet share responsive measured cell dimensions");
@@ -199,7 +208,7 @@ assert(minigames.includes('if(key===this.previewKey)return')&&minigames.includes
 assert(!/this\.flash\([^\n]*(PALLET LOADED|PALLETS SWAPPED)/.test(minigames)&&minigames.includes("slot-feedback"),"truck loading uses localized routine feedback rather than the global answer overlay");
 assert(css.includes("barcode-parcel:not(.choice-correct):not(.choice-wrong):hover")&&css.includes("stock-card:not(.choice-correct):not(.choice-wrong):hover"),"barcode and speed-picking cards retain visible hover states separate from result states");
 assert(!css.includes(".brand-logo{background:#fff")&&css.includes(".menu-logo{"),"the transparent CEVA logo is no longer forced into a white plaque");
-assert(minigames.includes("offsetGridCoordinate(target.dataset.cell,this.dragAnchor)")&&minigames.includes("x>=0&&y>=0"),"packing ghost, footprint preview, and placement share the pointer grab anchor with safe grid bounds");
+assert(minigames.includes("this.dragGrab={x:xRatio*geometry.width,y:yRatio*geometry.height}")&&minigames.includes("x>=0&&y>=0"),"packing preserves the continuous pixel grab point and existing collision bounds");
 assert(css.includes(".drag-source{opacity:0}"),"the moving source is hidden while its fully visible drag ghost is active");
 // Conveyor artwork remains presentation; exercise its DOM contract and lifecycle.
 const conveyorRoot={innerHTML:"",querySelector:()=>null};

@@ -12,6 +12,9 @@ export function attachPointerDrag({
   onCancel=()=>{},
   hitPadding=10,
   createGhost=null,
+  activationDistance=0,
+  trackPosition=false,
+  cancelOnResize=false,
 }) {
   let state=null;
   let frame=0;
@@ -29,15 +32,18 @@ export function attachPointerDrag({
   };
   const paint=()=>{
     frame=0;
-    if(!state)return;
+    if(!state?.ghost)return;
     const target=hitTarget(state.x,state.y);
-    if(target!==state.target){state.target?.classList.remove("drag-over");target?.classList.add("drag-over");state.target=target;onMove({...state,target});}
+    const changed=target!==state.target;
+    if(changed){state.target?.classList.remove("drag-over");target?.classList.add("drag-over");state.target=target;}
+    if(changed||trackPosition)onMove({...state,target});
   };
   const move=event=>{
     if(!state||event.pointerId!==state.id)return;
     event.preventDefault();
     state.x=event.clientX;state.y=event.clientY;
-    state.moved ||= Math.hypot(state.x-state.startX,state.y-state.startY)>4;
+    state.moved ||= !!state.ghost&&Math.hypot(state.x-state.startX,state.y-state.startY)>4;
+    if(!state.ghost){if(Math.hypot(state.x-state.startX,state.y-state.startY)<activationDistance)return;begin();state.moved=true;}
     // Cursor-following is deliberately synchronous; only hit testing is frame-batched.
     state.ghost.style.transform=`translate3d(${state.x-state.startX}px,${state.y-state.startY}px,0)`;
     if(!frame)frame=requestAnimationFrame(paint);
@@ -46,9 +52,10 @@ export function attachPointerDrag({
     if(!state||event.pointerId!==state.id)return;
     event.preventDefault();
     state.x=event.clientX;state.y=event.clientY;
-    state.ghost.style.transform=`translate3d(${state.x-state.startX}px,${state.y-state.startY}px,0)`;
+    if(!cancelled&&!state.ghost&&Math.hypot(state.x-state.startX,state.y-state.startY)>=activationDistance){begin();state.moved=true;}
+    if(state.ghost)state.ghost.style.transform=`translate3d(${state.x-state.startX}px,${state.y-state.startY}px,0)`;
     // Resolve the release position even when the last visual frame has already run.
-    state.moved ||= Math.hypot(state.x-state.startX,state.y-state.startY)>4;
+    state.moved ||= !!state.ghost&&Math.hypot(state.x-state.startX,state.y-state.startY)>4;
     if(frame){cancelAnimationFrame(frame);frame=0;}
     if(!cancelled)paint();
     const completed=state;
@@ -58,13 +65,11 @@ export function attachPointerDrag({
     element.classList.remove("drag-source");
     globalThis.document?.documentElement?.classList.remove("is-pointer-dragging");
     try{element.releasePointerCapture?.(event.pointerId);}catch{}
-    (cancelled?onCancel:onDrop)({...completed,target:completed.target,x:event.clientX,y:event.clientY});
-    completed.ghost.remove();
+    if(cancelled||completed.ghost)(cancelled?onCancel:onDrop)({...completed,target:completed.target,x:event.clientX,y:event.clientY});
+    completed.ghost?.remove();
   };
-  const down=event=>{
-    if(destroyed||state||event.button!==0)return;
-    event.preventDefault();
-    const rect=element.getBoundingClientRect();
+  const begin=()=>{
+    const {rect,downEvent:event}=state;
     const customGhost=createGhost?.({element,rect,event});
     const ghost=customGhost?.node||customGhost||element.cloneNode(true);
     const ghostRect=customGhost?.rect||rect;
@@ -73,12 +78,18 @@ export function attachPointerDrag({
     Object.assign(ghost.style,{position:"fixed",left:`${ghostRect.left}px`,top:`${ghostRect.top}px`,width:`${ghostRect.width}px`,height:`${ghostRect.height}px`,margin:"0"});
     container.append(ghost);
     const targetRects=targetList().map(target=>{const rect=target.getBoundingClientRect();return {target,rect:{left:rect.left,right:rect.right,top:rect.top,bottom:rect.bottom,centerX:rect.left+rect.width/2,centerY:rect.top+rect.height/2}};});
-    state={id:event.pointerId,ghost,target:null,targetRects,startX:event.clientX,startY:event.clientY,x:event.clientX,y:event.clientY,moved:false};
+    Object.assign(state,{ghost,targetRects});
     element.classList.add("drag-source");
     globalThis.document?.documentElement?.classList.add("is-pointer-dragging");
     targetList().forEach(target=>target.classList.add("drop-ready"));
-    element.setPointerCapture?.(event.pointerId);
     onStart({...state});
+  };
+  const down=event=>{
+    if(destroyed||state||event.button!==0)return;
+    event.preventDefault();
+    state={id:event.pointerId,ghost:null,target:null,targetRects:[],rect:element.getBoundingClientRect(),downEvent:event,startX:event.clientX,startY:event.clientY,x:event.clientX,y:event.clientY,moved:false};
+    element.setPointerCapture?.(event.pointerId);
+    if(!activationDistance)begin();
   };
   const cancel=event=>finish(event,true);
   const lost=event=>{if(state)finish(event,true);};
@@ -87,10 +98,12 @@ export function attachPointerDrag({
   element.addEventListener("pointerup",finish);
   element.addEventListener("pointercancel",cancel);
   element.addEventListener("lostpointercapture",lost);
-  return ()=>{
+  const abort=()=>{if(state)finish({pointerId:state.id,clientX:state.x,clientY:state.y,preventDefault(){}},true);};
+  if(cancelOnResize)globalThis.addEventListener?.("resize",abort,{passive:true});
+  const cleanup=()=>{
     destroyed=true;
     if(frame)cancelAnimationFrame(frame);
-    state?.ghost.remove();
+    state?.ghost?.remove();
     clearTargets();
     element.classList.remove("drag-source");
     globalThis.document?.documentElement?.classList.remove("is-pointer-dragging");
@@ -100,5 +113,8 @@ export function attachPointerDrag({
     element.removeEventListener("pointerup",finish);
     element.removeEventListener("pointercancel",cancel);
     element.removeEventListener("lostpointercapture",lost);
+    if(cancelOnResize)globalThis.removeEventListener?.("resize",abort);
   };
+  cleanup.cancel=abort;
+  return cleanup;
 }
