@@ -12,20 +12,30 @@ python3 -m http.server 8002 --bind 127.0.0.1
 node tests.mjs
 ```
 
-Optional Chromium checks use an installed development copy of Playwright:
+Automated checks use Node 22, Python 3 (local HTTP server), and a development-only,
+lockfile-pinned Playwright installation:
 
 ```sh
-NODE_PATH=/path/to/node_modules CHROMIUM_PATH=/path/to/chromium node scripts/browser-tests.cjs
-NODE_PATH=/path/to/node_modules CHROMIUM_PATH=/path/to/chromium node scripts/visual-tests.cjs
-NODE_PATH=/path/to/node_modules CHROMIUM_PATH=/path/to/chromium node scripts/edge-tests.cjs
-NODE_PATH=/path/to/node_modules CHROMIUM_PATH=/path/to/chromium node scripts/interaction-tests.cjs
-NODE_PATH=/path/to/node_modules CHROMIUM_PATH=/path/to/chromium node scripts/background-tests.cjs
+npm ci --ignore-scripts
+npx playwright install --with-deps chromium
+npm test
+# A single suite, including a local server when needed:
+node scripts/run-tests.cjs deadline
 ```
 
-Set `TEST_ORIGIN` to test another local server. Browser tests cover two complete
-runs, actual readiness gates, timing, perfect scoring, every stage timeout,
-duplicate names, retained results, and 27 desktop stage/viewport combinations.
+`npm test` runs the Node checks (including `competition-tests.mjs` and
+`final-tests.mjs`) and every `scripts/*-tests.cjs` browser suite. Logs and exit
+codes are saved in `test-results/`; any failed suite makes the command fail.
+Set `CHROMIUM_PATH` to use an existing Chromium instead of Playwright's browser.
+Set `TEST_ORIGIN` to reuse another local HTTP server, or `TEST_PORT` to change
+the runner's default port 8002. Browser suites use the repository root by default.
 No test dependency is loaded by the application.
+
+[GitHub Actions](.github/workflows/tests.yml) runs all 13 suites as separate jobs
+on pushes to `main`, pull requests to `main`, and manual dispatch. Jobs upload
+logs and captures even after failure. The workflow has read-only repository
+permissions and performs no deployment. For deadline behavior, test details,
+and current verification limits, see [the timer report](docs/timer-ci/report.md).
 
 ## Randomization and replay
 

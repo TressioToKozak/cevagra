@@ -6,6 +6,7 @@ export function attachPointerDrag({
   element,
   targets,
   container=document.body,
+  canInteract=()=>true,
   onStart=()=>{},
   onMove=()=>{},
   onDrop=()=>{},
@@ -32,7 +33,7 @@ export function attachPointerDrag({
   };
   const paint=()=>{
     frame=0;
-    if(!state?.ghost)return;
+    if(!state?.ghost||!canInteract())return;
     const target=hitTarget(state.x,state.y);
     const changed=target!==state.target;
     if(changed){state.target?.classList.remove("drag-over");target?.classList.add("drag-over");state.target=target;}
@@ -41,6 +42,7 @@ export function attachPointerDrag({
   const move=event=>{
     if(!state||event.pointerId!==state.id)return;
     event.preventDefault();
+    if(!canInteract())return finish(event,true);
     state.x=event.clientX;state.y=event.clientY;
     state.moved ||= !!state.ghost&&Math.hypot(state.x-state.startX,state.y-state.startY)>4;
     if(!state.ghost){if(Math.hypot(state.x-state.startX,state.y-state.startY)<activationDistance)return;begin();state.moved=true;}
@@ -50,6 +52,7 @@ export function attachPointerDrag({
   };
   const finish=(event,cancelled=false)=>{
     if(!state||event.pointerId!==state.id)return;
+    cancelled ||= !canInteract();
     event.preventDefault();
     state.x=event.clientX;state.y=event.clientY;
     if(!cancelled&&!state.ghost&&Math.hypot(state.x-state.startX,state.y-state.startY)>=activationDistance){begin();state.moved=true;}
@@ -85,7 +88,7 @@ export function attachPointerDrag({
     onStart({...state});
   };
   const down=event=>{
-    if(destroyed||state||event.button!==0)return;
+    if(destroyed||state||event.button!==0||!canInteract())return;
     event.preventDefault();
     state={id:event.pointerId,ghost:null,target:null,targetRects:[],rect:element.getBoundingClientRect(),downEvent:event,startX:event.clientX,startY:event.clientY,x:event.clientX,y:event.clientY,moved:false};
     element.setPointerCapture?.(event.pointerId);

@@ -1,0 +1,7 @@
+{
+  "name": "ceva-christmas-logistics-tests",
+  "private": true,
+  "type": "module",
+  "scripts": {"test": "node scripts/run-tests.cjs", "test:node": "node tests.mjs"},
+  "devDependencies": {"playwright": "1.62.1"}
+}

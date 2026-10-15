@@ -1,0 +1,40 @@
+name: Regression tests
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        suite: [node, animation, background, browser, deadline, edge, input-leaderboard, interaction, mission, packing, polish, premium, visual]
+    name: ${{ matrix.suite }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - name: Install Playwright Chromium
+        if: matrix.suite != 'node'
+        run: npx playwright install --with-deps chromium
+      - name: Run suite (starts local HTTP server)
+        run: node scripts/run-tests.cjs ${{ matrix.suite }}
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: results-${{ matrix.suite }}
+          path: |
+            test-results/
+            /tmp/ceva-*.png
+            /tmp/ceva-motion/
+          if-no-files-found: ignore

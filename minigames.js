@@ -1,7 +1,7 @@
 import { SeededRandom } from "./rng.js?v=20";
 import { CARRIERS } from "./tasks.js?v=20";
 import { scoreClassification, scoreStandard } from "./scoring.js?v=20";
-import { attachPointerDrag } from "./interactions.js?v=22";
+import { attachPointerDrag } from "./interactions.js?v=23";
 
 export function planPalletMove(slots,id,targetIndex){
   const next=[...slots],sourceIndex=next.indexOf(id),occupant=next[targetIndex]||null;
@@ -183,7 +183,7 @@ export class ConveyorRush extends BaseMinigame {
     const host=this.root.querySelector("#moving-parcel");
     host.innerHTML=`<div class="moving-box conveyor-parcel parcel-${variant}${this.active.carrier==="BRINGCARGO"?" parcel-long-carrier":""}" data-moving-box role="group" aria-label="${this.active.carrier}, ${this.active.id}, ${this.active.gift}"><img class="parcel-art" src="${art}boxes/parcel-${variant}.webp" alt="" draggable="false"><div class="parcel-label"><img src="${art}labels/shipping-label-${variant}.webp" alt="" draggable="false"><div class="parcel-copy"><b>${this.active.carrier}</b><span>${this.active.id}</span><small>${this.active.gift}</small></div></div></div>`;
     this.box=host.firstElementChild;this.measureTrack();this.position();
-    this.boxDragCleanup=attachPointerDrag({element:this.box,targets:()=>this.root.querySelectorAll("[data-chute]"),hitPadding:12,createGhost:({element})=>{const node=element.cloneNode(true);node.style.transform="none";return node;},onStart:()=>{this.dragging=true;},onDrop:({target,ghost})=>{this.dragging=false;if(target)this.sort(target,ghost);else if(this.geometryPending)this.measureTrack(true);},onCancel:()=>{this.dragging=false;if(this.geometryPending)this.measureTrack(true);this.position();}});
+    this.boxDragCleanup=attachPointerDrag({element:this.box,canInteract:()=>!this.locked&&this.ctx.isActive?.()!==false,targets:()=>this.root.querySelectorAll("[data-chute]"),hitPadding:12,createGhost:({element})=>{const node=element.cloneNode(true);node.style.transform="none";return node;},onStart:()=>{this.dragging=true;},onDrop:({target,ghost})=>{this.dragging=false;if(target)this.sort(target,ghost);else if(this.geometryPending)this.measureTrack(true);},onCancel:()=>{this.dragging=false;if(this.geometryPending)this.measureTrack(true);this.position();}});
     this.cleanups.push(this.boxDragCleanup);
   }
   measureTrack(preserveProgress=false){
@@ -233,7 +233,7 @@ export class PackingTetris extends BaseMinigame {
   boxMarkup(box,asset){return `<span class="shape-art"><img src="${asset}" alt="" draggable="false"></span><span class="shape-copy"><strong>${box.id}</strong><small>${box.w} × ${box.h}</small></span>`;}
   bindShape(element,box){
     const clear=()=>{this.root.classList.remove("is-dragging");this.clearPreview();this.dragGrab=null;this.dragGrid=null;this.dragCoordinate=null;};
-    const drag=attachPointerDrag({element,targets:()=>this.root.querySelectorAll(".pallet-grid"),activationDistance:7,trackPosition:true,cancelOnResize:true,
+    const drag=attachPointerDrag({element,canInteract:()=>!this.locked&&this.ctx.isActive?.()!==false,targets:()=>this.root.querySelectorAll(".pallet-grid"),activationDistance:7,trackPosition:true,cancelOnResize:true,
       createGhost:({rect,event})=>{
         this.syncGeometry();const geometry=this.boxGeometry(box),xRatio=(event.clientX-rect.left)/rect.width,yRatio=(event.clientY-rect.top)/rect.height,node=document.createElement("div");
         this.dragGrab={x:xRatio*geometry.width,y:yRatio*geometry.height};this.dragGrid={...this.packingGrid};node.className="packing-drag-ghost";node.innerHTML=this.boxMarkup(box,element.querySelector("img").getAttribute("src"));
@@ -321,7 +321,7 @@ export class TruckLoading extends BaseMinigame {
   deliveryLabel(pallet){const last=this.data.pallets.length;if(pallet.stop===last)return `STOP ${pallet.stop} · LAST DELIVERY · LOAD FIRST`;if(pallet.stop===1)return "STOP 1 · FIRST DELIVERY · LOAD LAST";return `STOP ${pallet.stop} · DELIVERY ${pallet.stop}`;}
   bindPallet(card,id){
     this.listen(card,"click",event=>{event.stopPropagation();if(!card.dataset.dragged)this.selectPallet(id);});
-    this.cleanups.push(attachPointerDrag({element:card,targets:()=>this.root.querySelectorAll("[data-slot]"),hitPadding:12,onStart:()=>{this.root.classList.add("is-dragging");card.closest(".truck-slot")?.classList.add("source-slot");},onDrop:({target})=>{this.root.classList.remove("is-dragging");this.root.querySelectorAll(".source-slot").forEach(slot=>slot.classList.remove("source-slot"));if(target)this.place(id,Number(target.dataset.slot));},onCancel:()=>{this.root.classList.remove("is-dragging");this.root.querySelectorAll(".source-slot").forEach(slot=>slot.classList.remove("source-slot"));}}));
+    this.cleanups.push(attachPointerDrag({element:card,canInteract:()=>!this.locked&&this.ctx.isActive?.()!==false,targets:()=>this.root.querySelectorAll("[data-slot]"),hitPadding:12,onStart:()=>{this.root.classList.add("is-dragging");card.closest(".truck-slot")?.classList.add("source-slot");},onDrop:({target})=>{this.root.classList.remove("is-dragging");this.root.querySelectorAll(".source-slot").forEach(slot=>slot.classList.remove("source-slot"));if(target)this.place(id,Number(target.dataset.slot));},onCancel:()=>{this.root.classList.remove("is-dragging");this.root.querySelectorAll(".source-slot").forEach(slot=>slot.classList.remove("source-slot"));}}));
   }
   selectPallet(id){this.selected=this.selected===id?null:id;this.cards.forEach((card,key)=>{card.classList.toggle("picked",key===this.selected);card.setAttribute("aria-pressed",String(key===this.selected));});}
   setSlot(index,id){this.slots[index]=id;const slot=this.root.querySelector(`[data-slot="${index}"]`),card=id?this.cards.get(id):null;slot.classList.toggle("occupied",Boolean(id));slot.querySelector(".slot-placeholder").hidden=Boolean(id);if(card){slot.append(card);card.classList.remove("picked","drag-source");}}

@@ -1,11 +1,11 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),{chromium}=require('playwright');
 const dir=process.env.MOTION_DIR||'/tmp/ceva-motion';fs.mkdirSync(dir,{recursive:true});
 (async()=>{
- const browser=await chromium.launch({executablePath:'/usr/bin/chromium',args:['--no-sandbox']});
+ const browser=await chromium.launch({executablePath:process.env.CHROMIUM_PATH||undefined,args:['--no-sandbox']});
  try{
  const p=await browser.newPage({viewport:{width:1366,height:768}}),errors=[];p.on('pageerror',e=>errors.push(e.message));
- await p.goto(process.env.TEST_ORIGIN||'http://127.0.0.1:8003/cevagra/');
- await p.evaluate(async()=>{window.qa=(await import('./game.js?v=22')).manager;window.configs=(await import('./tasks.js?v=20')).GAME_CONFIGS;window.make=(await import('./tasks.js?v=20')).buildCompetition;window.RNG=(await import('./rng.js?v=20')).SeededRandom;await(await import('./asset-loader.js?v=20')).assetLoader.preload((await import('./asset-manifest.js?v=20')).COMPETITION_ASSETS);});
+ await p.goto(process.env.TEST_ORIGIN||'http://127.0.0.1:8002/');
+ await p.evaluate(async()=>{window.qa=(await import('./game.js?v=23')).manager;window.configs=(await import('./tasks.js?v=20')).GAME_CONFIGS;window.make=(await import('./tasks.js?v=20')).buildCompetition;window.RNG=(await import('./rng.js?v=20')).SeededRandom;await(await import('./asset-loader.js?v=20')).assetLoader.preload((await import('./asset-manifest.js?v=20')).COMPETITION_ASSETS);});
  const ids=['picking','conveyor','barcode','packing','detective','loading','memory','quality','final'];
  const setup=async(id,brief=false,realFinish=false)=>{
   await p.evaluate(async({id,brief,realFinish})=>{qa.reset();document.body.classList.remove('menu-active','results-active');qa.playerName='ANIMATION QA';qa.runId=crypto.randomUUID();qa.runSeed='MOTION';qa.gameConfigs=configs;qa.tasks=make('MOTION',new RNG('MOTION'));qa.index=configs.findIndex(c=>c.id===id);qa.deadline=null;if(brief)qa.briefing();else{qa.state='countdown';await qa.startGame();clearInterval(qa.timer);qa.timer=null;if(!realFinish){qa.active.ctx.remaining=()=>qa.active.ctx.config.time;qa.active.ctx.finish=()=>window.submitted=(window.submitted||0)+1;}if(id==='memory'){window.memoryAt3800=null;setTimeout(()=>window.memoryAt3800=document.querySelectorAll('[data-remember-gift]').length,3800);}}},{id,brief,realFinish});

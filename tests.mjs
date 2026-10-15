@@ -118,10 +118,16 @@ assert(sumScores({bad:5000})===1000,"full-game score is hard capped at 1,000");
 
 let now=1000;const guard=new StageGuard(()=>now),token=guard.begin(15);
 assert(guard.remaining(token)===15,"stage timer starts at configured duration");
+assert(guard.allows(token),"active stage accepts input before deadline");
+now=guard.deadline-1;assert(guard.allows(token),"one ms before deadline accepted");
+now=guard.deadline;assert(!guard.allows(token),"exact deadline rejected before completion");
+now++;assert(!guard.allows(token),"late input rejected before timer callback");
+now=1000;
 now+=14900;assert(Math.round(guard.remaining(token)*10)/10===.1,"stage timer tracks remaining time");
 assert(guard.complete(token)&&!guard.complete(token),"stage can complete only once");
 const nextToken=guard.begin(20);assert(!guard.complete(token)&&guard.remaining(nextToken)===20,"stale callbacks cannot complete the next stage");
-guard.cancel();assert(guard.remaining(nextToken)===0,"cleanup invalidates active timer token");
+assert(!guard.allows(token)&&guard.allows(nextToken),"input tokens isolate successive stages");
+guard.cancel();assert(!guard.allows(nextToken),"cancelled stage rejects input");assert(guard.remaining(nextToken)===0,"cleanup invalidates active timer token");
 
 const memory=new Map();
 global.localStorage={getItem:key=>memory.get(key)??null,setItem:(key,value)=>memory.set(key,value),removeItem:key=>memory.delete(key)};

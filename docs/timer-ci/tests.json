@@ -1,0 +1,142 @@
+{
+  "local": {
+    "nodeVersion": "24.19.0",
+    "playwright": "1.62.1",
+    "chromium": "system /usr/bin/chromium",
+    "suites": [
+      {
+        "suite": "node",
+        "exitCode": 0,
+        "seconds": 1.7
+      },
+      {
+        "suite": "animation",
+        "exitCode": 0,
+        "seconds": 110.8
+      },
+      {
+        "suite": "background",
+        "exitCode": 0,
+        "seconds": 44.9
+      },
+      {
+        "suite": "browser",
+        "exitCode": 0,
+        "seconds": 119.9
+      },
+      {
+        "suite": "deadline",
+        "exitCode": 0,
+        "seconds": 20.9
+      },
+      {
+        "suite": "edge",
+        "exitCode": 0,
+        "seconds": 26.2
+      },
+      {
+        "suite": "input-leaderboard",
+        "exitCode": 0,
+        "seconds": 53
+      },
+      {
+        "suite": "interaction",
+        "exitCode": 0,
+        "seconds": 47.4
+      },
+      {
+        "suite": "mission",
+        "exitCode": 0,
+        "seconds": 94.5
+      },
+      {
+        "suite": "packing",
+        "exitCode": 0,
+        "seconds": 130.9
+      },
+      {
+        "suite": "polish",
+        "exitCode": 0,
+        "seconds": 132.7
+      },
+      {
+        "suite": "premium",
+        "exitCode": 0,
+        "seconds": 24.2
+      },
+      {
+        "suite": "visual",
+        "exitCode": 0,
+        "seconds": 60.7
+      }
+    ],
+    "nodeAssertions": 122703,
+    "finalSeeds": 5000,
+    "finalHoldCount": 4021,
+    "completeCompetitions": 2,
+    "perfectScore": 1000,
+    "nativePackingShapeGripViewportCases": 63
+  },
+  "node22Verification": {
+    "version": "22.23.3",
+    "suites": [
+      "node",
+      "deadline"
+    ],
+    "exitCode": 0,
+    "freshHttpServerPort": 8015
+  },
+  "negativeControls": {
+    "oldPlayingOnlyGate": {
+      "exitCode": 1,
+      "expectedFailure": true,
+      "reason": "Speed Picking accepted click exactly at deadline"
+    },
+    "isolatedRunnerFailure": {
+      "exitCode": 1,
+      "expectedFailure": true,
+      "failingSuiteExitCode": 7,
+      "followingSuiteExecuted": true,
+      "defaultDiscoveryExcludedRunner": true
+    }
+  },
+  "workflow": {
+    "actionlint": "1.7.7",
+    "lintExitCode": 0,
+    "matrixMatchesAllSuites": true,
+    "npmCiExitCode": 0,
+    "githubActionsRun": "not verified: GitHub API Forbidden",
+    "bundledChromiumInstall": "blocked locally: cdn.playwright.dev 403 Domain forbidden; elevated request cancelled",
+    "deploySteps": false
+  },
+  "initialRunnerIssue": {
+    "exitCode": 1,
+    "reason": "Runner discovered itself as a suite; duplicate run interrupted",
+    "fixed": true,
+    "allActualSuitesExitZero": true,
+    "fixedRunnerVerification": [
+      "node + deadline (Node 24)",
+      "node + deadline (Node 22)",
+      "isolated default discovery/server/failure propagation fixture"
+    ]
+  },
+  "notRun": [
+    "GitHub-hosted Actions execution",
+    "Playwright bundled Chromium installation on GitHub",
+    "other browsers",
+    "physical touch"
+  ],
+  "unchanged": [
+    "CSS",
+    "assets",
+    "effects",
+    "preloading",
+    "RNG/tasks",
+    "scoring",
+    "time limits",
+    "Memory four-second phase",
+    "Packing resolver/grab/threshold/snap/settling",
+    "ranking/CSV",
+    "menu/briefing/results/transitions"
+  ]
+}
