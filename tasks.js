@@ -48,7 +48,7 @@ export function buildCompetition(seed,rng){
 
 export function buildTask(type,rng){
   if(type==="picking"||type==="barcode"){
-    const targets=unique(10,()=>sku(rng)),counts=targets.map((_,index)=>6+Math.floor(index/3)),positions=balancedPositions(counts,rng.fork("answer-positions")),visual=rng.fork("artwork");
+    const targets=unique(10,()=>sku(rng)),counts=targets.map((_,index)=>type==="picking"?6:6+Math.floor(index/3)),positions=balancedPositions(counts,rng.fork("answer-positions")),visual=rng.fork("artwork");
     return {targets,rounds:targets.map((target,index)=>{
       const options=similarSkus(rng,target,counts[index]).filter(value=>value!==target);options.splice(positions[index],0,target);
       const variants=type==="picking"?visual.shuffle([0,1,2,3,4,5,0,1,2]).slice(0,counts[index]):visual.shuffle(Array.from({length:counts[index]},(_,i)=>i%3));

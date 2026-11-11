@@ -14,7 +14,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        suite: [node, animation, background, browser, deadline, edge, input-leaderboard, interaction, mission, packing, polish, premium, visual]
+        suite: [node, animation, background, browser, deadline, edge, input-leaderboard, layout, interaction, mission, packing, polish, premium, visual]
     name: ${{ matrix.suite }}
     steps:
       - uses: actions/checkout@v4

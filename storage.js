@@ -47,4 +47,4 @@ export class CompetitionSettings {
   setSeed(seed){return this.setEventId(seed);}
 
 }
-export function leaderboardCsv(rows){const quote=value=>`"${String(value??"").replaceAll('"','""')}"`;return ["Run ID,Rank,Participant,Score,Accuracy,Date and time,Run seed,Event ID,Mistakes",...rows.map((row,index)=>[row.id,index+1,row.name,row.score,`${row.accuracy}%`,row.timestamp,row.runSeed||row.competitionSeed,row.eventId,row.mistakes].map(quote).join(","))].join("\r\n");}
+export function leaderboardCsv(rows){const quote=value=>`"${String(value??"").replaceAll('"','""')}"`;return ["Run ID,Rank,Participant,Score,Accuracy,Date and time,Run seed,Event ID,Mistakes,Email",...rows.map((row,index)=>[row.id,index+1,row.name,row.score,`${row.accuracy}%`,row.timestamp,row.runSeed||row.competitionSeed,row.eventId,row.mistakes,row.email].map(quote).join(","))].join("\r\n");}

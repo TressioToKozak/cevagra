@@ -1,9 +1,9 @@
 import {installEditingCursor} from "./editing-cursor.js?v=20";
-import { CompetitionSettings, LeaderboardManager, leaderboardCsv, normalizeName } from "./storage.js?v=20";
+import { CompetitionSettings, LeaderboardManager, leaderboardCsv, normalizeName } from "./storage.js?v=24";
 import { ArcadeEffects, animateNumber } from "./effects.js?v=21";
 import { SeededRandom, createRunId, createRunSeed } from "./rng.js?v=20";
-import { ACTIVE_SECONDS, GAME_CONFIGS, TRANSITION_SECONDS, buildCompetition, buildGameOrder } from "./tasks.js?v=20";
-import { MINIGAME_CLASSES } from "./minigames.js?v=23";
+import { ACTIVE_SECONDS, GAME_CONFIGS, TRANSITION_SECONDS, buildCompetition, buildGameOrder } from "./tasks.js?v=24";
+import { MINIGAME_CLASSES } from "./minigames.js?v=24";
 import { sumScores } from "./scoring.js?v=20";
 import { StageGuard } from "./lifecycle.js?v=23";
 import { assetLoader, ASSET_PRIORITY } from "./asset-loader.js?v=20";
@@ -15,11 +15,30 @@ const esc=value=>String(value).replace(/[&<>'"]/g,char=>({"&":"&amp;","<":"&lt;"
 document.addEventListener("dragstart",event=>{
   if(event.target.closest?.("#app img,#modal img,.drag-ghost")&&!event.target.closest('[contenteditable]:not([contenteditable="false"])'))event.preventDefault();
 });
+document.addEventListener("contextmenu",event=>event.preventDefault());
+for(const type of ["pointerdown","pointerup","mousedown","mouseup","auxclick"]){
+  document.addEventListener(type,event=>{if(event.button===2){event.preventDefault();event.stopImmediatePropagation();}},true);
+}
+
+// Fit a complete design canvas to the browser content area (excluding browser chrome).
+function fitViewport(){
+  const viewport=window.visualViewport;
+  const width=Math.min(window.innerWidth,viewport?.width||window.innerWidth);
+  const height=Math.min(window.innerHeight,viewport?.height||window.innerHeight);
+  const scale=Math.min(1,width/1100,height/820);
+  app.style.setProperty("--screen-scale",scale);
+  app.style.setProperty("--screen-width",`${width/scale}px`);
+  app.style.setProperty("--screen-height",`${height/scale}px`);
+}
+window.addEventListener("resize",fitViewport);
+window.visualViewport?.addEventListener("resize",fitViewport);
+
 document.addEventListener("visibilitychange",()=>document.documentElement.classList.toggle("motion-suspended",document.hidden));
 const organizerEnabled=new URLSearchParams(location.search).get("organizer")==="1";
 const requestedSeed=new URLSearchParams(location.search).get("seed");
 const settings=new CompetitionSettings();
 const app=$("#app"),modal=$("#modal"),modalContent=$("#modal-content"),leaderboard=new LeaderboardManager();
+fitViewport();
 const RESULT_ICONS={
   picking:"speed-picking",
   conveyor:"conveyor-rush",
@@ -34,8 +53,8 @@ const RESULT_ICONS={
 
 export class CompetitionManager {
   constructor({root=app,seed=requestedSeed,loader=assetLoader}={}){this.root=root;this.debugSeed=seed;this.loader=loader;this.flowSerial=0;this.guard=new StageGuard();this.interfaceEffects=new ArcadeEffects();this.interfaceEffects.bindPress(root);this.interfaceEffects.bindPress(modal);this.reset();}
-  reset(){this.flowSerial++;this.briefingVersion=(this.briefingVersion||0)+1;this.preparedStage?.wrapper.remove();this.preparedStage=null;this.stageReady=false;this.state="menu";this.runId=null;this.cancelScoreAnimation?.();this.cancelScoreAnimation=null;this.stopTimer();this.active?.cleanup();this.effects?.destroy();this.active=null;this.playerName="";this.index=-1;this.scores={};this.results=[];this.totalCorrect=0;this.totalAttempts=0;this.totalMistakes=0;this.transitioning=false;}
-  landing(prefill="") {this.state="menu";this.stopTimer();this.active?.cleanup();document.body.classList.remove("results-active");document.body.classList.add("menu-active");this.root.innerHTML=`<section class="menu-screen" aria-labelledby="menu-title"><div class="menu-content"><img draggable="false" class="menu-logo" fetchpriority="high" decoding="async" src="assets/menu/logo-light.webp" alt="CEVA Logistics"><h1 id="menu-title"><span>CHRISTMAS</span><strong>LOGISTICS CHALLENGE</strong></h1><p class="menu-details">9 GAMES <i>•</i> 3 MINUTES <i>•</i> 1,000 POINTS</p><form class="menu-form" id="start-form" autocomplete="off"><label class="visually-hidden" for="player-name">Participant name</label><div class="menu-input-wrap"><span aria-hidden="true"></span><input id="player-name" name="competition-participant" maxlength="24" value="${esc(prefill)}" placeholder="Enter your name..." autocomplete="one-time-code" data-lpignore="true" data-form-type="other" spellcheck="false"></div><div class="menu-error" id="name-error" aria-live="polite"></div><button class="menu-start" type="submit"><i aria-hidden="true"></i><span>START GAME</span></button><button class="menu-leaderboard" type="button" id="leaderboard-button"><span aria-hidden="true">🏆</span> VIEW LEADERBOARD</button></form></div></section>`;$("#start-form").onsubmit=event=>{event.preventDefault();const input=$("#player-name"),name=input.value.trim().replace(/\s+/g," ");if(!name){$("#name-error").textContent="Enter a participant name to begin.";return input.focus();}this.playerName=name;this.prepare();};$("#leaderboard-button").onclick=()=>showLeaderboard();this.preloadInBackground();if(organizerEnabled&&!this.organizerOpened){this.organizerOpened=true;showOrganizer();}}
+  reset(){this.flowSerial++;this.briefingVersion=(this.briefingVersion||0)+1;this.preparedStage?.wrapper.remove();this.preparedStage=null;this.stageReady=false;this.state="menu";this.runId=null;this.cancelScoreAnimation?.();this.cancelScoreAnimation=null;this.stopTimer();this.active?.cleanup();this.effects?.destroy();this.active=null;this.playerName="";this.playerEmail="";this.index=-1;this.scores={};this.results=[];this.totalCorrect=0;this.totalAttempts=0;this.totalMistakes=0;this.transitioning=false;}
+  landing(prefill="") {this.state="menu";this.stopTimer();this.active?.cleanup();document.body.classList.remove("results-active");document.body.classList.add("menu-active");this.root.innerHTML=`<section class="menu-screen" aria-labelledby="menu-title"><div class="menu-content"><img draggable="false" class="menu-logo" fetchpriority="high" decoding="async" src="assets/menu/logo-light.webp" alt="CEVA Logistics"><h1 id="menu-title"><span>CHRISTMAS</span><strong>LOGISTICS CHALLENGE</strong></h1><p class="menu-details">9 GAMES <i>•</i> 3 MINUTES <i>•</i> 1,000 POINTS</p><form class="menu-form" id="start-form" autocomplete="off" novalidate><label class="visually-hidden" for="player-name">Participant name</label><div class="menu-input-wrap"><span aria-hidden="true"></span><input id="player-name" name="competition-participant" maxlength="24" value="${esc(prefill)}" placeholder="Enter your name..." autocomplete="one-time-code" data-lpignore="true" data-form-type="other" spellcheck="false"></div><label class="visually-hidden" for="player-email">Participant email</label><div class="menu-input-wrap menu-email-wrap"><input id="player-email" name="email" type="email" maxlength="254" placeholder="Enter your email..." autocomplete="email" required aria-describedby="name-error"></div><div class="menu-error" id="name-error" aria-live="polite"></div><button class="menu-start" type="submit"><i aria-hidden="true"></i><span>START GAME</span></button><button class="menu-leaderboard" type="button" id="leaderboard-button"><span aria-hidden="true">🏆</span> VIEW LEADERBOARD</button></form></div></section>`;$("#start-form").onsubmit=event=>{event.preventDefault();const input=$("#player-name"),name=input.value.trim().replace(/\s+/g," ");if(!name){$("#name-error").textContent="Enter a participant name to begin.";return input.focus();}const emailInput=$("#player-email"),email=emailInput.value.trim();emailInput.value=email;if(!email||!emailInput.validity.valid){$("#name-error").textContent="Enter a valid email address to begin.";return emailInput.focus();}this.playerName=name;this.playerEmail=email;this.prepare();};$("#leaderboard-button").onclick=()=>showLeaderboard();this.preloadInBackground();if(organizerEnabled&&!this.organizerOpened){this.organizerOpened=true;showOrganizer();}}
   preloadInBackground(){
     this.loader.preload([...COMMON_ASSETS.filter(path=>path.includes("/menu/")),...COMMON_ASSETS.filter(path=>path.includes("/cursor/"))],()=>{},{priority:ASSET_PRIORITY.HIGH}).catch(()=>{});
     if(this.backgroundScheduled)return;this.backgroundScheduled=true;
@@ -138,7 +157,7 @@ export class CompetitionManager {
   stopTimer(){this.interfaceEffects?.clearPress();this.cancelTransitionScore?.();this.cancelTransitionScore=null;cancelAnimationFrame(this.flashFrame);this.flashFrame=null;if(this.timer)clearInterval(this.timer);this.timer=null;if(this.transitionHandle)clearTimeout(this.transitionHandle);this.transitionHandle=null;this.stageToken=null;this.guard?.cancel();}
   finish(){
     if(this.state==="results")return;this.state="results";this.stopTimer();
-    const score=sumScores(this.scores),previousRecord=leaderboard.getHighScore(),accuracy=this.totalAttempts?Math.round(this.totalCorrect/this.totalAttempts*100):0,timestamp=new Date().toISOString(),run={id:this.runId,name:this.playerName,normalizedName:normalizeName(this.playerName),score,accuracy,mistakes:this.totalMistakes,averageResponseTime:0,minigameScores:this.scores,timestamp,competitionSeed:this.runSeed,runSeed:this.runSeed,eventId:this.eventId,startedAt:this.startedAt,debugSeed:!!this.debugSeed};
+    const score=sumScores(this.scores),previousRecord=leaderboard.getHighScore(),accuracy=this.totalAttempts?Math.round(this.totalCorrect/this.totalAttempts*100):0,timestamp=new Date().toISOString(),run={id:this.runId,name:this.playerName,email:this.playerEmail,normalizedName:normalizeName(this.playerName),score,accuracy,mistakes:this.totalMistakes,averageResponseTime:0,minigameScores:this.scores,timestamp,competitionSeed:this.runSeed,runSeed:this.runSeed,eventId:this.eventId,startedAt:this.startedAt,debugSeed:!!this.debugSeed};
     const board=leaderboard.saveRun(run),rank=board.findIndex(row=>row.id===run.id)+1,isRecord=score>previousRecord;
     document.body.classList.remove("menu-active");
     document.body.classList.add("results-active");
