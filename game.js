@@ -2,8 +2,8 @@ import {installEditingCursor} from "./editing-cursor.js?v=20";
 import { CompetitionSettings, LeaderboardManager, leaderboardCsv, normalizeName } from "./storage.js?v=24";
 import { ArcadeEffects, animateNumber } from "./effects.js?v=21";
 import { SeededRandom, createRunId, createRunSeed } from "./rng.js?v=20";
-import { ACTIVE_SECONDS, GAME_CONFIGS, TRANSITION_SECONDS, buildCompetition, buildGameOrder } from "./tasks.js?v=24";
-import { MINIGAME_CLASSES } from "./minigames.js?v=24";
+import { GAME_CONFIGS, TRANSITION_SECONDS, buildCompetition, buildGameOrder } from "./tasks.js?v=24";
+import { MINIGAME_CLASSES } from "./minigames.js?v=25";
 import { sumScores } from "./scoring.js?v=20";
 import { StageGuard } from "./lifecycle.js?v=23";
 import { assetLoader, ASSET_PRIORITY } from "./asset-loader.js?v=20";
@@ -121,7 +121,7 @@ export class CompetitionManager {
   }
   buildStage(config){
     const GameClass=MINIGAME_CLASSES[config.id],container=document.createElement("div");let token;
-    container.innerHTML=`<section class="competition-shell stage-preparing" data-game="${config.id}" style="--game-background:url('${GAMEPLAY_BACKGROUNDS[config.id]}')"><div class="competition-hud"><div><small>PLAYER</small><strong>${esc(this.playerName)}</strong></div><div><small>MINIGAME</small><strong>${this.index+1} / 9 · ${config.name}</strong></div><div><small>SCORE</small><strong id="score-value">${sumScores(this.scores)} / 1000</strong></div><div class="clock"><small>TIME</small><strong id="stage-time">${config.time.toFixed(1)}</strong></div></div><div class="overall"><span>ACTIVE TIME REMAINING</span><div class="overall-progress"><i id="overall-bar"></i></div><b id="overall-time">${ACTIVE_SECONDS}s</b></div><header class="minigame-head"><div><div class="eyebrow">CHALLENGE ${String(this.index+1).padStart(2,"0")}</div><h1>${config.name}</h1></div><div class="instruction-card"><strong>${config.action}</strong><span>${config.instruction}</span><small>${config.hint}</small></div></header><div class="minigame-root" id="minigame-root"></div><div class="score-flash" id="score-flash" aria-live="polite"></div></section>`;
+    container.innerHTML=`<section class="competition-shell stage-preparing" data-game="${config.id}" style="--game-background:url('${GAMEPLAY_BACKGROUNDS[config.id]}')"><div class="competition-hud"><div><small>PLAYER</small><strong>${esc(this.playerName)}</strong></div><div><small>MINIGAME</small><strong>${this.index+1} / 9 · ${config.name}</strong></div><div><small>SCORE</small><strong id="score-value">${sumScores(this.scores)} / 1000</strong></div><div class="clock"><small>TIME</small><strong id="stage-time">${config.time.toFixed(1)}</strong></div></div><header class="minigame-head"><div><div class="eyebrow">CHALLENGE ${String(this.index+1).padStart(2,"0")}</div><h1>${config.name}</h1></div><div class="instruction-card"><strong>${config.action}</strong><span>${config.instruction}</span><small>${config.hint}</small></div></header><div class="minigame-root" id="minigame-root"></div><div class="score-flash" id="score-flash" aria-live="polite"></div></section>`;
     const shell=container.firstElementChild,wrapper=document.createElement("div");wrapper.className="stage-preparation";wrapper.setAttribute("aria-hidden","true");wrapper.inert=true;wrapper.append(shell);this.root.append(wrapper);
     this.effects=new ArcadeEffects($("#minigame-root",shell));const context={isActive:()=>this.state==="playing"&&this.guard.allows(token),root:$("#minigame-root",shell),data:this.tasks[config.id],config,remaining:()=>this.deadline===null?config.time:Math.max(0,(this.deadline-performance.now())/1000),flash:(symbol,text)=>this.flash(symbol,text),feedback:(kind,text,anchor)=>this.effects.feedback(kind,text,anchor),selection:text=>this.effects.selection(text),motion:(node,kind,duration)=>this.effects.pulse(node,kind,duration),transfer:(source,target)=>this.effects.transfer(source,target),update:()=>this.updateHud(),finish:()=>this.completeGame(token)};
     const active=this.active=new GameClass().init(context);active.render();
@@ -142,13 +142,12 @@ export class CompetitionManager {
       if(serial!==this.flowSerial)return;this.briefing();
     }
   }
-  elapsedBeforeCurrent(){return this.gameConfigs.slice(0,this.index).reduce((sum,game)=>sum+game.time,0);}
   updateHud(){
     if(!this.active||this.state!=="playing")return;
-    const remaining=Math.max(0,(this.deadline-performance.now())/1000),elapsed=this.elapsedBeforeCurrent()+(this.gameConfigs[this.index].time-remaining),competitionRemaining=Math.max(0,ACTIVE_SECONDS-elapsed),percent=competitionRemaining/ACTIVE_SECONDS*100;
-    const stage=$("#stage-time"),bar=$("#overall-bar"),overall=$("#overall-time"),scoreNode=$("#score-value"),liveScore=Math.min(this.gameConfigs[this.index].max,this.pendingResult?.score??this.active.liveScore??this.active.score()),displayScore=Math.min(1000,sumScores(this.scores)+liveScore);
+    const remaining=Math.max(0,(this.deadline-performance.now())/1000);
+    const stage=$("#stage-time"),scoreNode=$("#score-value"),liveScore=Math.min(this.gameConfigs[this.index].max,this.pendingResult?.score??this.active.liveScore??this.active.score()),displayScore=Math.min(1000,sumScores(this.scores)+liveScore);
     if(scoreNode&&scoreNode.dataset.score!==String(displayScore)){const previous=Number(scoreNode.dataset.score);scoreNode.dataset.score=String(displayScore);scoreNode.textContent=`${displayScore} / 1000`;if(displayScore>previous)this.effects.pulse(scoreNode,"score-changed",250);}
-    if(stage){stage.textContent=remaining.toFixed(1);stage.classList.toggle("critical",remaining<5);}if(bar)bar.style.width=`${percent}%`;if(overall)overall.textContent=`${Math.ceil(competitionRemaining)}s`;
+    if(stage){stage.textContent=remaining.toFixed(1);stage.classList.toggle("critical",remaining<5);}
   }
 
   flash(symbol,text){const node=$("#score-flash");if(!node)return;node.textContent=`${symbol} ${text}`;node.classList.remove("show");cancelAnimationFrame(this.flashFrame);this.flashFrame=requestAnimationFrame(()=>{if(this.state==="playing")node.classList.add("show");});}

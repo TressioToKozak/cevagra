@@ -772,3 +772,25 @@ body.results-active #app{overflow:hidden}
 #app .menu-start{height:76px;min-height:0}
 #app .menu-leaderboard{height:54px;min-height:0;margin-top:18px}
 #app .menu-error{height:28px;min-height:0;padding-top:0;font-size:13px}
+
+
+/* Give the recovered HUD space to the playable boards. */
+.competition-shell[data-game="loading"] .loading-layout{grid-template-rows:minmax(0,1.35fr) minmax(0,.65fr) 62px}
+.competition-shell[data-game="quality"] .quality-inspection{grid-template-rows:minmax(0,1fr) auto}
+.competition-shell[data-game="final"] .final-layout{grid-template-rows:minmax(0,1fr) 74px 92px}
+.competition-shell[data-game="final"] .final-footer{justify-content:center;padding:0;gap:14px}
+.competition-shell[data-game="final"] .final-footer button{flex:1;width:auto;max-width:none}
+.competition-shell[data-game="detective"] #detective-count{grid-column:auto;grid-row:auto;min-width:0;padding:8px 12px}
+/* The old panel artwork contains a second, clipped label. Use real text once. */
+.competition-shell[data-game="barcode"] .barcode-target{background:linear-gradient(110deg,#0b2037,#061423);border:1px solid #4e7998;border-radius:7px;box-shadow:inset 0 1px 0 #b4d9ef44;padding:8px 16px;grid-template-columns:minmax(0,38fr) minmax(0,62fr)}
+.competition-shell[data-game="barcode"] .barcode-target span{padding:0 12px;background:none;white-space:normal;line-height:1.2}
+@media(max-height:760px){.competition-shell[data-game="final"] .final-layout{grid-template-rows:minmax(0,1fr) 60px 72px}}
+@media(max-width:760px){.competition-shell[data-game="loading"] .loading-layout{grid-template-rows:minmax(0,1fr) minmax(0,.65fr) 44px}.competition-shell[data-game="final"] .final-layout{grid-template-rows:minmax(0,1fr) 100px 68px}}
+/* Use the larger panels for larger operational data and pallet labels. */
+.competition-shell[data-game="detective"] .record-code b{font-size:clamp(20px,1.9vw,32px)}
+.competition-shell[data-game="detective"] .record-code small,.competition-shell[data-game="detective"] .record-location small{font-size:clamp(9px,.75vw,12px)}
+.competition-shell[data-game="final"] .dispatch-data dd{font-size:clamp(28px,2.3vw,40px)}
+.competition-shell[data-game="final"] .dispatch-data dt{font-size:clamp(12px,1vw,16px)}
+.competition-shell[data-game="loading"] .loading-layout{--pallet-width:clamp(124px,12vw,200px)}
+.load-pallet.pallet-art .pallet-copy b{font-size:clamp(9px,.95vw,16px)}
+.load-pallet.pallet-art .pallet-copy>span{font-size:clamp(8px,.8vw,13px)}

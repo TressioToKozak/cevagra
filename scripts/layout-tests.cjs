@@ -7,7 +7,7 @@ const {chromium}=require('playwright');
   page.on('pageerror',e=>errors.push(e.message));
   await page.goto(process.env.TEST_ORIGIN||'http://127.0.0.1:8002/');
   await page.evaluate(async()=>{
-   window.qa=(await import('./game.js?v=24')).manager;
+   window.qa=(await import('./game.js?v=25')).manager;
    const tasks=await import('./tasks.js?v=24');window.configs=tasks.GAME_CONFIGS;window.make=tasks.buildCompetition;
    window.RNG=(await import('./rng.js?v=20')).SeededRandom;
   });
@@ -34,6 +34,8 @@ const {chromium}=require('playwright');
    for(const id of await page.evaluate(()=>configs.map(c=>c.id))){
     await page.evaluate(id=>{qa.reset();document.body.classList.remove('menu-active','results-active');qa.gameConfigs=configs;qa.tasks=make('LAYOUT',new RNG('LAYOUT'));qa.index=configs.findIndex(c=>c.id===id);qa.playerName='Alex';qa.playerEmail='alex@example.com';qa.briefing();},id);
     await fits(id+' briefing');await page.evaluate(async()=>{qa.state='countdown';await qa.startGame();qa.stopTimer();});await fits(id+' gameplay');
+    assert.equal(await page.locator('.overall,.terminal-status,.loading-guide,.quality-legend,.final-inspect,.final-footer p').count(),0,'redundant panels are removed');
+    if(id==='barcode')assert.equal(await page.locator('.barcode-target').evaluate(n=>getComputedStyle(n).backgroundImage.includes('target-sku-panel')),false,'barcode panel contains no duplicate text artwork');
     if(id==='picking'){
      const boxes=[];
      for(let i=0;i<10;i++){await page.evaluate(i=>{qa.active.index=i;qa.active.draw();},i);assert.equal(await page.locator('.picking-card').count(),6);boxes.push(await page.locator('.picking-locations').boundingBox());}

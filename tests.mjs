@@ -148,7 +148,7 @@ board.clearLeaderboard();assert(board.getLeaderboard().length===0,"leaderboard a
 const html=readFileSync("index.html","utf8"),css=readFileSync("styles.css","utf8"),game=readFileSync("game.js","utf8"),minigames=readFileSync("minigames.js","utf8"),interactions=readFileSync("interactions.js","utf8"),effects=readFileSync("effects.js","utf8");
 assert(game.includes('assets/menu/logo-light.webp')&&game.includes("CHRISTMAS</span><strong>LOGISTICS CHALLENGE"),"CEVA logo and brand remain");
 assert(game.includes("CHRISTMAS</span><strong>LOGISTICS CHALLENGE")&&css.includes("menu-screen"),"Christmas presentation remains");
-assert(game.includes("ACTIVE TIME REMAINING")&&game.includes("/ 1000"),"HUD shows global progress and accumulated score");
+assert(!game.includes('class="overall"')&&game.includes("/ 1000")&&game.includes('id="stage-time"'),"HUD shows stage time and score without the redundant global progress bar");
 assert(game.includes("finish:()=>this.completeGame(token)")&&!game.includes("lockGame(token)"),"accepted answers advance immediately without waiting for the timer");
 assert(game.includes('createRunSeed')&&game.includes('buildGameOrder'),"each run receives fresh task data and a shuffled pre-final order");
 assert(!game.includes("LOCAL DEVICE LEADERBOARD")&&!game.includes("not a centralized company leaderboard"),"leaderboard omits the legacy local header and storage footer");
