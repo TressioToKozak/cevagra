@@ -9,7 +9,7 @@ export const GAME_CONFIGS=[
   {id:"loading",name:"TRUCK LOADING",time:20,max:100,action:"DRAG",instruction:"Load the last delivery deepest inside the truck.",hint:"Click a pallet then a slot, or drag it. Swap pallets to change the load order."},
   {id:"memory",name:"MEMORY CHALLENGE",time:15,max:100,action:"MEMORIZE",instruction:"Remember the five gifts. Then select the same gifts.",hint:"Then select only the gifts from Santa’s manifest."},
   {id:"quality",name:"QUALITY CONTROL",time:15,max:100,action:"SELECT",instruction:"Inspect the parcels and find every visible problem.",hint:"Look for damage, bad labels, missing data and wrong SKUs."},
-  {id:"final",name:"FINAL DISPATCH",time:25,max:200,action:"CHECK",instruction:"Compare the order with the packed shipment.",hint:"Flag every mismatch. RELEASE a matching shipment or HOLD an incorrect one."}
+  {id:"final",name:"FINAL DISPATCH",time:25,max:200,action:"CHECK",instruction:"Compare the order with the packed shipment.",hint:"Flag mismatches and choose RELEASE or HOLD. Points decrease every second."}
 ];
 export const ACTIVE_SECONDS=GAME_CONFIGS.reduce((sum,game)=>sum+game.time,0);
 export const TRANSITION_SECONDS=1.5;
@@ -48,7 +48,7 @@ export function buildCompetition(seed,rng){
 
 export function buildTask(type,rng){
   if(type==="picking"||type==="barcode"){
-    const targets=unique(10,()=>sku(rng)),counts=targets.map((_,index)=>type==="picking"?6:6+Math.floor(index/3)),positions=balancedPositions(counts,rng.fork("answer-positions")),visual=rng.fork("artwork");
+    const targets=unique(10,()=>sku(rng)),counts=targets.map(()=>6),positions=balancedPositions(counts,rng.fork("answer-positions")),visual=rng.fork("artwork");
     return {targets,rounds:targets.map((target,index)=>{
       const options=similarSkus(rng,target,counts[index]).filter(value=>value!==target);options.splice(positions[index],0,target);
       const variants=type==="picking"?visual.shuffle([0,1,2,3,4,5,0,1,2]).slice(0,counts[index]):visual.shuffle(Array.from({length:counts[index]},(_,i)=>i%3));
@@ -70,7 +70,7 @@ export function buildTask(type,rng){
   }
   if(type==="loading"){const ids=unique(7,()=>`PLT-${digits(rng,4)}`),cities=rng.shuffle(["Oslo","Boston","Zurich","Toronto","Helsinki","Edinburgh","Copenhagen"]),pallets=Array.from({length:7},(_,index)=>({id:ids[index],stop:index+1,city:cities[index]}));return {pallets:rng.shuffle(pallets),solution:[...pallets].sort((a,b)=>b.stop-a.stop).map(item=>item.id)};}
   if(type==="memory"){const shipment=rng.shuffle(GIFTS).slice(0,5);return {shipment,options:rng.shuffle([...shipment,...rng.shuffle(GIFTS.filter(gift=>!shipment.includes(gift))).slice(0,3)])};}
-  if(type==="quality"){const issues=rng.shuffle(["dented","wrong-label","missing","wrong-sku",null,null,null,null]),parcels=Array.from({length:8},(_,index)=>({id:`GIFT-${index+1}`,sku:sku(rng),carrier:rng.pick(CARRIERS),issue:issues[index],variant:rng.fork(`parcel-art-${index}`).int(0,2)}));return {parcels:rng.shuffle(parcels),solution:parcels.filter(parcel=>parcel.issue).map(parcel=>parcel.id)};}
+  if(type==="quality"){const count=rng.int(3,5),types=["dented","wrong-label","missing","wrong-sku"],issues=rng.shuffle([...Array.from({length:count},()=>rng.pick(types)),...Array(8-count).fill(null)]),parcels=Array.from({length:8},(_,index)=>({id:`GIFT-${index+1}`,sku:sku(rng),carrier:rng.pick(CARRIERS),issue:issues[index],variant:rng.fork(`parcel-art-${index}`).int(0,2)}));return {parcels:rng.shuffle(parcels),solution:parcels.filter(parcel=>parcel.issue).map(parcel=>parcel.id)};}
   if(type==="final"){
     const order={id:`SHP-${digits(rng)}`,sku:sku(rng),quantity:rng.pick([10,12,14]),carrier:rng.pick(CARRIERS),serials:12};
     const issuePool=rng.shuffle(["WRONG QUANTITY","WRONG CARRIER","WRONG SKU","MISSING SERIALS"]),solution=rng.next()<.8?issuePool.slice(0,2):[];

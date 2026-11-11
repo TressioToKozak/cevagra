@@ -10,6 +10,7 @@ import {COMPETITION_ASSETS,GAME_ASSETS,GAMEPLAY_BACKGROUNDS} from './asset-manif
 let checks=0;const check=(condition,message)=>{checks++;assert(condition,message);};
 const ids=Array.from({length:1000},createRunId),seeds=Array.from({length:1000},createRunSeed);
 check(new Set(ids).size===1000&&new Set(seeds).size===1000,'secure run identifiers and seeds are unique');
+const qualityCounts=new Map([[3,0],[4,0],[5,0]]),repeatedIssues=new Set();
 const lastPositions=new Set(),variants=new Set(),zones=new Set(),actions={HOLD:0,RELEASE:0};
 for(let i=0;i<500;i++){
  const seed=`BALANCED-${i}`,rng=new SeededRandom(seed),data=buildCompetition(seed,rng),again=buildCompetition(seed,new SeededRandom(seed)),order=buildGameOrder(rng.fork('game-order'));
@@ -17,7 +18,7 @@ for(let i=0;i<500;i++){
  lastPositions.add(data.picking.rounds.at(-1).options.indexOf(data.picking.rounds.at(-1).target));
  for(const name of ['picking','barcode']){
   let previous=-1;const counts=Array(9).fill(0);
-  for(const round of data[name].rounds){if(name==='picking')check(round.options.length===6,'every round keeps exactly six pallets');const position=round.options.indexOf(round.target);check(position>=0&&position!==previous,'no consecutive matching positions');check(round.options.length===round.variants.length&&new Set(round.options).size===round.options.length,'complete unique options and artwork');counts[position]++;previous=position;}
+  for(const round of data[name].rounds){check(round.options.length===6,'every round keeps exactly six choices');const position=round.options.indexOf(round.target);check(position>=0&&position!==previous,'no consecutive matching positions');check(round.options.length===round.variants.length&&new Set(round.options).size===round.options.length,'complete unique options and artwork');counts[position]++;previous=position;}
   check(Math.max(...counts)<=2,'each correct slot appears at most twice over ten rounds');
  }
  check(data.conveyor.carriers.length===6&&new Set(data.conveyor.carriers).size===6,'all six carrier zones');zones.add(data.conveyor.carriers.join());
@@ -28,13 +29,18 @@ for(let i=0;i<500;i++){
  check(data.detective.solution.length===3&&data.detective.rows.filter(r=>r.expected!==r.actual).length===3,'detective has exactly three real discrepancies');
  check(data.loading.solution.join()===data.loading.pallets.slice().sort((a,b)=>b.stop-a.stop).map(p=>p.id).join(),'truck physical direction is unchanged');
  check(data.memory.shipment.length===5&&data.memory.options.length===8,'memory keeps five gifts and three decoys');
- check(data.quality.solution.length===4&&data.quality.parcels.filter(p=>p.issue).length===4,'quality artwork preserves four defects');
+ qualityCounts.set(data.quality.solution.length,(qualityCounts.get(data.quality.solution.length)||0)+1);
+ for(const type of ['dented','wrong-label','missing','wrong-sku'])if(data.quality.parcels.filter(p=>p.issue===type).length>=2)repeatedIssues.add(type);
+ check(new Set(data.quality.solution).size===data.quality.solution.length,'each defective parcel appears once in the solution');
+ check([3,4,5].includes(data.quality.solution.length)&&data.quality.parcels.filter(p=>p.issue).length===data.quality.solution.length,'quality solution matches its random defect count');
  const task=data.final;actions[task.action]++;const differences=[task.order.quantity!==task.actual.quantity?'WRONG QUANTITY':null,task.order.carrier!==task.actual.carrier?'WRONG CARRIER':null,task.order.sku!==task.actual.sku?'WRONG SKU':null,task.order.serials!==task.actual.serials?'MISSING SERIALS':null].filter(Boolean);
  check(differences.sort().join()===task.solution.slice().sort().join()&&task.action===(differences.length?'HOLD':'RELEASE'),'final action and issue solution follow actual data');
- const game=new MINIGAME_CLASSES.final().init({root:{},data:task,config:GAME_CONFIGS.at(-1),remaining:()=>20});game.selected=new Set(task.solution);game.action=task.action;check(game.score()===200,'both final outcomes achieve 200');if(task.action==='RELEASE'){game.action=null;check(game.score()===0,'a valid shipment earns no points without an explicit decision');}
+ const game=new MINIGAME_CLASSES.final().init({root:{},data:task,config:GAME_CONFIGS.at(-1),remaining:()=>25});game.selected=new Set(task.solution);game.action=task.action;check(game.score()===200,'both final outcomes achieve 200');if(task.action==='RELEASE'){game.action=null;check(game.score()===0,'a valid shipment earns no points without an explicit decision');}
  for(let mask=0;mask<16;mask++){game.selected=new Set(task.options.filter((_,j)=>mask&(1<<j)));for(const action of ['HOLD','RELEASE',null]){game.action=action;check(game.score()>=0&&game.score()<=200,'final scores stay bounded');check(game.score()<200||(action===task.action&&[...game.selected].sort().join()===task.solution.slice().sort().join()),'only the correct classification and decision receive full points');}}
 }
 check(lastPositions.size===6,'all six pallet positions can be the final answer');
+check([...qualityCounts.values()].every(count=>count>50),'all three defect counts recur across seeded runs');
+check(repeatedIssues.size===4,'every defect type can repeat within a round');
 check(variants.size===PACKING_SETS.length&&zones.size>100,'multiple packing sets and carrier arrangements are used');check(actions.HOLD>350&&actions.RELEASE>65,'HOLD predominates while RELEASE remains represented');
 check(sumScores(Object.fromEntries(GAME_CONFIGS.map(c=>[c.id,c.max])))===1000,'maximum total is unchanged');check(scoreStandard({correct:10,total:10,completed:true,timeRemaining:8,timeLimit:15})===100,'perfect fast gameplay can attain its maximum');
 check(Object.keys(GAME_ASSETS).length===9&&Object.keys(GAMEPLAY_BACKGROUNDS).length===9,'manifest covers all nine backgrounds and games');

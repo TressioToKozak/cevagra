@@ -11,16 +11,21 @@ for(let i=0;i<5000;i++){
  check(task.solution.length===3&&task.rows.filter(row=>row.expected!==row.actual).length===3,'exactly three genuine WMS discrepancies');
 }
 for(let i=0;i<100;i++){
- const task=buildTask('final',new SeededRandom(`SCORING-150-50-${i}`)),game=new MINIGAME_CLASSES.final().init({root:{},data:task,config:GAME_CONFIGS.at(-1),remaining:()=>20});
+ const task=buildTask('final',new SeededRandom(`SCORING-150-50-${i}`)),game=new MINIGAME_CLASSES.final().init({root:{},data:task,config:GAME_CONFIGS.at(-1),remaining:()=>25});
  for(let mask=0;mask<16;mask++)for(const action of ['HOLD','RELEASE',null]){
   game.selected=new Set(task.options.filter((_,j)=>mask&(1<<j)));game.action=action;
-  const classification=task.solution.length?scoreClassification({selected:[...game.selected],solution:task.solution,universe:task.options,timeRemaining:20,timeLimit:25,max:150}):scoreStandard({correct:game.selected.size===0?1:0,total:1,mistakes:game.selected.size,completed:game.selected.size===0,timeRemaining:20,timeLimit:25,max:150});
+  const classification=task.solution.length?scoreClassification({selected:[...game.selected],solution:task.solution,universe:task.options,timeRemaining:25,timeLimit:25,max:150}):scoreStandard({correct:game.selected.size===0?1:0,total:1,mistakes:game.selected.size,completed:game.selected.size===0,timeRemaining:25,timeLimit:25,max:150});
   const expected=!task.solution.length&&action===null?0:classification+(action===task.action?50:0);
   check(game.score()===expected,'Final uses 150 classification and 50 decision points');
   if(action!==task.action)check(game.score()<=150,'wrong decisions never receive 50 decision points');
   if(mask===15)check(game.score()<=50,'selecting every issue does not earn classification points');
  }
  game.selected=new Set(task.solution);game.action=task.action;check(game.score()===200,'both perfect Final outcomes retain the 200 maximum');
+ for(const [remaining,expected]of [[25,200],[20,170],[15,140],[10,110],[5,80],[0,50]]){
+  game.ctx.remaining=()=>remaining;check(game.score()===expected,'Final loses six points per elapsed second for a perfect answer');
+ }
+ game.action=task.action==='HOLD'?'RELEASE':'HOLD';
+ check(game.score()<=38,'a wrong decision also loses points over time');
 }
 const started=[],images=new Map();
 const loader=new AssetLoader({concurrency:3,timeout:1000,imageFactory:()=>({set src(path){this.path=path;started.push(path);images.set(path,this);},decode:async()=>{}})});

@@ -33,7 +33,7 @@ assert(JSON.stringify(snapshotA.detective.solution)!==JSON.stringify(snapshotC.d
 assert(JSON.stringify(snapshotA.quality.parcels.map(item=>[item.id,item.issue]))!==JSON.stringify(snapshotC.quality.parcels.map(item=>[item.id,item.issue])),"quality issues move to different boxes");
 assert(JSON.stringify(snapshotA.conveyor.parcels)!==JSON.stringify(snapshotC.conveyor.parcels),"conveyor parcel order changes between runs");
 assert(snapshotA.picking.rounds.length===10&&snapshotA.barcode.rounds.length===10,"rapid games have capped challenge sets");
-assert(snapshotA.barcode.rounds.map(round=>round.options.length).join(",")==="6,6,6,7,7,7,8,8,8,9","Barcode Hunt preserves every generated option through late rounds");
+assert(snapshotA.barcode.rounds.every(round=>round.options.length===6),"Barcode Hunt keeps exactly six options in every round");
 const encoded=code128Values("SKU-12345");
 assert(encoded[0]===104&&encoded.at(-1)===106&&encoded.at(-2)===(104+[..."SKU-12345"].reduce((sum,char,index)=>sum+(char.charCodeAt(0)-32)*(index+1),0))%103,"Code 128-B output has the correct start, checksum, and stop symbols");
 assert((code128Svg("SKU-12345").match(/<rect /g)||[]).length>20&&code128Svg("SKU-12345").includes(">SKU-12345</text>"),"barcode SVG contains encoded bars and its matching human-readable SKU");
@@ -46,7 +46,7 @@ assert(snapshotA.packing.boxes.reduce((sum,box)=>sum+box.w*box.h,0)>=30,"packing
 assert(snapshotA.detective.solution.length===3,"WMS detective has equivalent discrepancy count");
 assert(snapshotA.loading.solution.length===7,"truck loading has seven ordered pallets");
 assert(snapshotA.memory.shipment.length===5&&snapshotA.memory.options.length===8,"memory challenge has five targets and three decoys");
-assert(snapshotA.quality.solution.length===4,"quality control has four visual issues");
+assert([3,4,5].includes(snapshotA.quality.solution.length),"quality control has three to five visual issues");
 assert([0,2].includes(snapshotA.final.solution.length)&&snapshotA.final.action===(snapshotA.final.solution.length?"HOLD":"RELEASE"),"final generates either a clear shipment or two discrepancies with the matching action");
 
 const finalCombos=new Set(Array.from({length:100},(_,index)=>{const game=buildCompetition(`FINAL-${index}`,new SeededRandom(`FINAL-${index}`));return [...game.final.solution].sort().join("+");}));
@@ -246,7 +246,7 @@ const liveContainer={append:node=>{liveContainer.child=node;}};
 global.document={body:liveContainer,documentElement:{classList:{add:name=>dragClasses.add(name),remove:name=>dragClasses.delete(name)}}};
 const liveConveyor=new Conveyor().init({root:liveRoot,data:{parcels:[{id:"GIFT-1",carrier:"DHL",gift:"TEDDY BEAR"},{id:"GIFT-2",carrier:"UPS",gift:"TRAIN SET"},{id:"GIFT-3",carrier:"BRINGCARGO",gift:"SNOW GLOBE"}]},config:GAME_CONFIGS[1],remaining:()=>10,flash:()=>{},update:()=>{},finish:()=>{}});
 liveConveyor.render();liveConveyor.start();
-assert(parcelHost.markup.includes("boxes/parcel-front.webp")&&parcelHost.markup.includes("labels/shipping-label-front.webp")&&parcelHost.markup.includes("<b>DHL</b>")&&parcelHost.markup.includes("GIFT-1")&&parcelHost.markup.includes("TEDDY BEAR"),"spawn layers supplied carton and label assets under dynamic HTML data");
+assert(parcelHost.markup.includes("boxes/parcel-front.webp")&&parcelHost.markup.includes("labels/shipping-label-front.webp")&&parcelHost.markup.includes("<b>DHL</b>")&&!parcelHost.markup.includes("GIFT-1")&&!parcelHost.markup.includes("TEDDY BEAR"),"spawn layers supplied carton and label assets under dynamic HTML data");
 const firstParcel=liveConveyor.box;
 firstParcel.dispatchEvent(pointer("pointerdown",30,30));
 assert(liveConveyor.dragging&&liveContainer.child.style.transform==="none","spawned parcel uses attachPointerDrag and clears belt translation on its ghost");
