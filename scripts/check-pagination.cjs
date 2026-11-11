@@ -6,6 +6,13 @@ let rows=Array.from({length:23},(_,i)=>({id:`page-${i}`,name:`Player ${i+1}`,ema
 await page.route('**/api/panel/results',r=>r.fulfill({json:{runs:rows}}));
 await page.route('**/api/panel/delete',async r=>{const data=r.request().postDataJSON();assert.equal(data.ids.length,23);rows=[];await r.fulfill({json:{deleted:23}});});
 await page.goto(origin+'/panel');await page.waitForFunction(()=>document.getElementById('result-count').textContent==='23');
+for(const [width,height] of [[1920,1080],[1440,900],[1366,768],[1366,650],[1280,720],[1280,600],[1024,576],[800,500]]){
+await page.setViewportSize({width,height});
+const fit=await page.evaluate(()=>{const main=document.querySelector('main').getBoundingClientRect();const nodes=[...document.querySelectorAll('tbody tr,.pagination,.card-head,.card-footer')];return {width:main.width,scroll:document.documentElement.scrollHeight>innerHeight||document.documentElement.scrollWidth>innerWidth,visible:nodes.every(node=>{const r=node.getBoundingClientRect();return r.top>=0&&r.bottom<=innerHeight&&r.left>=0&&r.right<=innerWidth;}),rows:[...document.querySelectorAll('tbody tr')].every(row=>row.getBoundingClientRect().height>=18),tableScroll:document.querySelector('.table-wrap').scrollHeight>document.querySelector('.table-wrap').clientHeight};});
+assert(!fit.scroll,`${width}x${height}: no page scroll`);assert(!fit.tableScroll,`${width}x${height}: no table scroll`);assert(fit.visible&&fit.rows,`${width}x${height}: all ten rows and controls fit`);assert(fit.width>width*.9,'Panel fills the screen width');
+if(width===1366&&height===650)await page.screenshot({path:'/tmp/ceva-panel-full-laptop.png'});
+if(width===1920)await page.screenshot({path:'/tmp/ceva-panel-full-desktop.png'});
+}
 assert.equal(await page.locator('tbody tr').count(),10);assert(await page.locator('#previous-page').isDisabled());assert.equal(await page.locator('#result-range').textContent(),'1–10 of 23 results');
 await page.locator('#next-page').click();assert.equal(await page.locator('tbody tr').count(),10);assert.equal(await page.locator('tbody tr').first().locator('td').first().textContent(),'Player 11');
 await page.locator('#next-page').click();assert.equal(await page.locator('tbody tr').count(),3);assert(await page.locator('#next-page').isDisabled());assert.equal(await page.locator('#page-info').textContent(),'Page 3 of 3');
