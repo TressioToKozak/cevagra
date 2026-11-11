@@ -2,3 +2,4 @@ node_modules/
 test-results/
 data/
 __pycache__/
+work/

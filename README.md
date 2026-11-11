@@ -224,8 +224,11 @@ and measured performance limitations.
 
 ## Briefing tutorials
 
-Each briefing displays its own looping GIF on the right, using illustrative data
-rather than current challenge answers. Playback never blocks readiness or starts
-the timer. Regenerate the nine GIFs with `python3 scripts/generate-tutorials.py`
-(Pillow required). Check offline login and all tutorial layouts with
+Each briefing displays a looping recording of its real minigame on the right.
+The recordings show actual artwork and real pointer interactions with fixed
+example data, rather than answers from the current challenge. Playback never
+blocks readiness or starts the timer. To recapture them, start a local server,
+run `node scripts/record-tutorials.cjs` (Playwright/Chromium), then
+`python3 scripts/generate-tutorials.py` (ffmpeg). Raw captured frames are kept in
+`work/tutorial-recordings/`; only the resulting GIFs are shipped. Check offline login and all tutorial layouts with
 `node scripts/check-offline-tutorials.cjs` against a static server (`TEST_ORIGIN`).
