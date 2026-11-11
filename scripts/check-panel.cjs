@@ -10,7 +10,7 @@ await page.screenshot({path:'/tmp/ceva-compact-menu.png'});
 const run={id:'panel-'+Date.now(),name:'Panel QA',email:'panel@example.com',score:650,accuracy:90,mistakes:1,timestamp:new Date().toISOString()};
 let response=await fetch(origin+'/api/leaderboard',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({runs:[run]})});assert(response.ok);
 const publicData=await(await fetch(origin+'/api/leaderboard')).json();assert(!publicData.runs.find(row=>row.id===run.id).email);
-await page.goto(origin+'/panel');await page.waitForFunction(()=>document.getElementById('status').textContent.startsWith('Shared competition results'));
+await page.goto(origin+'/panel');await page.locator('#username').fill('ceva');await page.locator('#password').fill('ceva');await page.locator('#login-form').evaluate(form=>form.requestSubmit());await page.waitForFunction(()=>document.getElementById('status').textContent.startsWith('Shared competition results'));
 assert.equal(await page.locator('tbody').getByText('panel@example.com',{exact:true}).count(),1);
 const download=page.waitForEvent('download');await page.locator('#export').click();const file=await download;const stream=await file.createReadStream();const chunks=[];for await(const chunk of stream)chunks.push(chunk);const csv=Buffer.concat(chunks).toString('utf8');assert(csv.includes('panel@example.com')&&csv.includes('650'));
 await page.locator('#delete').click();assert.equal(await page.locator('#confirmation').count(),0);await page.getByRole('button',{name:'Cancel',exact:true}).click();assert.equal(await page.locator('tbody').getByText('panel@example.com',{exact:true}).count(),1);

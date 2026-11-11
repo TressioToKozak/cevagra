@@ -1,5 +1,10 @@
 """Same-origin game server with persistent SQLite leaderboard (Python 3 only)."""
 import argparse
+import hashlib
+import hmac
+from http.cookies import SimpleCookie, CookieError
+import secrets
+import time
 import json
 import math
 import os
@@ -14,6 +19,7 @@ def connect(path):
     db = sqlite3.connect(path, timeout=10)
     db.execute('CREATE TABLE IF NOT EXISTS runs (id TEXT PRIMARY KEY, payload TEXT NOT NULL)')
     db.execute('CREATE TABLE IF NOT EXISTS deleted_runs (id TEXT PRIMARY KEY)')
+    db.execute('CREATE TABLE IF NOT EXISTS panel_sessions (token_hash TEXT PRIMARY KEY, expires REAL NOT NULL)')
     return db
 
 
@@ -34,17 +40,41 @@ class Handler(SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, directory=str(ROOT), **kwargs)
 
-    def reply(self, status, value):
+    def authenticated(self):
+        try:
+            cookie = SimpleCookie(self.headers.get('Cookie', ''))
+            token = cookie.get('ceva_panel_session')
+            if not token:
+                return False
+            token_hash = hashlib.sha256(token.value.encode()).hexdigest()
+            with connect(self.server.db_path) as db:
+                return db.execute('SELECT 1 FROM panel_sessions WHERE token_hash = ? AND expires > ?', (token_hash, time.time())).fetchone() is not None
+        except (sqlite3.Error, ValueError, CookieError):
+            return False
+
+    def session_cookie(self, token, age):
+        secure = '; Secure' if self.headers.get('X-Forwarded-Proto', '').lower() == 'https' else ''
+        return f'ceva_panel_session={token}; Path=/api/panel; HttpOnly; SameSite=Strict; Max-Age={age}{secure}'
+
+    def reply(self, status, value, cookie=None):
         body = json.dumps(value, ensure_ascii=False).encode()
         self.send_response(status)
         self.send_header('Content-Type', 'application/json; charset=utf-8')
         self.send_header('Cache-Control', 'no-store')
+        if cookie:
+            self.send_header('Set-Cookie', cookie)
         self.send_header('Content-Length', str(len(body)))
         self.end_headers()
         self.wfile.write(body)
 
     def do_GET(self):
         route = self.path.split('?')[0].rstrip('/')
+        if route == '/api/panel/session':
+            self.reply(200 if self.authenticated() else 401, {'authenticated': self.authenticated()})
+            return
+        if route.startswith('/api/panel/') and not self.authenticated():
+            self.reply(401, {'error': 'Sign in required'})
+            return
         if route == '/panel':
             self.path = '/panel/index.html'
         if route in {'/api/leaderboard', '/api/panel/results'}:
@@ -73,18 +103,46 @@ class Handler(SimpleHTTPRequestHandler):
         self.send_error(405)
 
     def do_POST(self):
-        if self.path not in {'/api/leaderboard', '/api/panel/delete'}:
+        if self.path not in {'/api/leaderboard', '/api/panel/delete', '/api/panel/login', '/api/panel/logout'}:
             self.reply(404, {'error': 'Not found'})
             return
         # JSON-only, same-origin requests; no permissive CORS.
         if self.headers.get('Content-Type', '').split(';')[0] != 'application/json' or self.headers.get('Sec-Fetch-Site') == 'cross-site':
             self.reply(403, {'error': 'Forbidden'})
             return
+        if self.path in {'/api/panel/delete', '/api/panel/logout'} and not self.authenticated():
+            self.reply(401, {'error': 'Sign in required'})
+            return
         try:
             length = int(self.headers.get('Content-Length', '0'))
             if not 0 < length <= 1_000_000:
                 raise ValueError()
             data = json.loads(self.rfile.read(length))
+            if self.path == '/api/panel/login':
+                if not isinstance(data, dict):
+                    raise ValueError()
+                username, password = data.get('username'), data.get('password')
+                if not isinstance(username, str) or not isinstance(password, str):
+                    raise ValueError()
+                expected_user = os.environ.get('PANEL_USERNAME', 'ceva')
+                expected_password = os.environ.get('PANEL_PASSWORD', 'ceva')
+                if not (hmac.compare_digest(username.encode(), expected_user.encode()) and hmac.compare_digest(password.encode(), expected_password.encode())):
+                    self.reply(401, {'error': 'Incorrect username or password.'})
+                    return
+                token = secrets.token_urlsafe(32)
+                with connect(self.server.db_path) as db:
+                    db.execute('DELETE FROM panel_sessions WHERE expires <= ?', (time.time(),))
+                    db.execute('INSERT INTO panel_sessions VALUES (?, ?)', (hashlib.sha256(token.encode()).hexdigest(), time.time() + 28800))
+                self.reply(200, {'authenticated': True}, self.session_cookie(token, 28800))
+                return
+            if self.path == '/api/panel/logout':
+                cookie = SimpleCookie(self.headers.get('Cookie', ''))
+                token = cookie.get('ceva_panel_session')
+                if token:
+                    with connect(self.server.db_path) as db:
+                        db.execute('DELETE FROM panel_sessions WHERE token_hash = ?', (hashlib.sha256(token.value.encode()).hexdigest(),))
+                self.reply(200, {'authenticated': False}, self.session_cookie('', 0))
+                return
             if self.path == '/api/panel/delete':
                 if not isinstance(data, dict) or data.get('confirmation') != 'DELETE':
                     raise ValueError()

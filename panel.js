@@ -4,6 +4,7 @@ const $=id=>document.getElementById(id),local=new LeaderboardManager(new LocalLe
 const api=new URL('api/panel/',new URL('./',import.meta.url));
 const PAGE_SIZE=10;
 let rows=[],mode='sql',page=0;
+function showLogin(message=''){rows=[];page=0;$('results').replaceChildren();$('result-count').textContent='0';$('confirm').close();$('panel-screen').hidden=true;$('login-screen').hidden=false;$('login-error').textContent=message;}
 function render(){
   const pages=Math.max(1,Math.ceil(rows.length/PAGE_SIZE));
   page=Math.max(0,Math.min(page,pages-1));
@@ -19,9 +20,9 @@ function render(){
   $('delete').disabled=!rows.length;$('export').disabled=!rows.length;
 }
 async function refresh(){
-  try{const response=await fetch(new URL('results',api),{cache:'no-store',signal:AbortSignal.timeout(5000)});if(!response.ok)throw Error();const data=await response.json();if(!Array.isArray(data.runs))throw Error();rows=data.runs;mode='sql';$('status').textContent=`Shared competition results · ${rows.length} ${rows.length===1?'run':'runs'}`;}
-  catch{mode='local';rows=local.getLeaderboard();$('status').textContent='Showing results saved in this browser. The shared server is unavailable.';}
-  rows.sort(LeaderboardManager.compareRuns);render();
+  try{const response=await fetch(new URL('results',api),{cache:'no-store',signal:AbortSignal.timeout(5000)});if(response.status===401){showLogin();return;}if(!response.ok)throw Error();const data=await response.json();if(!Array.isArray(data.runs))throw Error();rows=data.runs;mode='sql';$('status').textContent=`Shared competition results · ${rows.length} ${rows.length===1?'run':'runs'}`;}
+  catch{showLogin('The panel server is unavailable. Please try again.');return;}
+  $('login-screen').hidden=true;$('panel-screen').hidden=false;rows.sort(LeaderboardManager.compareRuns);render();
 }
 function exportExcel(snapshot=rows){const url=URL.createObjectURL(resultsWorkbook(snapshot)),link=document.createElement('a');link.href=url;link.download='ceva-results.xlsx';link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
 $('export').onclick=()=>exportExcel();
@@ -35,7 +36,7 @@ $('confirm-delete').onclick=async()=>{
     exportExcel(snapshot);
     if(mode==='sql'){
       const response=await fetch(new URL('delete',api),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({confirmation:'DELETE',ids:snapshot.map(run=>run.id)}),signal:AbortSignal.timeout(10000)});
-      if(!response.ok)throw Error('Results could not be deleted. Please try again.');
+      if(response.status===401){showLogin('Your session has expired. Please sign in again.');return;}if(!response.ok)throw Error('Results could not be deleted. Please try again.');
     }
     // Clear this browser too, so local copies cannot reappear after deletion.
     if(local.clearLeaderboard()===false&&mode==='local')throw Error('Results could not be cleared from this browser.');
@@ -45,4 +46,14 @@ $('confirm-delete').onclick=async()=>{
 };
 $('previous-page').onclick=()=>{page--;render();};
 $('next-page').onclick=()=>{page++;render();};
+$('login-form').onsubmit=async event=>{
+  event.preventDefault();$('sign-in').disabled=true;$('login-error').textContent='';
+  try{const response=await fetch(new URL('login',api),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:$('username').value,password:$('password').value}),signal:AbortSignal.timeout(10000)});if(!response.ok)throw Error(response.status===401?'Incorrect username or password.':'Sign in is unavailable. Please try again.');$('password').value='';await refresh();}
+  catch(error){showLogin(error.message);}
+  finally{$('sign-in').disabled=false;}
+};
+$('logout').onclick=async()=>{
+  try{const response=await fetch(new URL('logout',api),{method:'POST',headers:{'Content-Type':'application/json'},body:'{}',signal:AbortSignal.timeout(10000)});if(!response.ok&&response.status!==401)throw Error();showLogin();}
+  catch{$('status').textContent='Sign out failed. Please try again.';}
+};
 void refresh();

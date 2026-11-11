@@ -111,8 +111,12 @@ menu, panel, Excel export and deletion; it deletes the results displayed in that
 Organizer reset in the old dialog clears only this browser.
 Open `/panel` directly for name/email/score, Excel export and deleting displayed SQL
 results (a simple confirmation downloads an Excel (.xlsx) backup before deletion). There is no panel link in the game menu. This
-link-only panel has no login; anyone who knows its URL can view and delete results.
-On GitHub Pages, `/cevagra/panel/` shows this browser's local results only.
+panel requires sign-in: username `ceva`, password `ceva` (no registration).
+The server checks sessions for reading and deleting results; sessions expire after
+eight hours and sign-out revokes them. Set `PANEL_USERNAME` and `PANEL_PASSWORD`
+in the server environment to change the credentials.
+GitHub Pages cannot run server-side login: use the Python server for the panel.
+If its API is unavailable, the sign-in page stays locked.
 SQL deletions retain run IDs so another browser cannot upload deleted runs again. This remains a
 casual competition: submitted scores are validated for shape/range, not verified
 against server-side gameplay, and participant names are visible to other players.
