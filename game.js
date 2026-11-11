@@ -3,7 +3,7 @@ import { CompetitionSettings, LeaderboardManager, leaderboardCsv, normalizeName 
 import { ArcadeEffects, animateNumber } from "./effects.js?v=21";
 import { SeededRandom, createRunId, createRunSeed } from "./rng.js?v=20";
 import { GAME_CONFIGS, TRANSITION_SECONDS, buildCompetition, buildGameOrder } from "./tasks.js?v=24";
-import { MINIGAME_CLASSES } from "./minigames.js?v=25";
+import { MINIGAME_CLASSES } from "./minigames.js?v=26";
 import { sumScores } from "./scoring.js?v=20";
 import { StageGuard } from "./lifecycle.js?v=23";
 import { assetLoader, ASSET_PRIORITY } from "./asset-loader.js?v=20";

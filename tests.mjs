@@ -89,6 +89,7 @@ class FakeElement extends EventTarget{
   constructor(rect={left:10,top:20,width:80,height:40}){super();this.rect=rect;this.style={};this.dataset={};this.classes=new Set();this.classList={add:(...names)=>names.forEach(name=>this.classes.add(name)),remove:(...names)=>names.forEach(name=>this.classes.delete(name))};}
   getBoundingClientRect(){return {...this.rect,right:this.rect.left+this.rect.width,bottom:this.rect.top+this.rect.height};}
   cloneNode(){return new FakeElement(this.rect);}
+  querySelectorAll(){return [];}
   removeAttribute(){} setPointerCapture(){} releasePointerCapture(){} remove(){this.removed=true;}
 }
 const source=new FakeElement(),target=new FakeElement({left:200,top:100,width:100,height:80}),container={append:node=>{container.child=node;}},frames=[];
@@ -165,7 +166,7 @@ assert(interactions.includes("getBoundingClientRect")&&minigames.includes("data-
 assert(css.includes(".carrier-zone.drag-over")&&css.includes(".drag-ghost.moving-box"),"dragged boxes and active carrier zones have clear states");
 assert(game.includes("<div class=\"countdown\">${value}</div>")&&game.includes("GO!</div>"),"countdown renders only 3-2-1 and GO");
 assert(!game.includes("COMPETITION STARTS IN"),"countdown has no overlapping helper text");
-assert(minigames.includes("LAST DELIVERY · LOAD FIRST")&&minigames.includes("FIRST DELIVERY · LOAD LAST"),"truck delivery order is explicitly explained");
+assert(minigames.includes("LAST DELIVERY")&&minigames.includes("FIRST DELIVERY"),"truck keeps first and last delivery labels");
 assert(minigames.includes("truck-slots")&&minigames.includes("rear-door"),"truck loading uses a visual cargo bay and rear entrance");
 assert(GAME_CONFIGS.every(config=>config.action&&config.instruction&&config.hint),"every minigame has action, objective, and correctness guidance");
 assert(minigames.includes("pallet-grid")&&minigames.includes("every(value=>!value)"),"packing grid prevents collisions");
@@ -427,7 +428,7 @@ assert(Object.keys(FINAL_ISSUE_ASSETS).sort().join()===finalData.options.slice()
 // Truck Loading: gameplay data and order semantics do not depend on artwork.
 const truckGame=new MINIGAME_CLASSES.loading().init({root:{},data:snapshotA.loading,config:GAME_CONFIGS.find(c=>c.id==="loading"),remaining:()=>20});
 assert(snapshotA.loading.solution.map(id=>snapshotA.loading.pallets.find(p=>p.id===id).stop).join() === "7,6,5,4,3,2,1","Truck solution remains descending stop order from deepest bay to rear door");
-for(const pallet of snapshotA.loading.pallets){const label=truckGame.deliveryLabel(pallet);assert(label.includes(`STOP ${pallet.stop}`),`${pallet.city} retains its generated stop`);if(pallet.stop===7)assert(label.includes("LAST DELIVERY · LOAD FIRST"),"last delivery remains deepest/load first");else if(pallet.stop===1)assert(label.includes("FIRST DELIVERY · LOAD LAST"),"first delivery remains load last");else assert(label.includes(`DELIVERY ${pallet.stop}`),"middle pallet keeps its own delivery number");}
+for(const pallet of snapshotA.loading.pallets){const label=truckGame.deliveryLabel(pallet);assert(label.includes(`STOP ${pallet.stop}`),`${pallet.city} retains its generated stop`);if(pallet.stop===7)assert(label.includes("LAST DELIVERY")&&!label.includes("LOAD FIRST"),"last delivery remains deepest/load first");else if(pallet.stop===1)assert(label.includes("FIRST DELIVERY")&&!label.includes("LOAD LAST"),"first delivery remains load last");else assert(label.includes(`DELIVERY ${pallet.stop}`),"middle pallet keeps its own delivery number");}
 for(const slots of [Array(7).fill(null),snapshotA.loading.solution,[...snapshotA.loading.solution].reverse(),[...snapshotA.loading.solution.slice(0,4),null,null,null]]){
  truckGame.slots=slots;const correct=slots.filter((id,i)=>id===snapshotA.loading.solution[i]).length;
  assert(truckGame.score()===scoreStandard({correct,total:7,mistakes:0,completed:correct===7,timeRemaining:20,timeLimit:20})&&truckGame.liveScore===0,"Truck scoring is unchanged and placements cannot expose correctness through live points");
