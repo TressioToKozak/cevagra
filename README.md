@@ -107,10 +107,10 @@ page open or browser online event. The shared board refreshes when opened.
 To check SQL integration, start the server with a temporary test database and run
 `CHROMIUM_PATH=/usr/bin/chromium node scripts/check-sql.cjs` (this adds test results).
 Use `node scripts/check-panel.cjs` against a disposable test database to verify the
-menu, panel, CSV export and deletion; it deletes the results displayed in that database.
+menu, panel, Excel export and deletion; it deletes the results displayed in that database.
 Organizer reset in the old dialog clears only this browser.
-Open `/panel` directly for name/email/score, CSV export and deleting displayed SQL
-results (a simple confirmation downloads a CSV backup before deletion). There is no panel link in the game menu. This
+Open `/panel` directly for name/email/score, Excel export and deleting displayed SQL
+results (a simple confirmation downloads an Excel (.xlsx) backup before deletion). There is no panel link in the game menu. This
 link-only panel has no login; anyone who knows its URL can view and delete results.
 On GitHub Pages, `/cevagra/panel/` shows this browser's local results only.
 SQL deletions retain run IDs so another browser cannot upload deleted runs again. This remains a

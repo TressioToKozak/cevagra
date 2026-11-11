@@ -1,3 +1,4 @@
+import {resultsWorkbook} from './excel.js?v=1';
 import {LeaderboardManager, LocalLeaderboardStore} from './storage.js?v=29';
 const $=id=>document.getElementById(id),local=new LeaderboardManager(new LocalLeaderboardStore());
 const api=new URL('api/panel/',new URL('./',import.meta.url));
@@ -22,9 +23,8 @@ async function refresh(){
   catch{mode='local';rows=local.getLeaderboard();$('status').textContent='Showing results saved in this browser. The shared server is unavailable.';}
   rows.sort(LeaderboardManager.compareRuns);render();
 }
-function csvCell(value){let text=String(value??'');if(/^[\s]*[=+@-]/.test(text))text="'"+text;return '"'+text.replaceAll('"','""')+'"';}
-function exportCsv(snapshot=rows){const csv='\uFEFF'+[['Name','Email','Points'],...snapshot.map(run=>[run.name,run.email,run.score])].map(row=>row.map(csvCell).join(',')).join('\r\n');const url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'})),link=document.createElement('a');link.href=url;link.download='ceva-results.csv';link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
-$('export').onclick=()=>exportCsv();
+function exportExcel(snapshot=rows){const url=URL.createObjectURL(resultsWorkbook(snapshot)),link=document.createElement('a');link.href=url;link.download='ceva-results.xlsx';link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
+$('export').onclick=()=>exportExcel();
 $('delete').onclick=()=>{$('delete-error').textContent='';$('confirm').showModal();};
 $('confirm-delete').onclick=async()=>{
   if($('confirm-delete').disabled)return;
@@ -32,7 +32,7 @@ $('confirm-delete').onclick=async()=>{
   $('confirm-delete').disabled=true;
   try{
     // Initiate the backup in the click handler, before the destructive request.
-    exportCsv(snapshot);
+    exportExcel(snapshot);
     if(mode==='sql'){
       const response=await fetch(new URL('delete',api),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({confirmation:'DELETE',ids:snapshot.map(run=>run.id)}),signal:AbortSignal.timeout(10000)});
       if(!response.ok)throw Error('Results could not be deleted. Please try again.');
