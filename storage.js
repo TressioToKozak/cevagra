@@ -20,6 +20,35 @@ export class LocalLeaderboardStore {
   clear() { try { localStorage.removeItem(STORAGE_KEY); return true; } catch { return false; } }
 }
 
+// Keep the synchronous local API: SQL synchronization never blocks a screen.
+export class SqlLeaderboardStore extends LocalLeaderboardStore {
+  constructor(){super();this.revision=0;this.remote=[];this.acknowledged=new Set();this.syncing=null;this.onchange=()=>{};}
+  read(){const local=super.read();const rows=new Map(this.remote.map(run=>[run.id,run]));for(const run of local.runs)rows.set(run.id,run);return {version:3,runs:[...rows.values()]};}
+  write(data){const saved=super.write(data);this.pending=data.runs;this.revision++;void this.sync();return saved;}
+  clear(){this.pending=[];return super.clear();}
+  async request(options){const response=await fetch(new URL("api/leaderboard",document.baseURI),{...options,signal:AbortSignal.timeout(5000),cache:"no-store"});if(!response.ok)throw new Error("Leaderboard unavailable");return response.json();}
+  sync(){
+    if(this.syncing)return this.syncing;
+    const revision=this.revision;
+    this.syncing=(async()=>{
+      try{
+        // Retry locally retained runs using stable IDs; SQL ignores duplicates.
+        let pending;
+        while((pending=(this.pending||super.read().runs).filter(run=>!this.acknowledged.has(run.id))).length){
+          const batch=pending.slice(0,100);
+          const result=await this.request({method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({runs:batch})});
+          if(!Array.isArray(result.saved)||!batch.every(run=>result.saved.includes(run.id)))throw new Error("Incomplete save");
+          for(const id of result.saved)this.acknowledged.add(id);
+        }
+        const result=await this.request();
+        if(!Array.isArray(result.runs))throw new Error("Invalid leaderboard");
+        this.remote=result.runs;this.onchange();
+      }catch{/* Local results remain available; retry on next save/open/online. */}
+    })().finally(()=>{this.syncing=null;if(this.revision!==revision)void this.sync();});
+    return this.syncing;
+  }
+}
+
 export class LeaderboardManager {
   constructor(store = new LocalLeaderboardStore()) { this.store = store;this.unsaved=new Map();this.lastSaveSucceeded=true; }
   read() { const data=this.store.read();return {...data,runs:[...data.runs,...[...this.unsaved.values()].filter(run=>!data.runs.some(saved=>saved.id===run.id))]}; }

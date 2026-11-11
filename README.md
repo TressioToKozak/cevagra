@@ -1,14 +1,14 @@
 # CEVA Christmas Logistics Challenge
 
-A static, English-only competition for one computer and one browser. Nine minigames,
+An English-only competition with a shared SQLite leaderboard. Nine minigames,
 165 seconds of available active gameplay, and a 1,000-point maximum. Briefings and
-countdowns are untimed. No server, accounts, online synchronization, practice mode,
-or audio. GitHub Pages serves the relative assets directly from `/cevagra/`.
+countdowns are untimed. No accounts, practice mode or audio. The Python server serves the game and SQL API.
+GitHub Pages alone supports local results only; it cannot run the SQL backend.
 
 ## Run and test
 
 ```sh
-python3 -m http.server 8002 --bind 127.0.0.1
+python3 server.py --port 8002
 node tests.mjs
 ```
 
@@ -89,6 +89,27 @@ python3 scripts/optimize-assets.py
 This development script requires Pillow, preserves alpha and proportions, and
 skips current derivatives. It does not convert reference images or change game
 logic. Rebuild an individual derivative by removing that `.webp` and rerunning.
+
+## SQL leaderboard
+
+Run `npm start` (or `python3 server.py`) and open `http://localhost:8002`.
+Python 3 is the only server dependency; SQLite creates `data/leaderboard.sqlite3`
+automatically. The database survives server restarts. Back up this file and retain
+its directory on a persistent disk when hosting. Override with `--db PATH` or
+`LEADERBOARD_DB`; `--host 0.0.0.0` allows access from other computers.
+Serve both the game and `/api/leaderboard` through this server on the same origin.
+
+The existing local save happens immediately; SQL uploads and ranking refresh run
+silently in the background, without a loading screen. Existing local results are
+uploaded too, and stable run IDs prevent duplicate SQL rows on retries. If the API
+is unavailable, local play continues; uploads retry on the next save, ranking open,
+page open or browser online event. The shared board refreshes when opened.
+To check SQL integration, start the server with a temporary test database and run
+`CHROMIUM_PATH=/usr/bin/chromium node scripts/check-sql.cjs` (this adds test results).
+Organizer reset still clears only this browser; it does not delete SQL records.
+There is deliberately no unauthenticated remote-delete endpoint. This remains a
+casual competition: submitted scores are validated for shape/range, not verified
+against server-side gameplay, and participant names are visible to other players.
 
 ## Local results and organizer tools
 

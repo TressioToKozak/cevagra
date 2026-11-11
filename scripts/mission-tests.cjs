@@ -6,11 +6,13 @@ const origin = process.env.TEST_ORIGIN || 'http://127.0.0.1:8002/';
   try {
     const page = await browser.newPage();
     const errors = [];
+    // Exercise local fallback; SQL is covered by check-sql.cjs.
+    await page.route('**/api/leaderboard', route => route.abort());
     page.on('pageerror', e => errors.push(e.message));
     page.on('response', r => { if(r.status()>=400) errors.push(`${r.status()} ${r.url()}`); });
     await page.goto(origin);
     await page.evaluate(async () => {
-      window.qa = (await import('./game.js?v=27')).manager;
+      window.qa = (await import('./game.js?v=28')).manager;
       window.configs = (await import('./tasks.js?v=27')).GAME_CONFIGS;
       window.make = (await import('./tasks.js?v=27')).buildCompetition;
       window.RNG = (await import('./rng.js?v=20')).SeededRandom;
