@@ -10,9 +10,9 @@ const origin = process.env.TEST_ORIGIN || 'http://127.0.0.1:8002/';
     page.on('response', r => { if(r.status()>=400) errors.push(`${r.status()} ${r.url()}`); });
     await page.goto(origin);
     await page.evaluate(async () => {
-      window.qa = (await import('./game.js?v=26')).manager;
-      window.configs = (await import('./tasks.js?v=24')).GAME_CONFIGS;
-      window.make = (await import('./tasks.js?v=24')).buildCompetition;
+      window.qa = (await import('./game.js?v=27')).manager;
+      window.configs = (await import('./tasks.js?v=27')).GAME_CONFIGS;
+      window.make = (await import('./tasks.js?v=27')).buildCompetition;
       window.RNG = (await import('./rng.js?v=20')).SeededRandom;
       await (await import('./asset-loader.js?v=20')).assetLoader.preload((await import('./asset-manifest.js?v=20')).COMPETITION_ASSETS);
       window.nativeDrags = 0;

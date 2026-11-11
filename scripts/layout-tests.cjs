@@ -7,8 +7,8 @@ const {chromium}=require('playwright');
   page.on('pageerror',e=>errors.push(e.message));
   await page.goto(process.env.TEST_ORIGIN||'http://127.0.0.1:8002/');
   await page.evaluate(async()=>{
-   window.qa=(await import('./game.js?v=26')).manager;
-   const tasks=await import('./tasks.js?v=24');window.configs=tasks.GAME_CONFIGS;window.make=tasks.buildCompetition;
+   window.qa=(await import('./game.js?v=27')).manager;
+   const tasks=await import('./tasks.js?v=27');window.configs=tasks.GAME_CONFIGS;window.make=tasks.buildCompetition;
    window.RNG=(await import('./rng.js?v=20')).SeededRandom;
   });
   await page.locator('#player-name').fill('Alex');
@@ -42,7 +42,15 @@ const {chromium}=require('playwright');
     await page.evaluate(id=>{qa.reset();document.body.classList.remove('menu-active','results-active');qa.gameConfigs=configs;qa.tasks=make('LAYOUT',new RNG('LAYOUT'));qa.index=configs.findIndex(c=>c.id===id);qa.playerName='Alex';qa.playerEmail='alex@example.com';qa.briefing();},id);
     await fits(id+' briefing');await page.evaluate(async()=>{qa.state='countdown';await qa.startGame();qa.stopTimer();});await fits(id+' gameplay');
     assert.equal(await page.locator('.overall,.terminal-status,.loading-guide,.quality-legend,.final-inspect,.final-footer p').count(),0,'redundant panels are removed');
-    if(id==='barcode')assert.equal(await page.locator('.barcode-target').evaluate(n=>getComputedStyle(n).backgroundImage.includes('target-sku-panel')),false,'barcode panel contains no duplicate text artwork');
+    if(id==='barcode'){
+     assert.equal(await page.locator('.barcode-target').evaluate(n=>getComputedStyle(n).backgroundImage.includes('target-sku-panel')),false,'barcode panel contains no duplicate text artwork');
+     const grids=[];
+     for(let round=0;round<10;round++){
+      await page.evaluate(round=>{qa.active.index=round;qa.active.draw();},round);
+      assert.equal(await page.locator('.barcode-parcel').count(),6,'Barcode Hunt always has six boxes');grids.push(await page.locator('.barcode-grid').boundingBox());
+     }
+     assert(grids.every(g=>Math.abs(g.height-grids[0].height)<1),'Barcode Hunt keeps the same grid height');
+    }
     const hud=await page.locator('.competition-hud>div').evaluateAll(nodes=>nodes.map(n=>({column:getComputedStyle(n).gridColumn,image:getComputedStyle(n).backgroundImage})));
     assert(hud.every(n=>n.column==='auto'&&n.image==='none'),'all games use the shared HUD without baked-in labels');
     if(id==='loading'){
@@ -54,6 +62,8 @@ const {chromium}=require('playwright');
      assert(await page.locator('.truck-cab>img,.rear-door>img').evaluateAll(ns=>ns.every(n=>getComputedStyle(n).objectFit==='contain')),'complete truck markers are shown');
     }
     if(id==='conveyor'){
+     assert.equal(await page.locator('.parcel-copy span,.parcel-copy small').count(),0,'Conveyor omits gift ID and product name');
+     assert.equal(await page.locator('.parcel-label>img').count(),1,'original label artwork retains header, barcode and QR');
      for(const variant of [0,1,2]){
       const visible=await page.evaluate(variant=>{
        const a=qa.active;cancelAnimationFrame(a.raf);a.data.parcels[a.index].variant=variant;a.spawn();a.x=a.trackStart+100;a.position();

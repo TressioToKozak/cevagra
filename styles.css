@@ -820,3 +820,7 @@ body.results-active #app{overflow:hidden}
 }
 .load-pallet.pallet-art{container-type:inline-size}
 @media(max-width:1100px){.competition-shell[data-game="loading"] .load-pallet{width:min(100%,250px)}}
+
+/* Keep the carrier prominent and leave the artwork's barcode and QR uncovered. */
+.parcel-copy b{font-size:clamp(14px,18cqw,34px)}
+.parcel-long-carrier .parcel-copy b{font-size:clamp(10px,12cqw,28px)}

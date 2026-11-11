@@ -1,5 +1,5 @@
 import { SeededRandom } from "./rng.js?v=20";
-import { CARRIERS } from "./tasks.js?v=20";
+import { CARRIERS } from "./tasks.js?v=27";
 import { scoreClassification, scoreStandard } from "./scoring.js?v=20";
 import { attachPointerDrag } from "./interactions.js?v=23";
 
@@ -150,7 +150,7 @@ export class BarcodeHunt extends RapidFind{
     const round=this.data.rounds[this.index%this.data.rounds.length];this.current=round;
     if(!this.root.querySelector(".barcode-grid"))this.root.innerHTML='<div class="barcode-target" aria-live="polite"><span>SANTA’S BARCODE</span><strong></strong></div><div class="barcode-grid"></div>';
     this.root.querySelector(".barcode-target strong").textContent=round.target;if(this.index)this.ctx.motion?.(this.root.querySelector(".barcode-target"),"digital-refresh",150);
-    const grid=this.root.querySelector(".barcode-grid");grid.classList.toggle("barcode-grid-max",round.options.length>8);grid.classList.toggle("barcode-grid-many",round.options.length>6&&round.options.length<=8);
+    const grid=this.root.querySelector(".barcode-grid");
     round.options.forEach((value,index)=>{
       const carton=BARCODE_CARTONS[round.variants?.[index]??index%BARCODE_CARTONS.length];let button=grid.children[index];
       if(!button){button=document.createElement("button");button.className="barcode-parcel";button.innerHTML='<span class="barcode-card-shell" aria-hidden="true"></span><span class="carton"><img alt="" draggable="false"><span class="carton-label"></span></span>';grid.append(button);this.listen(button,"click",()=>this.choose(button));}
@@ -181,7 +181,7 @@ export class ConveyorRush extends BaseMinigame {
     // Variant selection is presentation only; never consume the gameplay RNG.
     const variant=["front","angle-left","angle-right"][this.active.variant??this.index%3],art="assets/conveyor-rush/";
     const host=this.root.querySelector("#moving-parcel");
-    host.innerHTML=`<div class="moving-box conveyor-parcel parcel-${variant}${this.active.carrier==="BRINGCARGO"?" parcel-long-carrier":""}" data-moving-box role="group" aria-label="${this.active.carrier}, ${this.active.id}, ${this.active.gift}"><img class="parcel-art" src="${art}boxes/parcel-${variant}.webp" alt="" draggable="false"><div class="parcel-label"><img src="${art}labels/shipping-label-${variant}.webp" alt="" draggable="false"><div class="parcel-copy"><b>${this.active.carrier}</b><span>${this.active.id}</span><small>${this.active.gift}</small></div></div></div>`;
+    host.innerHTML=`<div class="moving-box conveyor-parcel parcel-${variant}${this.active.carrier==="BRINGCARGO"?" parcel-long-carrier":""}" data-moving-box role="group" aria-label="${this.active.carrier}, parcel ${this.index+1}"><img class="parcel-art" src="${art}boxes/parcel-${variant}.webp" alt="" draggable="false"><div class="parcel-label"><img src="${art}labels/shipping-label-${variant}.webp" alt="" draggable="false"><div class="parcel-copy"><b>${this.active.carrier}</b></div></div></div>`;
     this.box=host.firstElementChild;this.measureTrack();this.position();
     this.boxDragCleanup=attachPointerDrag({element:this.box,canInteract:()=>!this.locked&&this.ctx.isActive?.()!==false,targets:()=>this.root.querySelectorAll("[data-chute]"),hitPadding:12,createGhost:({element,rect})=>{
       const node=element.cloneNode(true),scale=element.offsetWidth?rect.width/element.offsetWidth:1;node.style.transform="none";
@@ -418,7 +418,13 @@ export class FinalDispatch extends BaseMinigame {
     }));
   }
   get liveScore(){return this.locked?this.score():0;}
-  score(){if(!this.data.solution.length&&this.action===null)return 0;const base=this.data.solution.length?scoreClassification({selected:[...this.selected],solution:this.data.solution,universe:this.data.options,timeRemaining:this.remaining,timeLimit:this.ctx.config.time,max:150}):scoreStandard({correct:this.selected.size===0?1:0,total:1,mistakes:this.selected.size,completed:this.selected.size===0,timeRemaining:this.remaining,timeLimit:this.ctx.config.time,max:150});return Math.min(200,base+(this.action===this.data.action?50:0));}
+  score(){
+    if(!this.data.solution.length&&this.action===null)return 0;
+    const limit=this.ctx.config.time,remaining=Math.max(0,Math.min(limit,this.remaining));
+    // Grade correctness independently, then decay all Final points from the first second.
+    const base=this.data.solution.length?scoreClassification({selected:[...this.selected],solution:this.data.solution,universe:this.data.options,timeRemaining:limit,timeLimit:limit,max:150}):scoreStandard({correct:this.selected.size===0?1:0,total:1,mistakes:this.selected.size,completed:this.selected.size===0,timeRemaining:limit,timeLimit:limit,max:150});
+    return Math.round((base+(this.action===this.data.action?50:0))*(.25+.75*remaining/limit));
+  }
   complete(){const result=super.complete(),answers=new Set(this.data.solution),issueCorrect=this.data.options.filter(issue=>this.selected.has(issue)===answers.has(issue)).length,actionCorrect=this.action===this.data.action;return {...result,score:this.score(),correct:issueCorrect+(actionCorrect?1:0),mistakes:this.data.options.length-issueCorrect+(actionCorrect?0:1),attempts:this.data.options.length+1};}
   cleanup(){this.root.closest(".competition-shell")?.classList.remove("final-stage");super.cleanup();}
 }

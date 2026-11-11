@@ -7,7 +7,7 @@ const origin=process.env.TEST_ORIGIN||'http://127.0.0.1:8002';
  try{
   const page=await browser.newPage({viewport:{width:1920,height:1080}}),errors=[],requests=[];
   page.on('pageerror',e=>errors.push(e.message));page.on('response',r=>{if(r.status()>=400)errors.push(`${r.status()} ${r.url()}`);});page.on('request',r=>{if(/\.(webp|png|svg)(\?|$)/.test(r.url()))requests.push(r.url());});
-  await page.goto(origin);await page.evaluate(async()=>{window.qa=(await import('./game.js?v=26')).manager;});
+  await page.goto(origin);await page.evaluate(async()=>{window.qa=(await import('./game.js?v=27')).manager;});
   assert.equal(await page.locator('#player-name').inputValue(),'');
   await page.clock.install();await page.clock.pauseAt(new Date(Date.now()+1000));
   const click=async selector=>page.locator(selector).evaluate(e=>e.click());
@@ -28,19 +28,19 @@ const origin=process.env.TEST_ORIGIN||'http://127.0.0.1:8002';
    if(id==='detective'||id==='quality'){const solution=await page.evaluate(()=>qa.active.data.solution);const attr=id==='detective'?'row':'quality';for(const value of solution)await click(`[data-${attr}="${value}"]`);const before=await page.locator('#score-value').textContent();await page.evaluate(()=>qa.updateHud());assert.equal(await page.locator('#score-value').textContent(),before);await click(id==='detective'?'#lock-detective':'#lock-quality');}
    if(id==='loading'){const solution=await page.evaluate(()=>qa.active.data.solution);for(const [i,id] of solution.entries()){await click(`[data-pallet-id="${id}"]`);await page.locator(`[data-slot="${i}"]`).evaluate(e=>e.click());}await click('#lock-loading');}
    if(id==='memory'){assert.equal(await page.locator('[data-remember-gift]').count(),5);const elapsed=await page.evaluate(()=>qa.gameConfigs[qa.index].time-qa.guard.remaining());await page.clock.runFor(Math.max(0,Math.floor(3999-elapsed*1000)));assert.equal(await page.locator('[data-gift]').count(),0);await page.clock.runFor(2);await waitState('playing');assert.equal(await page.locator('[data-remember-gift]').count(),0);assert.equal(await page.locator('[data-gift]').count(),8);const gifts=await page.evaluate(()=>qa.active.data.shipment);for(const gift of gifts)await click(`[data-gift="${gift}"]`);await click('#lock-memory');}
-   if(id==='final'){const data=await page.evaluate(()=>qa.active.data);for(const issue of data.solution)await click(`[data-issue="${issue}"]`);await click(`[data-action="${data.action}"]`);}
+   if(id==='final'){await page.clock.runFor(5000);const data=await page.evaluate(()=>qa.active.data);for(const issue of data.solution)await click(`[data-issue="${issue}"]`);await page.evaluate(()=>window.expectedFinalScore=Math.round(50+150*qa.guard.remaining()/qa.gameConfigs[qa.index].time));await click(`[data-action="${data.action}"]`);}
    assert.notEqual(await state(),'playing');const count=await page.evaluate(()=>qa.results.length);await page.evaluate(token=>qa.completeGame(token),token);assert.equal(await page.evaluate(()=>qa.results.length),count,'no duplicate stage completion');
    if(id!=='final'){await page.clock.runFor(1600);await waitState('briefing');}
    console.log(`Complete flow: ${id} passed.`);
   }
   const first=await newRun();assert.equal(first.order.at(-1),'final');assert.equal(new Set(first.order).size,9);
   for(let i=0;i<9;i++){await activate();await solve();}
-  assert.equal(await state(),'results');assert.equal(await page.evaluate(()=>qa.results.length),9);assert.equal(await page.evaluate(()=>qa.results.reduce((s,r)=>s+r.score,0)),1000,'all maximums are achievable with real gameplay time');
+  assert.equal(await state(),'results');assert.equal(await page.evaluate(()=>qa.results.length),9);assert.equal(await page.evaluate(()=>qa.results.reduce((s,r)=>s+r.score,0)),800+await page.evaluate(()=>expectedFinalScore),'Final applies time decay to an otherwise perfect run');assert((await page.evaluate(()=>qa.results.at(-1).score))<200,'Final no longer grants full points after a delay');
   assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('christmas-logistics-leaderboard-v1')).runs.length),1);
   await click('#view-board');assert.equal(await page.locator('.leaderboard tbody tr').count(),1);await click('#modal-close');await click('#return-start');assert.equal(await page.locator('#player-name').inputValue(),'');
   const second=await newRun();assert.notEqual(first.id,second.id);assert.notEqual(first.seed,second.seed);assert.notDeepEqual(first.tasks,second.tasks);
   for(let i=0;i<9;i++){await activate();const duration=await page.evaluate(()=>qa.gameConfigs[qa.index].time);await page.clock.runFor(duration*1000+100);if(i<8){await page.clock.runFor(1600);await waitState('briefing');}}
   assert.equal(await state(),'results');const runs=await page.evaluate(()=>JSON.parse(localStorage.getItem('christmas-logistics-leaderboard-v1')).runs);assert.equal(runs.length,2);assert.equal(runs[0].name,runs[1].name);assert.notEqual(runs[0].id,runs[1].id);assert(runs.every(r=>r.runSeed&&r.timestamp));
-  assert.equal(new Set(requests).size,requests.length,'decoded assets are not fetched again between stages/runs');assert.deepEqual(errors,[]);console.log('Two complete competitions, perfect score, all timeouts, unique seeds/IDs, duplicate names, leaderboard and clean console passed.');
+  assert.equal(new Set(requests).size,requests.length,'decoded assets are not fetched again between stages/runs');assert.deepEqual(errors,[]);console.log('Two complete competitions, perfect answers with Final time decay, all timeouts, unique seeds/IDs, duplicate names, leaderboard and clean console passed.');
  }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exit(1);});
