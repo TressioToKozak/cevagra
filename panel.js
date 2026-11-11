@@ -1,10 +1,18 @@
 import {LeaderboardManager, LocalLeaderboardStore} from './storage.js?v=29';
 const $=id=>document.getElementById(id),local=new LeaderboardManager(new LocalLeaderboardStore());
 const api=new URL('api/panel/',new URL('./',import.meta.url));
-let rows=[],mode='sql';
+const PAGE_SIZE=10;
+let rows=[],mode='sql',page=0;
 function render(){
+  const pages=Math.max(1,Math.ceil(rows.length/PAGE_SIZE));
+  page=Math.max(0,Math.min(page,pages-1));
+  const start=page*PAGE_SIZE;
+  $('page-info').textContent=`Page ${page+1} of ${pages}`;
+  $('result-range').textContent=rows.length?`${start+1}–${Math.min(start+PAGE_SIZE,rows.length)} of ${rows.length} results`:'0 results';
+  $('previous-page').disabled=page===0;
+  $('next-page').disabled=page===pages-1;
   $('results').replaceChildren();
-  for(const run of rows){const tr=document.createElement('tr');for(const value of [run.name,run.email||'—',run.score]){const td=document.createElement('td');td.textContent=String(value??'');tr.append(td);}$('results').append(tr);}
+  for(const run of rows.slice(start,start+PAGE_SIZE)){const tr=document.createElement('tr');for(const value of [run.name,run.email||'—',run.score]){const td=document.createElement('td');td.textContent=String(value??'');tr.append(td);}$('results').append(tr);}
   if(!rows.length){const tr=document.createElement('tr'),td=document.createElement('td');td.colSpan=3;td.className='empty-state';td.textContent='No completed runs yet.';tr.append(td);$('results').append(tr);}
   $('result-count').textContent=rows.length;
   $('delete').disabled=!rows.length;$('export').disabled=!rows.length;
@@ -35,4 +43,6 @@ $('confirm-delete').onclick=async()=>{
   }catch(error){$('delete-error').textContent=error.message;}
   finally{$('confirm-delete').disabled=false;}
 };
+$('previous-page').onclick=()=>{page--;render();};
+$('next-page').onclick=()=>{page++;render();};
 void refresh();
