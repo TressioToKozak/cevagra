@@ -110,7 +110,7 @@ Use `node scripts/check-panel.cjs` against a disposable test database to verify 
 menu, panel, CSV export and deletion; it deletes the results displayed in that database.
 Organizer reset in the old dialog clears only this browser.
 Open `/panel` directly for name/email/score, CSV export and deleting displayed SQL
-results (type `USUŃ` to confirm). There is no panel link in the game menu. This
+results (a simple confirmation downloads a CSV backup before deletion). There is no panel link in the game menu. This
 link-only panel has no login; anyone who knows its URL can view and delete results.
 On GitHub Pages, `/cevagra/panel/` shows this browser's local results only.
 SQL deletions retain run IDs so another browser cannot upload deleted runs again. This remains a
