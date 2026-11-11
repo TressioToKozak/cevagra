@@ -14,6 +14,13 @@ with zipfile.ZipFile(io.BytesIO(sys.stdin.buffer.read())) as archive:
  assert sheet.find('.//s:c[@r="B2"]/s:is/s:t',ns).text=='=1+1'
  assert sheet.find('.//s:c[@r="C2"]/s:v',ns).text=='650'
  assert sheet.find('.//s:f',ns) is None
+ styles=ET.fromstring(archive.read('xl/styles.xml'))
+ assert len(styles.find('s:cellXfs',ns))==8
+ assert sheet.find('.//s:c[@r="A1"]',ns).attrib['s']=='1'
+ assert sheet.find('.//s:c[@r="C2"]',ns).attrib['s']=='4'
+ assert sheet.find('.//s:c[@r="C3"]',ns).attrib['s']=='7'
+ assert sheet.find('.//s:sheetView',ns).attrib['showGridLines']=='0'
+ assert sheet.find('.//s:row',ns).attrib['ht']=='32'
  assert len(sheet.findall('.//s:row',ns))==3
 print('PASS: XLSX package, CRCs, XML, Unicode, numeric points and safe text cells')
 `],{input:Buffer.from(await file.arrayBuffer()),encoding:'utf8'});

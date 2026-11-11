@@ -11,13 +11,18 @@
   .total{padding:10px 24px;min-width:160px}.total strong{font-size:clamp(28px,4dvh,44px);margin-top:8px}
   .results-card{height:100%;min-height:0;display:grid;grid-template-rows:clamp(56px,9dvh,84px) minmax(0,1fr) clamp(44px,7dvh,64px) 28px}
   .card-head{padding:10px 24px;min-height:0}.card-head h2{font-size:17px}#status{margin-top:4px;font-size:11px}
-  .table-wrap{min-height:0;overflow:hidden}table{height:100%;table-layout:fixed;display:grid;grid-template-rows:28px minmax(0,1fr)}
-  thead{display:block}tbody{display:grid;grid-template-rows:repeat(10,minmax(0,1fr));min-height:0}
-  tr{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.5fr) minmax(80px,.4fr);min-height:0}
+  .table-wrap{min-height:0;overflow:hidden}table{height:100%;table-layout:fixed;display:grid;grid-template-rows:clamp(32px,5dvh,46px) minmax(0,1fr)}
+  thead{display:block}thead tr{height:100%}tbody{display:grid;grid-template-rows:repeat(10,minmax(0,1fr));min-height:0}
+  tr{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr) minmax(80px,.65fr);min-height:0}
   th,td{display:flex;align-items:center;min-width:0;min-height:0;padding:0 24px;line-height:1.2;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
-  td{font-size:clamp(12px,1.6dvh,16px)}td:last-child{font-size:clamp(14px,1.9dvh,20px)}th:last-child,td:last-child{justify-content:flex-end}
+  th{font-size:clamp(13px,1.9dvh,18px);letter-spacing:.08em;color:#d0dfef}td{font-size:clamp(14px,2.1dvh,20px)}td:last-child{font-size:clamp(16px,2.4dvh,24px)}th:last-child,td:last-child{justify-content:flex-end}
   tbody tr:has(.empty-state){grid-column:1;grid-row:1/-1;display:flex}.empty-state{flex:1;justify-content:center;padding:20px!important}
   .pagination{padding:4px 24px;min-height:0}.pagination button{height:32px;width:32px;padding:7px}
   .card-footer{padding:0 24px;align-items:center;min-height:0;font-size:8px}
 }
 @media(min-width:701px) and (max-height:600px){.hero .eyebrow,.intro{display:none}.card-head h2{font-size:15px}.card-head button{padding:9px 12px}.total{padding:6px 20px}.total strong{font-size:28px;margin-top:5px}}
+
+/* Clearer grouping and stronger contrast in the results table. */
+tbody tr:nth-child(even){background:#142b414d}tbody tr:hover{background:#20446166}th{font-size:13px;color:#c2d4e8}td:nth-child(2){color:#b6c7d9}
+@media(max-width:700px){td{font-size:14px}th{font-size:12px;letter-spacing:.06em}td:last-child{font-size:18px}}
+@media(min-width:701px){th{font-size:clamp(13px,1.9dvh,18px);color:#d0dfef}}

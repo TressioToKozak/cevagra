@@ -1,4 +1,4 @@
-import {resultsWorkbook} from './excel.js?v=1';
+import {resultsWorkbook} from './excel.js?v=2';
 import {LeaderboardManager, LocalLeaderboardStore} from './storage.js?v=29';
 const $=id=>document.getElementById(id),local=new LeaderboardManager(new LocalLeaderboardStore());
 const api=new URL('api/panel/',new URL('./',import.meta.url));
