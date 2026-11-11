@@ -183,7 +183,13 @@ export class ConveyorRush extends BaseMinigame {
     const host=this.root.querySelector("#moving-parcel");
     host.innerHTML=`<div class="moving-box conveyor-parcel parcel-${variant}${this.active.carrier==="BRINGCARGO"?" parcel-long-carrier":""}" data-moving-box role="group" aria-label="${this.active.carrier}, ${this.active.id}, ${this.active.gift}"><img class="parcel-art" src="${art}boxes/parcel-${variant}.webp" alt="" draggable="false"><div class="parcel-label"><img src="${art}labels/shipping-label-${variant}.webp" alt="" draggable="false"><div class="parcel-copy"><b>${this.active.carrier}</b><span>${this.active.id}</span><small>${this.active.gift}</small></div></div></div>`;
     this.box=host.firstElementChild;this.measureTrack();this.position();
-    this.boxDragCleanup=attachPointerDrag({element:this.box,canInteract:()=>!this.locked&&this.ctx.isActive?.()!==false,targets:()=>this.root.querySelectorAll("[data-chute]"),hitPadding:12,createGhost:({element})=>{const node=element.cloneNode(true);node.style.transform="none";return node;},onStart:()=>{this.dragging=true;},onDrop:({target,ghost})=>{this.dragging=false;if(target)this.sort(target,ghost);else if(this.geometryPending)this.measureTrack(true);},onCancel:()=>{this.dragging=false;if(this.geometryPending)this.measureTrack(true);this.position();}});
+    this.boxDragCleanup=attachPointerDrag({element:this.box,canInteract:()=>!this.locked&&this.ctx.isActive?.()!==false,targets:()=>this.root.querySelectorAll("[data-chute]"),hitPadding:12,createGhost:({element,rect})=>{
+      const node=element.cloneNode(true),scale=element.offsetWidth?rect.width/element.offsetWidth:1;node.style.transform="none";
+      // The ghost lives outside the scaled game canvas; retain the visible text size.
+      const copies=node.querySelectorAll(".parcel-copy > *");
+      element.querySelectorAll(".parcel-copy > *").forEach((text,index)=>{const style=getComputedStyle(text);copies[index].style.fontSize=`${parseFloat(style.fontSize)*scale}px`;if(style.letterSpacing!=="normal")copies[index].style.letterSpacing=`${parseFloat(style.letterSpacing)*scale}px`;});
+      return node;
+    },onStart:()=>{this.dragging=true;},onDrop:({target,ghost})=>{this.dragging=false;if(target)this.sort(target,ghost);else if(this.geometryPending)this.measureTrack(true);},onCancel:()=>{this.dragging=false;if(this.geometryPending)this.measureTrack(true);this.position();}});
     this.cleanups.push(this.boxDragCleanup);
   }
   measureTrack(preserveProgress=false){
@@ -319,7 +325,7 @@ export class TruckLoading extends BaseMinigame {
     this.listen(this.root.querySelector("#lock-loading"),"click",()=>{if(this.locked||this.slots.some(value=>!value))return;this.locked=true;this.ctx.finish();});
     this.root.querySelectorAll("[data-slot]").forEach(slot=>this.listen(slot,"click",event=>{if(event.target.closest(".load-pallet"))return;this.place(this.selected,Number(slot.dataset.slot));}));
   }
-  deliveryLabel(pallet){const last=this.data.pallets.length;if(pallet.stop===last)return `STOP ${pallet.stop} · LAST DELIVERY · LOAD FIRST`;if(pallet.stop===1)return "STOP 1 · FIRST DELIVERY · LOAD LAST";return `STOP ${pallet.stop} · DELIVERY ${pallet.stop}`;}
+  deliveryLabel(pallet){const last=this.data.pallets.length;if(pallet.stop===last)return `STOP ${pallet.stop} · LAST DELIVERY`;if(pallet.stop===1)return "STOP 1 · FIRST DELIVERY";return `STOP ${pallet.stop} · DELIVERY ${pallet.stop}`;}
   bindPallet(card,id){
     this.listen(card,"click",event=>{event.stopPropagation();if(!card.dataset.dragged)this.selectPallet(id);});
     this.cleanups.push(attachPointerDrag({element:card,canInteract:()=>!this.locked&&this.ctx.isActive?.()!==false,targets:()=>this.root.querySelectorAll("[data-slot]"),hitPadding:12,onStart:()=>{this.root.classList.add("is-dragging");card.closest(".truck-slot")?.classList.add("source-slot");},onDrop:({target})=>{this.root.classList.remove("is-dragging");this.root.querySelectorAll(".source-slot").forEach(slot=>slot.classList.remove("source-slot"));if(target)this.place(id,Number(target.dataset.slot));},onCancel:()=>{this.root.classList.remove("is-dragging");this.root.querySelectorAll(".source-slot").forEach(slot=>slot.classList.remove("source-slot"));}}));
