@@ -88,7 +88,7 @@ export class CompetitionManager {
       <div class="briefing-facts"><span class="mission-clock" aria-hidden="true">◷</span><span>${config.action}</span><strong>${config.time} SECONDS</strong></div>
       <div class="mission-action"><button class="primary industrial-primary" id="ready-button" disabled><span>I'M READY</span><b aria-hidden="true">›</b></button><div class="challenge-readiness" id="challenge-readiness" role="status" aria-live="polite">Preparing challenge...</div></div>
       <p class="mission-paused"><span aria-hidden="true">ⓘ</span> The clock is paused until you begin.</p>
-    </div><figure class="briefing-demo" aria-label="How to play ${esc(config.name)}"><figcaption><span>HOW TO PLAY</span><span>LOOPING DEMO</span></figcaption><img src="assets/tutorials/${config.id}.gif?v=37" alt="Animated example: ${esc(config.instruction)}" draggable="false" decoding="async"><p>EXAMPLE ONLY · YOUR CHALLENGE WILL BE DIFFERENT</p></figure></section>`;
+    </div><figure class="briefing-demo" aria-label="How to play ${esc(config.name)}"><figcaption><span>HOW TO PLAY</span><span>LOOPING DEMO</span></figcaption><img src="assets/tutorials/gameplay/${config.id}.gif?v=38" alt="Animated example: ${esc(config.instruction)}" draggable="false" decoding="async"><p>EXAMPLE ONLY · YOUR CHALLENGE WILL BE DIFFERENT</p></figure></section>`;
     $("#ready-button",this.root).onclick=()=>{if(this.state!=="briefing"||!this.stageReady)return;this.state="countdown";this.countdown(3,this.flowSerial);};this.prepareBriefing();
   }
   async prepareBriefing(){

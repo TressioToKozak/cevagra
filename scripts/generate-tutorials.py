@@ -5,7 +5,8 @@ import os
 from pathlib import Path
 import subprocess
 ROOT=Path(__file__).resolve().parent.parent
-OUT=ROOT/'assets/tutorials'
+OUT=ROOT/'assets/tutorials/gameplay'
+OUT.mkdir(parents=True,exist_ok=True)
 for kind in ['picking','conveyor','barcode','packing','detective','loading','memory','quality','final']:
     if os.environ.get('RECORD_GAMES') and kind not in os.environ['RECORD_GAMES'].split(','):
         continue
