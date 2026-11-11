@@ -830,3 +830,8 @@ body.results-active #app{overflow:hidden}
 #app .menu-email-wrap input{padding:0 55px}
 #app .menu-email-icon{position:absolute;z-index:2;left:14px;top:18px;width:28px;height:24px;color:#6486aa;pointer-events:none}
 #app .menu-leaderboard{width:86%}
+/* Passive looping tutorial; it never blocks readiness or starts a game timer. */
+.briefing-demo{position:absolute;left:50%;right:4%;top:50%;transform:translateY(-50%);margin:0;border:1px solid #547c97;border-radius:12px;background:#041625ed;box-shadow:0 20px 60px #0008;overflow:hidden;pointer-events:none}
+.briefing-demo figcaption{display:flex;justify-content:space-between;gap:12px;padding:16px 20px;color:#f6ce77;font:800 12px var(--mono);letter-spacing:.12em;border-bottom:1px solid #28465b}
+.briefing-demo figcaption span:last-child{color:#8fb5cb;font-size:10px}.briefing-demo>img{display:block;width:100%;aspect-ratio:16/9;object-fit:contain;background:#071c2d}.briefing-demo>p{margin:0;padding:12px 18px;border-top:1px solid #28465b;color:#8fb5cb;font:700 9px var(--mono);letter-spacing:.06em;text-align:center}
+#app .warehouse-gate:has(.briefing-demo) .gate-panel{width:48%;padding-right:32px}

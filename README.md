@@ -115,8 +115,11 @@ panel requires sign-in: username `ceva`, password `ceva` (no registration).
 The server checks sessions for reading and deleting results; sessions expire after
 eight hours and sign-out revokes them. Set `PANEL_USERNAME` and `PANEL_PASSWORD`
 in the server environment to change the credentials.
-GitHub Pages cannot run server-side login: use the Python server for the panel.
-If its API is unavailable, the sign-in page stays locked.
+When the API is unavailable (including GitHub Pages), the temporary frontend
+login `ceva` / `ceva` opens only this browser's local results. This convenience
+check is not a security boundary. It never grants access to the SQL API. Offline
+sign-in lasts for the current tab; sign-out clears it. A server rejection (401)
+never falls back to the offline password.
 SQL deletions retain run IDs so another browser cannot upload deleted runs again. This remains a
 casual competition: submitted scores are validated for shape/range, not verified
 against server-side gameplay, and participant names are visible to other players.
@@ -218,3 +221,11 @@ Run `node scripts/premium-tests.cjs` for native press geometry, rapid selections
 keyboard activation, neutral feedback, cleanup and reduced-motion checks.
 See [the premium report](docs/premium/report.md) for recordings, all-suite results
 and measured performance limitations.
+
+## Briefing tutorials
+
+Each briefing displays its own looping GIF on the right, using illustrative data
+rather than current challenge answers. Playback never blocks readiness or starts
+the timer. Regenerate the nine GIFs with `python3 scripts/generate-tutorials.py`
+(Pillow required). Check offline login and all tutorial layouts with
+`node scripts/check-offline-tutorials.cjs` against a static server (`TEST_ORIGIN`).
