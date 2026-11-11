@@ -7,13 +7,13 @@ const origin=process.env.TEST_ORIGIN||'http://127.0.0.1:8002';
  try{
   const page=await browser.newPage({viewport:{width:1920,height:1080}}),errors=[],requests=[];
   page.on('pageerror',e=>errors.push(e.message));page.on('response',r=>{if(r.status()>=400)errors.push(`${r.status()} ${r.url()}`);});page.on('request',r=>{if(/\.(webp|png|svg)(\?|$)/.test(r.url()))requests.push(r.url());});
-  await page.goto(origin);await page.evaluate(async()=>{window.qa=(await import('./game.js?v=23')).manager;});
+  await page.goto(origin);await page.evaluate(async()=>{window.qa=(await import('./game.js?v=24')).manager;});
   assert.equal(await page.locator('#player-name').inputValue(),'');
   await page.clock.install();await page.clock.pauseAt(new Date(Date.now()+1000));
   const click=async selector=>page.locator(selector).evaluate(e=>e.click());
   const state=()=>page.evaluate(()=>qa.state);
   const waitState=async target=>{for(let i=0;i<400;i++){if(await state()===target)return;await page.waitForTimeout(40);await page.clock.runFor(32);}throw new Error(`Expected ${target}, got ${await state()}`);};
-  async function newRun(){await page.locator('#player-name').fill('Alex');await page.locator('#start-form').evaluate(form=>form.requestSubmit());assert.equal(await state(),'briefing');assert.equal(await page.locator('#asset-progress,#asset-error').count(),0);assert(await page.evaluate(()=>qa.guard.closed));await waitState('briefing');return page.evaluate(()=>({id:qa.runId,seed:qa.runSeed,order:qa.gameConfigs.map(c=>c.id),tasks:qa.tasks}));}
+  async function newRun(){await page.locator('#player-name').fill('Alex');await page.locator('#player-email').fill('qa@example.com');await page.locator('#start-form').evaluate(form=>form.requestSubmit());assert.equal(await state(),'briefing');assert.equal(await page.locator('#asset-progress,#asset-error').count(),0);assert(await page.evaluate(()=>qa.guard.closed));await waitState('briefing');return page.evaluate(()=>({id:qa.runId,seed:qa.runSeed,order:qa.gameConfigs.map(c=>c.id),tasks:qa.tasks}));}
   async function activate(){
    const index=await page.evaluate(()=>qa.index);assert.equal(await state(),'briefing');for(let retry=0;retry<600&&!await page.evaluate(()=>qa.stageReady);retry++){await page.waitForTimeout(40);await page.clock.runFor(32);}assert(await page.evaluate(()=>qa.stageReady));await page.clock.runFor(10000);assert.equal(await state(),'briefing');assert(await page.evaluate(()=>qa.guard.closed));
    await click('#ready-button');await page.evaluate(()=>qa.countdown(3,qa.flowSerial-1));assert.equal(await state(),'countdown');assert(await page.evaluate(()=>qa.guard.closed));

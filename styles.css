@@ -755,3 +755,20 @@ body.results-active #app{padding:clamp(18px,3vh,36px) clamp(24px,4vw,76px)}
 .gate-panel .primary:disabled{opacity:.45;filter:saturate(.4);cursor:var(--cursor-disabled)}
 .reset-confirmation{display:flex;flex-direction:column;gap:12px;padding:16px;margin-top:14px;border:1px solid #c98a58;border-radius:6px;color:#e8d4c0;background:#261c18}
 .reset-confirmation p{margin:0}.reset-confirmation>button{align-self:flex-start}.reset-confirmation label{font-weight:800;color:#fff}.reset-confirmation>div{display:flex;gap:10px;flex-wrap:wrap}
+
+/* Scale the entire canvas, rather than clipping short laptop windows. */
+body #app{width:var(--screen-width,100vw);height:var(--screen-height,100dvh);zoom:var(--screen-scale,1)}
+body.menu-active #app{height:var(--screen-height,100dvh)}
+body.results-active #app{overflow:hidden}
+#app .warehouse-gate{overflow:hidden;align-items:center}
+#app .results-screen{height:100%;min-height:0;grid-template-rows:auto auto minmax(0,1fr) auto}
+#app .results-screen.storage-failed{grid-template-rows:auto auto minmax(0,1fr) auto auto}
+#app .menu-content{top:5%;left:53%;width:40%;max-width:600px}
+#app .menu-logo{height:125px;margin-bottom:0}
+#app .menu-form{margin-top:20px}
+#app .menu-input-wrap{height:60px;min-height:0;margin-bottom:12px}
+#app .menu-input-wrap input{padding:0 55px;font-size:20px}
+#app .menu-email-wrap input{padding:0 22px}
+#app .menu-start{height:76px;min-height:0}
+#app .menu-leaderboard{height:54px;min-height:0;margin-top:18px}
+#app .menu-error{height:28px;min-height:0;padding-top:0;font-size:13px}

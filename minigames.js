@@ -191,14 +191,15 @@ export class ConveyorRush extends BaseMinigame {
     if(!belt||!track||!this.box)return;
     const progress=preserveProgress&&this.endX>this.startX?(this.x-this.startX)/(this.endX-this.startX):0;
     const beltRect=belt.getBoundingClientRect(),trackRect=track.getBoundingClientRect(),boxRect=this.box.getBoundingClientRect();
-    this.trackStart=trackRect.left-beltRect.left;this.trackEnd=trackRect.right-beltRect.left;
-    this.boxWidth=boxRect.width;this.startX=this.trackStart-this.boxWidth;this.endX=this.trackEnd;
+    const scale=belt.offsetWidth?beltRect.width/belt.offsetWidth:1;
+    this.trackStart=(trackRect.left-beltRect.left)/scale;this.trackEnd=(trackRect.right-beltRect.left)/scale;
+    this.boxWidth=boxRect.width/scale;this.startX=this.trackStart-this.boxWidth;this.endX=this.trackEnd;
     this.travelDuration=Math.max(2.6,3.8-this.index*.11);
     this.speed=(this.endX-this.startX)/this.travelDuration;
     this.x=this.startX+progress*(this.endX-this.startX);
     // Parcel coordinates share the belt origin; clipping hides entry/exit off the surface.
-    host.style.clipPath=`inset(0 ${Math.max(0,beltRect.width-this.trackEnd)}px 0 ${this.trackStart}px)`;
-    this.box.style.top=`${trackRect.bottom-beltRect.top-boxRect.height}px`;
+    host.style.clipPath=`inset(0 ${Math.max(0,beltRect.width/scale-this.trackEnd)}px 0 ${this.trackStart}px)`;
+    this.box.style.top=`${(trackRect.bottom-beltRect.top-boxRect.height)/scale}px`;
     this.geometryPending=false;this.position();
   }
   position(){if(this.box&&!this.dragging)this.box.style.transform=`translate3d(${this.x}px,0,0)`;}
@@ -263,7 +264,7 @@ export class PackingTetris extends BaseMinigame {
     this.root.style.setProperty("--pack-gap-x",`${b.left-a.right}px`);this.root.style.setProperty("--pack-gap-y",`${c.top-a.bottom}px`);
     Object.keys(this.placed).forEach(id=>this.positionPlaced(id));
   }
-  positionPlaced(id){const placement=this.placed[id],box=this.data.boxes.find(item=>item.id===id),block=this.root.querySelector(`[data-placed="${id}"]`),cell=this.root.querySelector(`[data-cell="${placement?.x}:${placement?.y}"]`),grid=this.root.querySelector(".pallet-grid");if(!placement||!block||!cell||!grid)return;const cr=cell.getBoundingClientRect(),gr=grid.getBoundingClientRect(),styles=getComputedStyle(this.root),stepX=parseFloat(styles.getPropertyValue("--pack-step-x")),stepY=parseFloat(styles.getPropertyValue("--pack-step-y")),cellW=parseFloat(styles.getPropertyValue("--pack-cell-w")),cellH=parseFloat(styles.getPropertyValue("--pack-cell-h"));Object.assign(block.style,{left:`${cr.left-gr.left}px`,top:`${cr.top-gr.top}px`,width:`${cellW+(box.w-1)*stepX}px`,height:`${cellH+(box.h-1)*stepY}px`});}
+  positionPlaced(id){const placement=this.placed[id],box=this.data.boxes.find(item=>item.id===id),block=this.root.querySelector(`[data-placed="${id}"]`),cell=this.root.querySelector(`[data-cell="${placement?.x}:${placement?.y}"]`),grid=this.root.querySelector(".pallet-grid");if(!placement||!block||!cell||!grid)return;const cr=cell.getBoundingClientRect(),gr=grid.getBoundingClientRect(),styles=getComputedStyle(this.root),stepX=parseFloat(styles.getPropertyValue("--pack-step-x")),stepY=parseFloat(styles.getPropertyValue("--pack-step-y")),cellW=parseFloat(styles.getPropertyValue("--pack-cell-w")),cellH=parseFloat(styles.getPropertyValue("--pack-cell-h"));const scale=grid.offsetWidth?gr.width/grid.offsetWidth:1;Object.assign(block.style,{left:`${(cr.left-gr.left)/scale}px`,top:`${(cr.top-gr.top)/scale}px`,width:`${(cellW+(box.w-1)*stepX)/scale}px`,height:`${(cellH+(box.h-1)*stepY)/scale}px`});}
   canPlace(id,coordinate){if(!id||this.placed[id])return false;const box=this.data.boxes.find(item=>item.id===id),[x,y]=coordinate.split(":").map(Number);return x>=0&&y>=0&&x+box.w<=this.data.cols&&y+box.h<=this.data.rows&&Array.from({length:box.h},(_,dy)=>Array.from({length:box.w},(_,dx)=>this.cells[y+dy][x+dx])).flat().every(value=>!value);}
   clearPreview(){if(!this.previewCells.length)return;this.previewCells.forEach(cell=>cell.classList.remove("valid-target","invalid-target","preview-edge"));this.previewCells=[];this.previewKey="";}
   preview(id,coordinate){if(!id)return this.clearPreview();const valid=this.canPlace(id,coordinate),key=`${id}:${coordinate}:${valid}`;if(key===this.previewKey)return;this.clearPreview();this.previewKey=key;const box=this.data.boxes.find(item=>item.id===id),[x,y]=coordinate.split(":").map(Number);for(let dy=0;dy<box.h;dy++)for(let dx=0;dx<box.w;dx++){const cell=this.root.querySelector(`[data-cell="${x+dx}:${y+dy}"]`);if(cell){cell.classList.add(valid?"valid-target":"invalid-target","preview-edge");this.previewCells.push(cell);}}}
