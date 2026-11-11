@@ -13,6 +13,7 @@ ROOT = Path(__file__).resolve().parent
 def connect(path):
     db = sqlite3.connect(path, timeout=10)
     db.execute('CREATE TABLE IF NOT EXISTS runs (id TEXT PRIMARY KEY, payload TEXT NOT NULL)')
+    db.execute('CREATE TABLE IF NOT EXISTS deleted_runs (id TEXT PRIMARY KEY)')
     return db
 
 
@@ -43,11 +44,18 @@ class Handler(SimpleHTTPRequestHandler):
         self.wfile.write(body)
 
     def do_GET(self):
-        if self.path.split('?')[0].rstrip('/') == '/api/leaderboard':
+        route = self.path.split('?')[0].rstrip('/')
+        if route == '/panel':
+            self.path = '/panel/index.html'
+        if route in {'/api/leaderboard', '/api/panel/results'}:
             try:
                 with connect(self.server.db_path) as db:
                     rows = [json.loads(row[0]) for row in db.execute('SELECT payload FROM runs')]
-                self.reply(200, {'runs': [{key: value for key, value in row.items() if key not in {'email', 'playerEmail'}} for row in rows]})
+                    deleted = [row[0] for row in db.execute('SELECT id FROM deleted_runs')]
+                if route == '/api/panel/results':
+                    self.reply(200, {'runs': rows})
+                else:
+                    self.reply(200, {'runs': [{key: value for key, value in row.items() if key not in {'email', 'playerEmail'}} for row in rows], 'deleted': deleted})
             except sqlite3.Error:
                 self.reply(503, {'error': 'Database unavailable'})
             return
@@ -65,7 +73,7 @@ class Handler(SimpleHTTPRequestHandler):
         self.send_error(405)
 
     def do_POST(self):
-        if self.path != '/api/leaderboard':
+        if self.path not in {'/api/leaderboard', '/api/panel/delete'}:
             self.reply(404, {'error': 'Not found'})
             return
         # JSON-only, same-origin requests; no permissive CORS.
@@ -76,15 +84,30 @@ class Handler(SimpleHTTPRequestHandler):
             length = int(self.headers.get('Content-Length', '0'))
             if not 0 < length <= 1_000_000:
                 raise ValueError()
-            runs = json.loads(self.rfile.read(length)).get('runs')
+            data = json.loads(self.rfile.read(length))
+            if self.path == '/api/panel/delete':
+                if not isinstance(data, dict) or data.get('confirmation') != 'DELETE':
+                    raise ValueError()
+                ids = data.get('ids')
+                if not isinstance(ids, list) or len(ids) > 100000 or not all(isinstance(id, str) and 0 < len(id) <= 200 for id in ids):
+                    raise ValueError()
+                with connect(self.server.db_path) as db:
+                    db.executemany('INSERT OR IGNORE INTO deleted_runs (id) SELECT id FROM runs WHERE id = ?', [(id,) for id in ids])
+                    db.executemany('DELETE FROM runs WHERE id = ?', [(id,) for id in ids])
+                self.reply(200, {'deleted': len(ids)})
+                return
+            runs = data.get('runs')
             if not isinstance(runs, list) or len(runs) > 100 or not all(valid_run(run) for run in runs):
                 raise ValueError()
+        except sqlite3.Error:
+            self.reply(503, {'error': 'Database unavailable'})
+            return
         except (ValueError, AttributeError):
             self.reply(400, {'error': 'Invalid results'})
             return
         try:
             with connect(self.server.db_path) as db:
-                db.executemany('INSERT OR IGNORE INTO runs (id, payload) VALUES (?, ?)', [(run['id'], json.dumps(run, ensure_ascii=False)) for run in runs])
+                db.executemany('INSERT OR IGNORE INTO runs (id, payload) SELECT ?, ? WHERE NOT EXISTS (SELECT 1 FROM deleted_runs WHERE id = ?)', [(run['id'], json.dumps(run, ensure_ascii=False), run['id']) for run in runs])
             self.reply(200, {'saved': [run['id'] for run in runs]})
         except sqlite3.Error:
             self.reply(503, {'error': 'Database unavailable'})

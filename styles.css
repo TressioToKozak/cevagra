@@ -824,3 +824,9 @@ body.results-active #app{overflow:hidden}
 /* Keep the carrier prominent and leave the artwork's barcode and QR uncovered. */
 .parcel-copy b{font-size:clamp(14px,18cqw,34px)}
 .parcel-long-carrier .parcel-copy b{font-size:clamp(10px,12cqw,28px)}
+
+/* Compact menu controls, centered below the existing title. */
+#app .menu-form{width:80%;max-width:480px;margin-left:auto;margin-right:auto}
+#app .menu-email-wrap input{padding:0 55px}
+#app .menu-email-icon{position:absolute;z-index:2;left:14px;top:18px;width:28px;height:24px;color:#6486aa;pointer-events:none}
+#app .menu-leaderboard{width:86%}
