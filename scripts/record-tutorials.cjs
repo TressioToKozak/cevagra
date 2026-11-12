@@ -7,7 +7,7 @@ const root=path.resolve(__dirname,'..','work','tutorial-recordings');
 (async()=>{const browser=await chromium.launch({executablePath:process.env.CHROMIUM_PATH||undefined,args:['--no-sandbox']});try{
 const page=await browser.newPage({viewport:{width:1366,height:768}}),errors=[];page.on('pageerror',e=>errors.push(e.message));
 await page.goto(origin);await page.evaluate(async()=>{
-window.qa=(await import('./game.js?v=40')).manager;
+window.qa=(await import('./game.js?v=42')).manager;
 window.configs=(await import('./tasks.js?v=27')).GAME_CONFIGS;
 window.make=(await import('./tasks.js?v=27')).buildCompetition;
 window.RNG=(await import('./rng.js?v=20')).SeededRandom;

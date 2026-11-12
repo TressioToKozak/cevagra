@@ -25,7 +25,8 @@ function fitViewport(){
   const viewport=window.visualViewport;
   const width=Math.min(window.innerWidth,viewport?.width||window.innerWidth);
   const height=Math.min(window.innerHeight,viewport?.height||window.innerHeight);
-  const scale=Math.min(1,width/1100,height/820);
+  const phone=matchMedia("(max-width:600px), (max-width:950px) and (pointer:coarse) and (max-height:500px)").matches;
+  const scale=phone?1:Math.min(1,width/1100,height/820);
   app.style.setProperty("--screen-scale",scale);
   app.style.setProperty("--screen-width",`${width/scale}px`);
   app.style.setProperty("--screen-height",`${height/scale}px`);

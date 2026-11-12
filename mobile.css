@@ -1,0 +1,81 @@
+/* Phone-only stylesheet. Loaded through a media query; desktop styles stay intact. */
+html,body{width:100%;min-height:100%;overflow-x:hidden}body{overflow-y:auto}
+body #app,body.menu-active #app{width:100%;height:100dvh;min-height:100svh;max-width:none;margin:0;padding:0;zoom:1}
+#app .menu-screen{display:grid;place-items:center;height:auto;min-height:100svh;padding:24px 18px;background-position:40% center}
+#app .menu-screen:after{inset:0;width:auto;height:auto;background:#03132668;animation:none}
+#app .menu-content{position:relative;top:auto;left:auto;width:100%;max-width:390px;margin:auto}
+#app .menu-logo{height:112px;width:100%;margin:0}
+#app .menu-content h1{width:100%;line-height:1.06}#app .menu-content h1 span{font-size:clamp(29px,8vw,40px)}#app .menu-content h1 strong{font-size:clamp(19px,5.4vw,27px);letter-spacing:0}
+#app .menu-details{font-size:10px;letter-spacing:.09em;margin-top:14px}
+#app .menu-form{width:100%;max-width:none;margin-top:24px}
+#app .menu-input-wrap{height:56px;margin-bottom:12px}#app .menu-input-wrap input{font-size:17px;padding:0 48px}
+#app .menu-input-wrap>span{left:25px;top:12px}#app .menu-email-icon{left:12px;top:16px;width:26px}
+#app .menu-error{height:auto;min-height:24px;font-size:12px}
+#app .menu-start{width:94%;height:62px;min-height:0;font-size:23px;gap:18px}
+#app .menu-leaderboard{width:88%;height:48px;min-height:0;font-size:13px;margin-top:16px}
+#app .warehouse-gate{position:relative;inset:auto;display:flex;flex-direction:column;align-items:stretch;min-height:100svh;height:auto;overflow:visible;padding:18px 16px 24px;background-position:40% center}
+#app .warehouse-gate .gate-panel,#app .warehouse-gate:has(.briefing-demo) .gate-panel{width:100%;padding:12px 10px 18px;margin:0;gap:16px}
+#app .mission-brand{height:42px}#app .gate-logo{width:180px;height:86px;transform:translate(-25px,-24px)}
+#app .mission-frame{display:none}.mission-kicker{font-size:11px}.mission-identification{gap:10px}.mission-progress{gap:12px}
+#app .mission-heading{width:100%;gap:14px;padding:8px 0}.mission-icon-frame{flex:0 0 52px;width:52px;height:60px}.briefing-icon{width:44px;height:44px}
+#app .gate-panel h1{font-size:clamp(28px,8vw,38px);overflow-wrap:anywhere}#app .gate-panel .briefing-objective{font-size:18px;line-height:1.4}#app .gate-panel .briefing-hint{font-size:15px;line-height:1.45}
+#app .briefing-facts{min-height:42px;max-width:100%}#app .briefing-facts>span,#app .briefing-facts strong{padding:7px 12px;font-size:12px}
+#app .mission-action{width:100%}#app .gate-panel .primary{min-height:58px;font-size:24px}#app .gate-panel .mission-paused{font-size:12px}
+#app .briefing-demo{position:relative;left:auto;right:auto;top:auto;transform:none;width:100%;margin:6px 0 0;flex-shrink:0}#app .briefing-demo figcaption{padding:12px 14px;font-size:11px}
+#app .competition-shell{width:100%;height:100dvh;min-height:560px;padding:8px;overflow:hidden;border-radius:0;gap:0}
+#app .competition-hud{grid-template-columns:minmax(0,.7fr) minmax(0,1.4fr) minmax(0,.7fr) 50px;min-height:48px;flex-shrink:0}
+#app .competition-hud>div{padding:6px 5px;gap:4px}#app .competition-hud small{font-size:7px;letter-spacing:.04em}#app .competition-hud strong{font-size:11px}#app .competition-hud .clock strong{font-size:19px}
+#app .competition-shell .minigame-head{width:100%;height:auto;min-width:0;flex-shrink:0;grid-template-columns:minmax(0,1fr);gap:5px;padding:10px 0 7px;margin:0}
+#app .minigame-head h1{font-size:22px;line-height:1.1}#app .minigame-head .eyebrow{font-size:8px}
+#app .competition-shell .instruction-card{min-width:0;min-height:0;padding:8px;margin:0;grid-template-columns:48px minmax(0,1fr);background:#071521ed;border:1px solid #59798e;border-left:3px solid #e8be66}
+#app .competition-shell .instruction-card>strong{display:block;min-width:0;font-size:8px;padding:7px 3px}
+#app .competition-shell .instruction-card>span{position:static;width:auto;height:auto;clip-path:none;font-size:12px;line-height:1.3}
+#app .competition-shell .instruction-card>small{display:none}#app .competition-shell .instruction-card:before{display:none}
+#app .competition-shell .minigame-root{min-width:0;min-height:0;padding:4px 0 0;flex:1;overflow:hidden}
+#app .score-flash{top:70px;right:8px;font-size:12px}
+#app .competition-shell[data-game="picking"] .picking-target{width:100%;height:48px;margin-bottom:8px}#app .picking-target strong{font-size:24px}
+#app .picking-locations{width:100%;height:calc(100% - 56px);grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(3,minmax(0,1fr));gap:8px}
+#app .picking-card-footer strong{font-size:16px}#app .picking-location{font-size:11px}#app .picking-card-footer>i{width:16px;height:16px}
+#app .competition-shell[data-game="barcode"] .minigame-head>div:first-child{background:none;font-size:inherit}#app .competition-shell[data-game="barcode"] .minigame-head>div:first-child>*{display:block}
+#app .competition-shell[data-game="barcode"] .barcode-target{width:100%;height:54px;margin-bottom:8px;padding:6px 8px;grid-template-columns:40% 60%}#app .barcode-target span{font-size:11px}#app .barcode-target strong{font-size:24px}
+#app .competition-shell[data-game="barcode"] .barcode-grid{width:100%;height:calc(100% - 62px);grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(3,minmax(0,1fr));gap:8px}
+#app .competition-shell[data-game="barcode"] .barcode-sku{font-size:clamp(11px,16cqw,19px)}
+#app .competition-shell[data-game="conveyor"] .conveyor{height:34%}#app .competition-shell[data-game="conveyor"] .chutes{height:63%;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(3,minmax(0,1fr));gap:7px}
+#app .competition-shell[data-game="conveyor"] .carrier-zone{grid-template-columns:42% 58%;padding:4px}#app .carrier-badge{max-height:66px}#app .competition-shell[data-game="conveyor"] .carrier-name{font-size:15px}#app .competition-shell[data-game="conveyor"] .chute-copy small{font-size:8px}#app .chute-status{font-size:9px}
+#app .moving-box.conveyor-parcel{width:min(160px,90cqh)}#app .parcel-copy b{font-size:clamp(15px,18cqw,27px)}
+#app .competition-shell[data-game="packing"] .packing-layout{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1fr) minmax(0,1.1fr);gap:8px}
+#app .competition-shell[data-game="packing"] .data-title{height:28px;min-height:28px;padding:6px 10px;font-size:11px}
+#app .competition-shell[data-game="packing"] .shape-rack{padding:3px;min-width:0}#app .shape-box{min-width:0;min-height:0}#app .shape-copy strong,#app .shape-copy small{font-size:8px}
+#app .pallet-grid-wrap{padding:4px 8px}#app .packing-key{font-size:9px;gap:12px}
+#app .competition-shell[data-game="detective"] .detective-terminal{--wms-record-columns:24px 40px minmax(0,1fr) 12px minmax(0,1fr) 0px}
+#app .competition-shell[data-game="detective"] .detective-records{grid-template-columns:1fr;grid-template-rows:repeat(8,minmax(0,1fr));padding:4px;gap:4px}
+#app .competition-shell[data-game="detective"] .record-code b{font-size:clamp(11px,3.3vw,15px)}#app .competition-shell[data-game="detective"] .record-location b{font-size:13px}#app .record-flag{overflow:hidden}#app .wms-barcode{height:8px}
+#app .competition-shell[data-game="detective"] .record-code small{font-size:6px}#app .competition-shell[data-game="detective"] .detective-footer{flex-direction:row;gap:6px;padding:6px}#app .competition-shell[data-game="detective"] .terminal-confirm{min-width:0;width:70%;min-height:44px;font-size:11px}#app .competition-shell[data-game="detective"] #detective-count{font-size:9px;padding:6px}
+#app .competition-shell[data-game="loading"] .loading-layout{grid-template-rows:minmax(0,1fr) minmax(0,1.2fr) 48px;gap:8px}
+#app .competition-shell[data-game="loading"] .truck-scene{grid-template-columns:24px minmax(0,1fr) 24px;min-height:0;gap:2px}#app .truck-slots{height:100%;gap:2px}#app .truck-slot{min-width:0}#app .truck-slot>small{font-size:5px}#app .slot-placeholder{font-size:6px}#app .load-arrow{font-size:6px}
+#app .competition-shell[data-game="loading"] .pallet-yard-cards{grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:repeat(3,minmax(0,1fr));gap:5px}#app .competition-shell[data-game="loading"] .pallet-yard .load-pallet{width:100%;max-width:none;min-height:0}
+#app .competition-shell[data-game="loading"] .pallet-copy b{font-size:clamp(10px,12cqw,16px)}#app .competition-shell[data-game="loading"] .pallet-copy span{font-size:clamp(7px,9cqw,11px)}#app .competition-shell[data-game="loading"] .pallet-copy small{font-size:7px}#app .loading-footer .lock-answer{min-width:0;width:100%;min-height:44px;font-size:12px}
+#app .competition-shell[data-game="memory"] .memory-heading{flex-wrap:wrap;gap:6px;padding:8px}#app .memory-heading h2{font-size:17px}#app .memory-phase-pill{width:80px;height:26px}#app .memory-heading>span:not(.visually-hidden){font-size:8px}#app .memory-heading #memory-count{font-size:11px;padding:6px}
+#app .competition-shell[data-game="memory"] .gift-memory{left:0;right:0;top:0;bottom:20%;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr));gap:22px 6px}
+#app .memory-gift figcaption{font-size:10px;bottom:-16px;padding:3px 4px}#app .competition-shell[data-game="memory"] .memory-options{grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(4,minmax(0,1fr));gap:6px}#app .memory-options b{font-size:11px}#app .memory-footer{gap:6px}#app .memory-footer>span{font-size:10px}#app .competition-shell[data-game="memory"] #lock-memory{min-width:0;width:52%;padding:8px;font-size:11px;min-height:44px}
+#app .competition-shell[data-game="quality"] .quality-grid{grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(4,minmax(0,1fr));gap:5px}#app .competition-shell[data-game="quality"] #lock-quality{min-width:0;width:100%;min-height:44px;font-size:12px}
+#app .competition-shell[data-game="final"] .final-layout{grid-template-rows:minmax(0,1fr) 100px 56px;gap:6px}#app .competition-shell[data-game="final"] .dispatch-panel{border-width:6px;padding:5px;min-width:0}#app .competition-shell[data-game="final"] .dispatch-panel h3{font-size:11px;gap:4px;padding-bottom:5px}#app .dispatch-panel h3 img{width:20px;height:20px}
+#app .competition-shell[data-game="final"] .dispatch-data dt{font-size:9px;padding:1px 3px}#app .competition-shell[data-game="final"] .dispatch-data dd{font-size:clamp(15px,4vw,19px);padding:1px 3px}#app .competition-shell[data-game="final"] .final-footer button{height:52px;font-size:12px}
+body.results-active #app{height:auto;min-height:100svh;overflow:visible;padding:16px 12px}
+#app .results-screen{height:auto;min-height:0;grid-template-rows:auto auto auto auto;gap:12px}#app .results-header{flex-wrap:wrap;gap:10px;padding-bottom:10px}#app .results-header h1{font-size:23px}#app .results-brand{flex-basis:110px}#app .results-record-badge{margin-left:0;font-size:9px}
+#app .results-summary{grid-template-columns:1fr 1fr;gap:8px}#app .results-player{grid-column:1/-1}#app .results-player,#app .results-final-score,#app .results-rank{min-height:90px;padding:12px;gap:10px}#app .results-player strong{font-size:23px}#app .results-final-score strong b{font-size:38px}#app .results-final-score strong small{font-size:12px}#app .results-final-score>img,#app .results-rank>img{width:28px;height:32px}#app .results-rank strong{font-size:30px}
+#app .results-stats{gap:6px}#app .results-stats>div{grid-template-columns:1fr;padding:10px;gap:5px}#app .results-stats img{width:22px;height:22px}#app .results-stats span{font-size:8px}#app .results-stats strong{font-size:22px}
+#app .results-games{grid-template-columns:1fr;grid-template-rows:repeat(9,80px);gap:8px}#app .results-game-card{padding:12px;gap:12px}#app .results-game-card h3{font-size:13px}#app .results-game-card strong{font-size:22px}#app .results-game-card>img{width:36px;height:36px}
+#app .results-actions{display:grid;grid-template-columns:1fr;gap:10px}#app .results-actions button{width:100%;min-width:0;height:52px;font-size:16px}
+dialog.leaderboard-modal{width:calc(100vw - 16px);max-height:calc(100dvh - 16px)}.leaderboard-title h2{font-size:17px}.leaderboard-title img{width:80px}.leaderboard th,.leaderboard td{padding:10px 8px;font-size:11px}.leaderboard-scroll{overflow:auto}.record-banner b{font-size:26px}
+@media(orientation:landscape){#app .menu-screen{padding:16px}#app .menu-logo{height:80px}#app .warehouse-gate{padding:16px;display:grid;grid-template-columns:1fr 1fr;align-items:center;gap:14px}#app .gate-panel h1{font-size:28px}#app .gate-panel .briefing-objective{font-size:15px}#app .gate-panel .briefing-hint{font-size:12px}#app .mission-paused{display:none}#app .competition-shell{min-height:560px}#app .menu-content{max-width:420px}}
+/* Keep the timer fully readable and fit all seven truck positions on a phone. */
+#app .competition-hud{grid-template-columns:minmax(0,.7fr) minmax(0,1.4fr) minmax(0,.7fr) 66px}
+#app .competition-hud .clock strong{font-size:20px;text-overflow:clip}
+#app .competition-shell[data-game="loading"] .truck-scene{grid-template-columns:minmax(0,1fr)}
+#app .competition-shell[data-game="loading"] .truck-cab,#app .competition-shell[data-game="loading"] .rear-door{display:none}
+#app .competition-shell[data-game="loading"] .truck-body{height:160px;max-height:100%;width:100%;align-self:center}
+#app .competition-shell[data-game="loading"] .truck-slots{left:5%;right:5%;top:26%;bottom:17%;height:auto;gap:2px}
+#app .competition-shell[data-game="loading"] .truck-slot{padding:16px 0 2px}
+#app .competition-shell[data-game="loading"] .truck-slot>.load-pallet{width:100%;max-width:100%;min-width:0}
+#app .competition-shell[data-game="loading"] .truck-slot .pallet-copy b{font-size:6px}#app .competition-shell[data-game="loading"] .truck-slot .pallet-copy span{font-size:5px}#app .competition-shell[data-game="loading"] .truck-slot .pallet-copy small{display:none}
