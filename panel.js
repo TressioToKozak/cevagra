@@ -15,7 +15,6 @@ function renderStatistics(){
   $('stat-time').textContent=stats?`${hours}h ${minutes}m ${seconds%60}s`:'—';
   $('stat-player').textContent=stats?.topPlayer?.name||'No games yet';
   $('stat-player-detail').textContent=stats?.topPlayer?`${number.format(stats.topPlayer.count)} completed ${stats.topPlayer.count===1?'game':'games'}${stats.topPlayer.email?' · '+stats.topPlayer.email:''}`:'Complete a game to appear here';
-  $('statistics-note').textContent=stats?`${mode==='local'?'This browser only · ':''}Visits and active play time tracked since ${new Date(stats.since).toLocaleDateString('en-GB')}. Games = completed competitions. Totals survive result deletion.`:'Statistics unavailable.';
 }
 
 const OFFLINE_SESSION='ceva-panel-offline-v1';
@@ -24,7 +23,7 @@ try{offlineSignedIn=sessionStorage.getItem(OFFLINE_SESSION)==='signed-in';}catch
 function localSession(active){offlineSignedIn=active;try{active?sessionStorage.setItem(OFFLINE_SESSION,'signed-in'):sessionStorage.removeItem(OFFLINE_SESSION);}catch{}}
 function showLocalResults(){if(!offlineSignedIn){showLogin();return;}mode='local';rows=local.getLeaderboard();$('status').textContent='Offline mode · Results saved in this browser';$('login-screen').hidden=true;$('panel-screen').hidden=false;render();}
 
-function showLogin(message=''){rows=[];page=0;$('results').replaceChildren();$('result-count').textContent='0';$('confirm').close();$('panel-screen').hidden=true;$('login-screen').hidden=false;$('login-error').textContent=message;}
+function showLogin(message=''){rows=[];page=0;$('results').replaceChildren();$('result-count').textContent='0';$('confirm').close();$('statistics-dialog').close();$('panel-screen').hidden=true;$('login-screen').hidden=false;$('login-error').textContent=message;}
 function render(){
   renderStatistics();
   const pages=Math.max(1,Math.ceil(rows.length/PAGE_SIZE));
@@ -47,6 +46,8 @@ async function refresh(){
   $('login-screen').hidden=true;$('panel-screen').hidden=false;rows.sort(LeaderboardManager.compareRuns);render();
 }
 function exportExcel(snapshot=rows,name=`Leaderboard - ${backupDate()}.xlsx`,blob=resultsWorkbook(snapshot)){const url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download=name;link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
+$('open-statistics').onclick=()=>{renderStatistics();$('statistics-dialog').showModal();void refresh();};
+$('close-statistics').onclick=()=>$('statistics-dialog').close();
 $('refresh-statistics').onclick=()=>void refresh();
 $('export').onclick=()=>exportExcel();
 $('backup-folder').onclick=async()=>{try{await chooseBackupDirectory();$('status').textContent='Backup folder: leaderboard backups.';}catch(error){if(error.name!=='AbortError')$('status').textContent=error.message;}};
