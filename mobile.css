@@ -3,7 +3,7 @@ html,body{width:100%;min-height:100%;overflow-x:hidden}body{overflow-y:auto}
 body #app,body.menu-active #app{width:100%;height:100dvh;min-height:100svh;max-width:none;margin:0;padding:0;zoom:1}
 #app .menu-screen{display:grid;place-items:center;height:auto;min-height:100svh;padding:24px 18px;background-position:40% center}
 #app .menu-screen:after{inset:0;width:auto;height:auto;background:#03132668;animation:none}
-#app .menu-content{position:relative;top:auto;left:auto;width:100%;max-width:390px;margin:auto}
+#app .menu-content{position:relative;top:auto;left:auto;transform:none;width:100%;max-width:390px;margin:auto}
 #app .menu-logo{height:112px;width:100%;margin:0}
 #app .menu-content h1{width:100%;line-height:1.06}#app .menu-content h1 span{font-size:clamp(29px,8vw,40px)}#app .menu-content h1 strong{font-size:clamp(19px,5.4vw,27px);letter-spacing:0}
 #app .menu-details{font-size:10px;letter-spacing:.09em;margin-top:14px}

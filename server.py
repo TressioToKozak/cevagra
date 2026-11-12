@@ -12,6 +12,8 @@ from pathlib import Path
 import sqlite3
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 
+from backups import BackupManager
+
 ROOT = Path(__file__).resolve().parent
 
 
@@ -91,6 +93,9 @@ class Handler(SimpleHTTPRequestHandler):
             return
         # Serve only public game files; never expose databases, source control or tests.
         path = Path(self.translate_path(self.path)).resolve()
+        if path.is_relative_to(self.server.backups.directory):
+            self.send_error(404)
+            return
         if not path.is_relative_to(ROOT) or any(part.startswith('.') for part in path.relative_to(ROOT).parts) or (path != ROOT and path.parts[len(ROOT.parts)] not in {'assets'} and path.suffix not in {'.html', '.css', '.js', '.webmanifest', '.ico'}):
             self.send_error(404)
             return
@@ -150,15 +155,19 @@ class Handler(SimpleHTTPRequestHandler):
                 if not isinstance(ids, list) or len(ids) > 100000 or not all(isinstance(id, str) and 0 < len(id) <= 200 for id in ids):
                     raise ValueError()
                 with connect(self.server.db_path) as db:
+                    db.execute('BEGIN IMMEDIATE')
+                    selected = set(ids)
+                    deleted_rows = [json.loads(row[0]) for row in db.execute('SELECT payload FROM runs') if json.loads(row[0]).get('id') in selected]
+                    backup = self.server.backups.create(deleted_rows) if deleted_rows else None
                     db.executemany('INSERT OR IGNORE INTO deleted_runs (id) SELECT id FROM runs WHERE id = ?', [(id,) for id in ids])
                     db.executemany('DELETE FROM runs WHERE id = ?', [(id,) for id in ids])
-                self.reply(200, {'deleted': len(ids)})
+                self.reply(200, {'deleted': len(deleted_rows), 'backup': backup})
                 return
             runs = data.get('runs')
             if not isinstance(runs, list) or len(runs) > 100 or not all(valid_run(run) for run in runs):
                 raise ValueError()
-        except sqlite3.Error:
-            self.reply(503, {'error': 'Database unavailable'})
+        except (sqlite3.Error, OSError):
+            self.reply(503, {'error': 'Backup or database unavailable; results have not been deleted'})
             return
         except (ValueError, AttributeError):
             self.reply(400, {'error': 'Invalid results'})
@@ -176,6 +185,8 @@ def main():
     parser.add_argument('--host', default='127.0.0.1')
     parser.add_argument('--port', type=int, default=8002)
     parser.add_argument('--db', default=os.environ.get('LEADERBOARD_DB', str(ROOT / 'data' / 'leaderboard.sqlite3')))
+    parser.add_argument('--backup-dir', default=os.environ.get('LEADERBOARD_BACKUP_DIR', str(ROOT / 'leaderboard backups')))
+    parser.add_argument('--backup-timezone', default=os.environ.get('BACKUP_TIMEZONE', 'Europe/Berlin'))
     args = parser.parse_args()
     db_path = Path(args.db).resolve()
     db_path.parent.mkdir(parents=True, exist_ok=True)
@@ -183,8 +194,14 @@ def main():
         pass
     server = ThreadingHTTPServer((args.host, args.port), Handler)
     server.db_path = db_path
+    server.backups = BackupManager(db_path, args.backup_dir, args.backup_timezone)
+    server.backups.start()
     print(f'Game: http://{args.host}:{args.port}', flush=True)
-    server.serve_forever()
+    try:
+        server.serve_forever()
+    finally:
+        server.backups.stopped.set()
+        server.server_close()
 
 
 if __name__ == '__main__':

@@ -43,8 +43,8 @@ export class SqlLeaderboardStore extends LocalLeaderboardStore {
         const result=await this.request();
         if(!Array.isArray(result.runs))throw new Error("Invalid leaderboard");
         this.deleted=new Set(result.deleted||[]);for(const id of this.deleted)this.acknowledged.add(id);
-        this.remote=result.runs;this.onchange();
-      }catch{/* Local results remain available; retry on next save/open/online. */}
+        this.remote=result.runs;this.online=true;this.onchange();
+      }catch{this.online=false;/* Local results remain available; retry on next save/open/online. */}
     })().finally(()=>{this.syncing=null;if(this.revision!==revision)void this.sync();});
     return this.syncing;
   }

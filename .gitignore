@@ -3,3 +3,5 @@ test-results/
 data/
 __pycache__/
 work/
+/leaderboard backups/*
+!/leaderboard backups/.gitkeep

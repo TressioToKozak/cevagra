@@ -9,7 +9,7 @@ async function ready(url){for(let i=0;i<100;i++){const ok=await new Promise(reso
  try{
   const chosen=selected.length?selected:suites;
   const port=process.env.TEST_PORT||'8002',origin=process.env.TEST_ORIGIN||`http://127.0.0.1:${port}/`;
-  if(chosen.some(n=>n!=='node')){
+  if(chosen.some(n=>!['node','backups'].includes(n))){
    if(!process.env.TEST_ORIGIN){server=spawn('python3',['-m','http.server',port,'--bind','127.0.0.1'],{cwd:root,stdio:'ignore'});server.on('error',e=>console.error(e.message));}
    await ready(origin);
   }

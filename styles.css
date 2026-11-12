@@ -746,7 +746,7 @@ body.results-active #app{overflow:hidden}
 #app .warehouse-gate{overflow:hidden;align-items:center}
 #app .results-screen{height:100%;min-height:0;grid-template-rows:auto auto minmax(0,1fr) auto}
 #app .results-screen.storage-failed{grid-template-rows:auto auto minmax(0,1fr) auto auto}
-#app .menu-content{top:5%;left:53%;width:40%;max-width:600px}
+#app .menu-content{top:50%;transform:translateY(-50%);left:53%;width:40%;max-width:600px}
 #app .menu-logo{height:145px;margin-bottom:0}
 #app .menu-form{margin-top:20px}
 #app .menu-input-wrap{height:68px;min-height:0;margin-bottom:12px}

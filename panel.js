@@ -1,3 +1,4 @@
+import {backupDate,createBrowserBackup,chooseBackupDirectory,startDailyBackups} from './backup-store.js?v=43';
 import {resultsWorkbook} from './excel.js?v=2';
 import {LeaderboardManager, LocalLeaderboardStore} from './storage.js?v=29';
 const $=id=>document.getElementById(id),local=new LeaderboardManager(new LocalLeaderboardStore());
@@ -30,8 +31,9 @@ async function refresh(){
   catch{showLocalResults();return;}
   $('login-screen').hidden=true;$('panel-screen').hidden=false;rows.sort(LeaderboardManager.compareRuns);render();
 }
-function exportExcel(snapshot=rows){const url=URL.createObjectURL(resultsWorkbook(snapshot)),link=document.createElement('a');link.href=url;link.download='ceva-results.xlsx';link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
+function exportExcel(snapshot=rows,name=`Leaderboard - ${backupDate()}.xlsx`,blob=resultsWorkbook(snapshot)){const url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download=name;link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
 $('export').onclick=()=>exportExcel();
+$('backup-folder').onclick=async()=>{try{await chooseBackupDirectory();$('status').textContent='Backup folder: leaderboard backups.';}catch(error){if(error.name!=='AbortError')$('status').textContent=error.message;}};
 $('delete').onclick=()=>{$('delete-error').textContent='';$('confirm').showModal();};
 $('confirm-delete').onclick=async()=>{
   if($('confirm-delete').disabled)return;
@@ -39,13 +41,17 @@ $('confirm-delete').onclick=async()=>{
   $('confirm-delete').disabled=true;
   try{
     // Initiate the backup in the click handler, before the destructive request.
-    exportExcel(snapshot);
+    const backup=await createBrowserBackup(snapshot);
+    if(!backup.written)exportExcel(snapshot,backup.name,backup.blob);
     if(mode==='sql'){
       const response=await fetch(new URL('delete',api),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({confirmation:'DELETE',ids:snapshot.map(run=>run.id)}),signal:AbortSignal.timeout(10000)});
       if(response.status===401){showLogin('Your session has expired. Please sign in again.');return;}if(!response.ok)throw Error('Results could not be deleted. Please try again.');
     }
-    // Clear this browser too, so local copies cannot reappear after deletion.
-    if(local.clearLeaderboard()===false&&mode==='local')throw Error('Results could not be cleared from this browser.');
+    // Remove only the backed-up IDs; a run saved by another tab must survive.
+    const data=local.store.read(),deletedIds=new Set(snapshot.map(run=>run.id));
+    const kept=data.runs.filter(run=>!deletedIds.has(run.id));
+    const cleared=!local.store.error&&(kept.length===data.runs.length||local.store.write({...data,runs:kept})!==false);
+    if(!cleared&&mode==='local')throw Error('Results could not be cleared from this browser.');
     $('confirm').close();await refresh();
   }catch(error){$('delete-error').textContent=error.message;}
   finally{$('confirm-delete').disabled=false;}
@@ -74,3 +80,5 @@ $('logout').onclick=async()=>{
   catch{$('status').textContent='Sign out failed. Please try again.';}
 };
 void refresh();
+
+startDailyBackups(async()=>{if($('panel-screen').hidden)return null;if(mode==='sql')await refresh();return $('panel-screen').hidden?null:rows;},()=>{$('status').textContent='Automatic backup failed. Check folder access.';});
