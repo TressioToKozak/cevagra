@@ -1,7 +1,7 @@
-import {createPalletSealing} from "./sealing.js?v=52";
+import {createPalletSealing} from "./sealing.js?v=53";
 import { SeededRandom } from "./rng.js?v=20";
 import { CARRIERS } from "./tasks.js?v=52";
-import { scoreClassification, scoreStandard } from "./scoring.js?v=20";
+import { scoreClassification, scoreStandard, scoreSpeedPicking } from "./scoring.js?v=53";
 import { attachPointerDrag } from "./interactions.js?v=23";
 
 export function planPalletMove(slots,id,targetIndex){
@@ -131,6 +131,7 @@ const BARCODE_CARTONS=[
 
 export class SpeedPicking extends RapidFind{
   constructor(){super("picking");}
+  score(){return scoreSpeedPicking({correct:this.correct,total:this.data.rounds.length,mistakes:this.mistakes,timeRemaining:this.remaining,timeLimit:this.ctx.config.time});}
   draw(){
     const round=this.data.rounds[this.index%this.data.rounds.length];this.current=round;
     if(!this.root.querySelector(".picking-locations"))this.root.innerHTML='<div class="picking-target" aria-live="polite"><span>TARGET SKU</span><strong></strong></div><div class="picking-locations"></div>';

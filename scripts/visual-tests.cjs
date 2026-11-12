@@ -4,7 +4,7 @@ const assert=require('node:assert/strict');const{chromium}=require('playwright')
  const page=await browser.newPage(),errors=[];// Exercise local fallback; SQL is covered by check-sql.cjs.
     await page.route('**/api/leaderboard', route => route.abort());await page.route('**/api/statistics',route=>route.fulfill({json:{saved:true}}));
     page.on('pageerror',e=>errors.push(e.message));page.on('response',r=>{if(r.status()>=400)errors.push(`${r.status()} ${r.url()}`);});
- await page.goto(process.env.TEST_ORIGIN||'http://127.0.0.1:8002');await page.evaluate(async()=>{window.qa=(await import('./game.js?v=52')).manager;const {assetLoader}=await import('./asset-loader.js?v=20'),{COMPETITION_ASSETS}=await import('./asset-manifest.js?v=50');await assetLoader.preload(COMPETITION_ASSETS);});
+ await page.goto(process.env.TEST_ORIGIN||'http://127.0.0.1:8002');await page.evaluate(async()=>{window.qa=(await import('./game.js?v=53')).manager;const {assetLoader}=await import('./asset-loader.js?v=20'),{COMPETITION_ASSETS}=await import('./asset-manifest.js?v=50');await assetLoader.preload(COMPETITION_ASSETS);});
  for(const [width,height] of [[1920,1080],[1366,768],[1280,720]]){
   await page.setViewportSize({width,height});
   for(const id of ['picking','conveyor','barcode','packing','detective','loading','memory','quality','final']){

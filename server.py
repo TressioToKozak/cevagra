@@ -97,6 +97,8 @@ class Handler(SimpleHTTPRequestHandler):
         if route.startswith('/api/panel/') and not self.authenticated():
             self.reply(401, {'error': 'Sign in required'})
             return
+        if route in {'/test', '/tests'}:
+            self.path = route + '/index.html'
         if route == '/panel':
             self.path = '/panel/index.html'
         if route in {'/api/leaderboard', '/api/panel/results'}:

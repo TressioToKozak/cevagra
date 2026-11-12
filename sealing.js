@@ -17,7 +17,7 @@ export class SealSimulation {
     this.sealed=this.layers.every(layer=>layer>=1);
   }
   get coverage(){return this.layers.reduce((sum,n)=>sum+clamp(n),0)/this.layers.length;}
-  get score(){return Math.round(clamp(this.coverage*90+(this.sealed?10:0)-this.waste*2.5-this.outside*6-this.breaks*6,0,100));}
+  get score(){return Math.round(clamp(Math.pow(this.coverage,2.4)*70+(this.sealed?30:0)-this.waste*6-this.outside*10-this.breaks*12,0,100));}
 }
 let ribbonSequence=0;
 export function createPalletSealing(Base){return class PalletSealing extends Base {
@@ -41,7 +41,7 @@ export function createPalletSealing(Base){return class PalletSealing extends Bas
     this.listen(this.roll,'blur',()=>{this.keys.clear();if(this.pointer===null)this.sim.hold(false);});
     this.cleanups.push(()=>{cancelAnimationFrame(this.raf);this.keys.clear();this.sim.hold(false);if(this.pointer!==null&&this.roll.hasPointerCapture?.(this.pointer))this.roll.releasePointerCapture(this.pointer);this.pointer=null;});this.paint();
   }
-  start(){this.last=performance.now();const tick=now=>{if(this.locked||this.ctx.isActive?.()===false)return;const dt=Math.min(.05,Math.max(0,(now-this.last)/1000));this.last=now;if(this.keys.has('ArrowUp'))this.sim.y+=dt*.13;if(this.keys.has('ArrowDown'))this.sim.y-=dt*.13;this.sim.step(dt);this.liveScore=this.score();this.paint();if(this.sim.sealed){this.roll.disabled=true;this.timeout(()=>this.ctx.finish(),650);return;}this.raf=requestAnimationFrame(tick);};this.raf=requestAnimationFrame(tick);}
+  start(){this.last=performance.now();const tick=now=>{if(this.locked||this.ctx.isActive?.()===false)return;const dt=Math.min(.05,Math.max(0,(now-this.last)/1000));this.last=now;if(this.keys.has('ArrowUp'))this.sim.y+=dt*.13;if(this.keys.has('ArrowDown'))this.sim.y-=dt*.13;this.sim.step(dt);this.liveScore=this.score();this.paint();if(this.sim.sealed){this.ctx.finish();return;}this.raf=requestAnimationFrame(tick);};this.raf=requestAnimationFrame(tick);}
   paint(){
     const s=this.sim,y=clamp(s.y,-.08,1.08),outside=s.y<-.035||s.y>1.035;
     this.roll.style.bottom=`${y*100}%`;this.roll.classList.toggle('is-held',s.holding);this.roll.setAttribute('aria-pressed',String(s.holding));

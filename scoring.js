@@ -17,3 +17,9 @@ export function scoreClassification({selected=[],solution=[],universe=[],timeRem
 }
 
 export const sumScores = (scores) => Math.min(1000,Object.values(scores).reduce((sum,value)=>sum+value,0));
+
+export function scoreSpeedPicking({correct=0,total=10,mistakes=0,timeRemaining=0,timeLimit=15}){
+  const progress=clamp(correct/Math.max(1,total),0,1);
+  const completion=correct>=total?10*clamp(timeRemaining/(timeLimit*.25),0,1):0;
+  return Math.round(clamp(90*Math.pow(progress,.7)+completion-mistakes*4,0,100));
+}
