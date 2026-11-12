@@ -4,8 +4,8 @@ import {installEditingCursor} from "./editing-cursor.js?v=39";
 import { CompetitionSettings, LeaderboardManager, SqlLeaderboardStore, leaderboardCsv, normalizeName } from "./storage.js?v=43";
 import { ArcadeEffects, animateNumber } from "./effects.js?v=21";
 import { SeededRandom, createRunId, createRunSeed } from "./rng.js?v=20";
-import { GAME_CONFIGS, TRANSITION_SECONDS, buildCompetition, buildGameOrder } from "./tasks.js?v=50";
-import { MINIGAME_CLASSES } from "./minigames.js?v=50";
+import { GAME_CONFIGS, TRANSITION_SECONDS, buildCompetition, buildGameOrder } from "./tasks.js?v=51";
+import { MINIGAME_CLASSES } from "./minigames.js?v=51";
 import { sumScores } from "./scoring.js?v=20";
 import { StageGuard } from "./lifecycle.js?v=23";
 import { assetLoader, ASSET_PRIORITY } from "./asset-loader.js?v=20";
@@ -95,7 +95,7 @@ export class CompetitionManager {
       <div class="briefing-facts"><span class="mission-clock" aria-hidden="true">◷</span><span>${config.action}</span><strong>${config.time} SECONDS</strong></div>
       <div class="mission-action"><button class="primary industrial-primary" id="ready-button" disabled><span>I'M READY</span><b aria-hidden="true">›</b></button><div class="challenge-readiness" id="challenge-readiness" role="status" aria-live="polite">Preparing challenge...</div></div>
       <p class="mission-paused"><span aria-hidden="true">ⓘ</span> The clock is paused until you begin.</p>
-    </div><figure class="briefing-demo" aria-label="How to play ${esc(config.name)}"><figcaption>HOW TO PLAY</figcaption><img src="assets/tutorials/gameplay/${config.id}.gif?v=${config.id==="barcode"?50:38}" alt="Animated example: ${esc(config.instruction)}" draggable="false" decoding="async"></figure></section>`;
+    </div><figure class="briefing-demo" aria-label="How to play ${esc(config.name)}"><figcaption>HOW TO PLAY</figcaption><img src="assets/tutorials/gameplay/${config.id}.gif?v=${config.id==="barcode"?51:38}" alt="Animated example: ${esc(config.instruction)}" draggable="false" decoding="async"></figure></section>`;
     $("#ready-button",this.root).onclick=()=>{if(this.state!=="briefing"||!this.stageReady)return;this.state="countdown";this.countdown(3,this.flowSerial);};this.prepareBriefing();
   }
   async prepareBriefing(){
