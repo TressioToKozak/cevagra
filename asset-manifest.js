@@ -32,7 +32,7 @@ export const COMMON_ASSETS=[
   "assets/menu/logo-light.webp",
   "assets/results/background/results-background.webp",
   "assets/results/icons/accuracy.svg",
-  "assets/results/icons/barcode-hunt.svg",
+  "assets/results/icons/pallet-sealing.svg",
   "assets/results/icons/challenges.svg",
   "assets/results/icons/conveyor-rush.svg",
   "assets/results/icons/final-dispatch.svg",
@@ -95,15 +95,7 @@ export const GAME_ASSETS={
   ],
   "barcode": [
     "assets/barcode-hunt/background/background-barcode-hunt.webp",
-    "assets/barcode-hunt/boxes/box-angle-left-blank-label.webp",
-    "assets/barcode-hunt/boxes/box-angle-right-blank-label.webp",
-    "assets/barcode-hunt/boxes/box-front-square-label.webp",
-    "assets/barcode-hunt/cards/answer-card-shell.webp",
-    "assets/barcode-hunt/hud/instruction-banner-click.webp",
-    "assets/barcode-hunt/hud/score-panel.webp",
-    "assets/barcode-hunt/hud/target-sku-panel.webp",
-    "assets/barcode-hunt/hud/time-panel.webp",
-    "assets/barcode-hunt/hud/title-badge-barcode-hunt.webp"
+    "assets/barcode-hunt/boxes/box-front-square-label.webp"
   ],
   "packing": [
     "assets/packing-tetris/background-packing-tetris.webp",

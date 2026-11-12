@@ -1,5 +1,6 @@
+import {createPalletSealing} from "./sealing.js?v=50";
 import { SeededRandom } from "./rng.js?v=20";
-import { CARRIERS } from "./tasks.js?v=27";
+import { CARRIERS } from "./tasks.js?v=50";
 import { scoreClassification, scoreStandard } from "./scoring.js?v=20";
 import { attachPointerDrag } from "./interactions.js?v=23";
 
@@ -431,4 +432,6 @@ export class FinalDispatch extends BaseMinigame {
   cleanup(){this.root.closest(".competition-shell")?.classList.remove("final-stage");super.cleanup();}
 }
 
-export const MINIGAME_CLASSES={picking:SpeedPicking,conveyor:ConveyorRush,barcode:BarcodeHunt,packing:PackingTetris,detective:WmsDetective,loading:TruckLoading,memory:MemoryChallenge,quality:QualityControl,final:FinalDispatch};
+// Keep the existing score-slot ID so saved competitions remain readable.
+export const PalletSealing=createPalletSealing(BaseMinigame);
+export const MINIGAME_CLASSES={picking:SpeedPicking,conveyor:ConveyorRush,barcode:PalletSealing,packing:PackingTetris,detective:WmsDetective,loading:TruckLoading,memory:MemoryChallenge,quality:QualityControl,final:FinalDispatch};

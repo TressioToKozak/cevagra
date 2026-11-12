@@ -7,9 +7,9 @@ const origin=process.env.TEST_ORIGIN||'http://127.0.0.1:8002';
  try{
   const page=await browser.newPage({viewport:{width:1920,height:1080}}),errors=[],requests=[];
   // Exercise local fallback; SQL is covered by check-sql.cjs.
-    await page.route('**/api/leaderboard', route => route.abort());
+    await page.route('**/api/leaderboard', route => route.abort());await page.route('**/api/statistics',route=>route.fulfill({json:{saved:true}}));
     page.on('pageerror',e=>errors.push(e.message));page.on('response',r=>{if(r.status()>=400)errors.push(`${r.status()} ${r.url()}`);});page.on('request',r=>{if(/\.(webp|png|svg)(\?|$)/.test(r.url()))requests.push(r.url());});
-  await page.goto(origin);await page.evaluate(async()=>{window.qa=(await import('./game.js?v=47')).manager;});
+  await page.goto(origin);await page.evaluate(async()=>{window.qa=(await import('./game.js?v=50')).manager;});
   assert.equal(await page.locator('#player-name').inputValue(),'');
   await page.clock.install();await page.clock.pauseAt(new Date(Date.now()+1000));
   const click=async selector=>page.locator(selector).evaluate(e=>e.click());
@@ -24,7 +24,8 @@ const origin=process.env.TEST_ORIGIN||'http://127.0.0.1:8002';
   }
   async function solve(){
    const id=await page.evaluate(()=>qa.gameConfigs[qa.index].id),token=await page.evaluate(()=>qa.stageToken);
-   if(id==='picking'||id==='barcode'){const first=await page.locator('[data-sku]').first().evaluate(e=>{e.dataset.qaPersistent='yes';return e.dataset.sku;});for(let i=0;i<10;i++){const target=await page.evaluate(()=>qa.active.current.target);await click(`[data-sku="${target}"]`);if(i===1)assert.equal(await page.locator('[data-qa-persistent]').count(),1,'rapid rounds reuse card nodes');}}
+   if(id==='picking'){const first=await page.locator('[data-sku]').first().evaluate(e=>{e.dataset.qaPersistent='yes';return e.dataset.sku;});for(let i=0;i<10;i++){const target=await page.evaluate(()=>qa.active.current.target);await click(`[data-sku="${target}"]`);if(i===1)assert.equal(await page.locator('[data-qa-persistent]').count(),1,'rapid rounds reuse card nodes');}}
+   if(id==='barcode'){await page.mouse.move(0,0);for(let frame=0;frame<840&&await state()==='playing';frame++){await page.evaluate(()=>{const a=qa.active;a.sim.hold(true);a.sim.y=a.sim.target;});await page.clock.runFor(17);}}
    if(id==='conveyor'){for(let i=0;i<12;i++)await page.evaluate(()=>qa.active.sort(document.querySelector(`[data-chute="${qa.active.active.carrier}"]`)));}
    if(id==='packing')await page.evaluate(async()=>{const {packingInventoryLayout}=await import('./minigames.js?v=23'),layout=packingInventoryLayout(qa.active.data.boxes);for(const [id,pos]of Object.entries(layout)){const node=document.querySelector(`[data-shape="${id}"]`),r=node.getBoundingClientRect(),box=qa.active.data.boxes.find(b=>b.id===id),size=qa.active.boxGeometry(box),cell=document.querySelector(`[data-cell="${pos.x}:${pos.y}"]`).getBoundingClientRect();node.setPointerCapture=()=>{};node.releasePointerCapture=()=>{};const send=(type,x,y)=>node.dispatchEvent(new PointerEvent(type,{pointerId:77,button:0,bubbles:true,cancelable:true,clientX:x,clientY:y}));send('pointerdown',r.left+r.width/2,r.top+r.height/2);send('pointermove',cell.left+size.width/2,cell.top+size.height/2);send('pointerup',cell.left+size.width/2,cell.top+size.height/2);}});
    if(id==='detective'||id==='quality'){const solution=await page.evaluate(()=>qa.active.data.solution);const attr=id==='detective'?'row':'quality';for(const value of solution)await click(`[data-${attr}="${value}"]`);const before=await page.locator('#score-value').textContent();await page.evaluate(()=>qa.updateHud());assert.equal(await page.locator('#score-value').textContent(),before);await click(id==='detective'?'#lock-detective':'#lock-quality');}

@@ -7,11 +7,11 @@ const root=path.resolve(__dirname,'..','work','tutorial-recordings');
 (async()=>{const browser=await chromium.launch({executablePath:process.env.CHROMIUM_PATH||undefined,args:['--no-sandbox']});try{
 const page=await browser.newPage({viewport:{width:1366,height:768}}),errors=[];page.on('pageerror',e=>errors.push(e.message));
 await page.goto(origin);await page.evaluate(async()=>{
-window.qa=(await import('./game.js?v=47')).manager;
-window.configs=(await import('./tasks.js?v=27')).GAME_CONFIGS;
-window.make=(await import('./tasks.js?v=27')).buildCompetition;
+window.qa=(await import('./game.js?v=50')).manager;
+window.configs=(await import('./tasks.js?v=50')).GAME_CONFIGS;
+window.make=(await import('./tasks.js?v=50')).buildCompetition;
 window.RNG=(await import('./rng.js?v=20')).SeededRandom;
-await(await import('./asset-loader.js?v=20')).assetLoader.preload((await import('./asset-manifest.js?v=20')).COMPETITION_ASSETS);
+await(await import('./asset-loader.js?v=20')).assetLoader.preload((await import('./asset-manifest.js?v=50')).COMPETITION_ASSETS);
 const cursor=document.createElement('img');cursor.id='recording-cursor';cursor.src='assets/cursor/pointer.png';Object.assign(cursor.style,{position:'fixed',width:'30px',height:'40px',zIndex:'999999',pointerEvents:'none',left:'-100px',top:'-100px',filter:'drop-shadow(0 2px 3px #000)'});document.body.append(cursor);
 window.addEventListener('pointermove',event=>{cursor.style.left=event.clientX+'px';cursor.style.top=event.clientY+'px';});
 });
@@ -30,8 +30,11 @@ for(let i=0;i<500;i++){if(await page.evaluate(()=>qa.state==='playing'))break;aw
 if(await page.evaluate(()=>qa.state)!=='playing')throw Error('Stage did not start: '+id);
 await page.evaluate(()=>{qa.active.ctx.finish=()=>{};});await page.mouse.move(680,680);
 await hold(id==='memory'?32:6);
-if(id==='picking'||id==='barcode'){
+if(id==='picking'){
 for(let i=0;i<2;i++){const target=await page.evaluate(()=>qa.active.current.target);await click(`[data-sku="${target}"]`);}
+}else if(id==='barcode'){
+const roll=await point('.seal-roll');await page.mouse.move(roll.x,roll.y);await page.mouse.down();
+for(let i=0;i<110;i++){const target=await page.evaluate(()=>{const a=qa.active,r=a.control.getBoundingClientRect();return {x:r.left+r.width/2,y:r.bottom-a.sim.target*r.height,sealed:a.sim.sealed};});if(target.sealed)break;await page.mouse.move(roll.x,target.y);await capture();}await page.mouse.up();
 }else if(id==='conveyor'){
 const carrier=await page.evaluate(()=>qa.active.active.carrier);await drag('[data-moving-box]',await point(`[data-chute="${carrier}"]`));
 }else if(id==='packing'){
@@ -47,7 +50,7 @@ const gifts=await page.evaluate(()=>qa.active.data.shipment);for(const gift of g
 const data=await page.evaluate(()=>qa.active.data);for(const issue of data.solution)await click(`[data-issue="${issue}"]`);await click(`[data-action="${data.action}"]`);
 }
 const success=await page.evaluate(id=>{const a=qa.active;return id==='conveyor'?a.index>0:id==='packing'?Object.keys(a.placed).length>=2:id==='loading'?a.slots.filter(Boolean).length>=2:true;},id);if(!success)throw Error('Demonstration did not complete a real interaction: '+id);
-await hold(8);console.log(id+': '+frame+' captured gameplay frames');
+await hold(id==='barcode'?2:8);console.log(id+': '+frame+' captured gameplay frames');
 }
 if(errors.length)throw Error(errors.join('\n'));
 }finally{await browser.close();}})().catch(error=>{console.error(error);process.exitCode=1;});

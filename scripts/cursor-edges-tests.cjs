@@ -1,7 +1,7 @@
 const assert=require('node:assert/strict'),{chromium}=require('playwright');
 (async()=>{const browser=await chromium.launch({executablePath:process.env.CHROMIUM_PATH||undefined,args:['--no-sandbox']});try{
 const page=await browser.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));await page.goto(process.env.TEST_ORIGIN||'http://127.0.0.1:8025');
-await page.evaluate(async()=>{window.qa=(await import('./game.js?v=47')).manager;window.configs=(await import('./tasks.js?v=27')).GAME_CONFIGS;window.make=(await import('./tasks.js?v=27')).buildCompetition;window.RNG=(await import('./rng.js?v=20')).SeededRandom;await(await import('./asset-loader.js?v=20')).assetLoader.preload((await import('./asset-manifest.js?v=20')).COMPETITION_ASSETS);});
+await page.evaluate(async()=>{window.qa=(await import('./game.js?v=50')).manager;window.configs=(await import('./tasks.js?v=50')).GAME_CONFIGS;window.make=(await import('./tasks.js?v=50')).buildCompetition;window.RNG=(await import('./rng.js?v=20')).SeededRandom;await(await import('./asset-loader.js?v=20')).assetLoader.preload((await import('./asset-manifest.js?v=50')).COMPETITION_ASSETS);});
 async function edges(width,height){
  const before=await page.evaluate(()=>({w:document.documentElement.scrollWidth,h:document.documentElement.scrollHeight}));
  for(const [x,y] of [[2,height/2],[width-2,height/2],[width/2,2],[width/2,height-2],[2,2],[width-2,height-2]]){
