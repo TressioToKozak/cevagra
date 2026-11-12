@@ -8,7 +8,7 @@ const PAGE_SIZE=10;
 let rows=[],mode='sql',page=0,statistics=null;
 const number=new Intl.NumberFormat('en-GB');
 function renderStatistics(){
-  const stats=mode==='local'?localStatistics(rows):statistics;
+  const stats=mode==='local'?localStatistics(local.getLeaderboard()):statistics;
   $('stat-visits').textContent=stats?number.format(stats.visits):'—';
   $('stat-games').textContent=stats?number.format(stats.games):'—';
   const seconds=Math.floor((stats?.playMs||0)/1000),hours=Math.floor(seconds/3600),minutes=Math.floor(seconds%3600/60);
@@ -46,9 +46,25 @@ async function refresh(){
   $('login-screen').hidden=true;$('panel-screen').hidden=false;rows.sort(LeaderboardManager.compareRuns);render();
 }
 function exportExcel(snapshot=rows,name=`Leaderboard - ${backupDate()}.xlsx`,blob=resultsWorkbook(snapshot)){const url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download=name;link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
-$('open-statistics').onclick=()=>{renderStatistics();$('statistics-dialog').showModal();void refresh();};
+let statisticsRefreshing=false;
+async function refreshStatistics(){
+  if(statisticsRefreshing||!$('statistics-dialog').open||document.hidden||$('panel-screen').hidden)return;
+  if(mode==='local'){renderStatistics();return;}
+  statisticsRefreshing=true;
+  try{
+    const response=await fetch(new URL('results',api),{cache:'no-store',signal:AbortSignal.timeout(5000)});
+    if(!$('statistics-dialog').open)return;
+    if(response.status===401){showLogin('Your session has expired. Please sign in again.');return;}
+    if(!response.ok)return;
+    const data=await response.json();
+    if(data.statistics&&$('statistics-dialog').open){statistics=data.statistics;renderStatistics();}
+  }catch{/* Keep the last statistics visible during a temporary connection failure. */}
+  finally{statisticsRefreshing=false;}
+}
+setInterval(()=>void refreshStatistics(),5000);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)void refreshStatistics();});
+$('open-statistics').onclick=()=>{renderStatistics();$('statistics-dialog').showModal();void refreshStatistics();};
 $('close-statistics').onclick=()=>$('statistics-dialog').close();
-$('refresh-statistics').onclick=()=>void refresh();
 $('export').onclick=()=>exportExcel();
 $('backup-folder').onclick=async()=>{try{await chooseBackupDirectory();$('status').textContent='Backup folder: leaderboard backups.';}catch(error){if(error.name!=='AbortError')$('status').textContent=error.message;}};
 $('delete').onclick=()=>{$('delete-error').textContent='';$('confirm').showModal();};
