@@ -1,3 +1,4 @@
+import {createGameAnalytics} from './analytics.js?v=47';
 import {startDailyBackups} from "./backup-store.js?v=43";
 import {installEditingCursor} from "./editing-cursor.js?v=39";
 import { CompetitionSettings, LeaderboardManager, SqlLeaderboardStore, leaderboardCsv, normalizeName } from "./storage.js?v=43";
@@ -39,6 +40,7 @@ document.addEventListener("visibilitychange",()=>document.documentElement.classL
 const organizerEnabled=new URLSearchParams(location.search).get("organizer")==="1";
 const requestedSeed=new URLSearchParams(location.search).get("seed");
 const settings=new CompetitionSettings();
+const analytics=createGameAnalytics();
 const app=$("#app"),modal=$("#modal"),modalContent=$("#modal-content"),leaderboard=new LeaderboardManager(new SqlLeaderboardStore());
 leaderboard.store.onchange=()=>{if(modal.open&&modal.classList.contains("leaderboard-modal"))showLeaderboard(modal.dataset.currentRun||"",false);};
 void leaderboard.store.sync();
@@ -144,7 +146,7 @@ export class CompetitionManager {
       stage.active.syncGeometry?.();stage.active.measureTrack?.(true);
       stage.shell.classList.remove("stage-preparing");
       const token=this.guard.begin(config.time);this.deadline=this.guard.deadline;this.stageToken=token;stage.activate(token);this.state="playing";
-      stage.active.start();
+      stage.active.start();analytics.setPlaying(true);
       this.timer=setInterval(()=>{if(this.stageToken!==token||this.state!=="playing")return;this.updateHud();if(performance.now()>=this.deadline)this.completeGame(token);},50);this.updateHud();
     }catch{
       if(serial!==this.flowSerial)return;this.briefing();
@@ -161,10 +163,11 @@ export class CompetitionManager {
   flash(symbol,text){const node=$("#score-flash");if(!node)return;node.textContent=`${symbol} ${text}`;node.classList.remove("show");cancelAnimationFrame(this.flashFrame);this.flashFrame=requestAnimationFrame(()=>{if(this.state==="playing")node.classList.add("show");});}
 
   completeGame(token=this.stageToken){if(this.state!=="playing"||this.transitioning||!this.guard.complete(token))return;this.transitioning=true;this.state="transition";const config=this.gameConfigs[this.index],result=this.pendingResult||this.active.complete();this.stopTimer();this.active.cleanup();this.effects?.destroy();this.scores[config.id]=Math.min(config.max,result.score);this.results.push({...result,id:config.id,name:config.name,max:config.max});this.totalCorrect+=result.correct;this.totalAttempts+=result.attempts;this.totalMistakes+=result.mistakes;if(this.index===this.gameConfigs.length-1)return this.finish();const total=sumScores(this.scores);this.root.innerHTML=`<section class="stage-transition" style="--transition-background:url('${GAMEPLAY_BACKGROUNDS[config.id]}')"><div class="eyebrow">MISSION COMPLETE</div><h1>${config.name}</h1><p class="completion-note">${({detective:"REPORT SUBMITTED",quality:"REPORT SUBMITTED",memory:"MANIFEST LOCKED",loading:"LOAD CONFIRMED",packing:"PALLET COMPLETE"})[config.id]||"TASK CONFIRMED"}</p><strong>+<b id="earned-points">0</b></strong><span>/ ${config.max} POINTS</span><div class="transition-track"><i></i></div><small>${this.index===this.gameConfigs.length-1?"CALCULATING FINAL RESULT":"NEXT: "+this.gameConfigs[this.index+1].name}</small><b>TOTAL ${total} / 1000</b></section>`;this.cancelTransitionScore=animateNumber($("#earned-points"),this.scores[config.id],450);const serial=this.flowSerial;this.transitionHandle=setTimeout(()=>{if(serial!==this.flowSerial)return;this.transitioning=false;this.state="between";this.next();},TRANSITION_SECONDS*1000);}
-  stopTimer(){this.interfaceEffects?.clearPress();this.cancelTransitionScore?.();this.cancelTransitionScore=null;cancelAnimationFrame(this.flashFrame);this.flashFrame=null;if(this.timer)clearInterval(this.timer);this.timer=null;if(this.transitionHandle)clearTimeout(this.transitionHandle);this.transitionHandle=null;this.stageToken=null;this.guard?.cancel();}
+  stopTimer(){analytics.setPlaying(false);this.interfaceEffects?.clearPress();this.cancelTransitionScore?.();this.cancelTransitionScore=null;cancelAnimationFrame(this.flashFrame);this.flashFrame=null;if(this.timer)clearInterval(this.timer);this.timer=null;if(this.transitionHandle)clearTimeout(this.transitionHandle);this.transitionHandle=null;this.stageToken=null;this.guard?.cancel();}
   finish(){
     if(this.state==="results")return;this.state="results";this.stopTimer();
     const score=sumScores(this.scores),previousRecord=leaderboard.getHighScore(),accuracy=this.totalAttempts?Math.round(this.totalCorrect/this.totalAttempts*100):0,timestamp=new Date().toISOString(),run={id:this.runId,name:this.playerName,email:this.playerEmail,normalizedName:normalizeName(this.playerName),score,accuracy,mistakes:this.totalMistakes,averageResponseTime:0,minigameScores:this.scores,timestamp,competitionSeed:this.runSeed,runSeed:this.runSeed,eventId:this.eventId,startedAt:this.startedAt,debugSeed:!!this.debugSeed};
+    analytics.completed(run);
     const board=leaderboard.saveRun(run),rank=board.findIndex(row=>row.id===run.id)+1,isRecord=score>previousRecord;
     document.body.classList.remove("menu-active");
     document.body.classList.add("results-active");

@@ -1,10 +1,23 @@
+import {localStatistics} from './analytics.js?v=47';
 import {backupDate,createBrowserBackup,chooseBackupDirectory,startDailyBackups} from './backup-store.js?v=43';
 import {resultsWorkbook} from './excel.js?v=2';
 import {LeaderboardManager, LocalLeaderboardStore} from './storage.js?v=29';
 const $=id=>document.getElementById(id),local=new LeaderboardManager(new LocalLeaderboardStore());
 const api=new URL('api/panel/',new URL('./',import.meta.url));
 const PAGE_SIZE=10;
-let rows=[],mode='sql',page=0;
+let rows=[],mode='sql',page=0,statistics=null;
+const number=new Intl.NumberFormat('en-GB');
+function renderStatistics(){
+  const stats=mode==='local'?localStatistics(rows):statistics;
+  $('stat-visits').textContent=stats?number.format(stats.visits):'—';
+  $('stat-games').textContent=stats?number.format(stats.games):'—';
+  const seconds=Math.floor((stats?.playMs||0)/1000),hours=Math.floor(seconds/3600),minutes=Math.floor(seconds%3600/60);
+  $('stat-time').textContent=stats?`${hours}h ${minutes}m ${seconds%60}s`:'—';
+  $('stat-player').textContent=stats?.topPlayer?.name||'No games yet';
+  $('stat-player-detail').textContent=stats?.topPlayer?`${number.format(stats.topPlayer.count)} completed ${stats.topPlayer.count===1?'game':'games'}${stats.topPlayer.email?' · '+stats.topPlayer.email:''}`:'Complete a game to appear here';
+  $('statistics-note').textContent=stats?`${mode==='local'?'This browser only · ':''}Visits and active play time tracked since ${new Date(stats.since).toLocaleDateString('en-GB')}. Games = completed competitions. Totals survive result deletion.`:'Statistics unavailable.';
+}
+
 const OFFLINE_SESSION='ceva-panel-offline-v1';
 let offlineSignedIn=false;
 try{offlineSignedIn=sessionStorage.getItem(OFFLINE_SESSION)==='signed-in';}catch{}
@@ -13,6 +26,7 @@ function showLocalResults(){if(!offlineSignedIn){showLogin();return;}mode='local
 
 function showLogin(message=''){rows=[];page=0;$('results').replaceChildren();$('result-count').textContent='0';$('confirm').close();$('panel-screen').hidden=true;$('login-screen').hidden=false;$('login-error').textContent=message;}
 function render(){
+  renderStatistics();
   const pages=Math.max(1,Math.ceil(rows.length/PAGE_SIZE));
   page=Math.max(0,Math.min(page,pages-1));
   const start=page*PAGE_SIZE;
@@ -28,11 +42,12 @@ function render(){
   $('delete').disabled=!rows.length;$('export').disabled=!rows.length;
 }
 async function refresh(){
-  try{const response=await fetch(new URL('results',api),{cache:'no-store',signal:AbortSignal.timeout(5000)});if(response.status===401){showLogin();return;}if(!response.ok)throw Error();const data=await response.json();if(!Array.isArray(data.runs))throw Error();rows=data.runs;mode='sql';$('status').textContent=`Shared competition results · ${rows.length} ${rows.length===1?'run':'runs'}`;}
+  try{const response=await fetch(new URL('results',api),{cache:'no-store',signal:AbortSignal.timeout(5000)});if(response.status===401){showLogin();return;}if(!response.ok)throw Error();const data=await response.json();if(!Array.isArray(data.runs))throw Error();rows=data.runs;statistics=data.statistics||null;mode='sql';$('status').textContent=`Shared competition results · ${rows.length} ${rows.length===1?'run':'runs'}`;}
   catch{showLocalResults();return;}
   $('login-screen').hidden=true;$('panel-screen').hidden=false;rows.sort(LeaderboardManager.compareRuns);render();
 }
 function exportExcel(snapshot=rows,name=`Leaderboard - ${backupDate()}.xlsx`,blob=resultsWorkbook(snapshot)){const url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download=name;link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
+$('refresh-statistics').onclick=()=>void refresh();
 $('export').onclick=()=>exportExcel();
 $('backup-folder').onclick=async()=>{try{await chooseBackupDirectory();$('status').textContent='Backup folder: leaderboard backups.';}catch(error){if(error.name!=='AbortError')$('status').textContent=error.message;}};
 $('delete').onclick=()=>{$('delete-error').textContent='';$('confirm').showModal();};
