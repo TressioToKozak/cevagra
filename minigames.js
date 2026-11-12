@@ -1,6 +1,6 @@
-import {createPalletSealing} from "./sealing.js?v=51";
+import {createPalletSealing} from "./sealing.js?v=52";
 import { SeededRandom } from "./rng.js?v=20";
-import { CARRIERS } from "./tasks.js?v=51";
+import { CARRIERS } from "./tasks.js?v=52";
 import { scoreClassification, scoreStandard } from "./scoring.js?v=20";
 import { attachPointerDrag } from "./interactions.js?v=23";
 

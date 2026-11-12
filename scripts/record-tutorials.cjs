@@ -7,9 +7,9 @@ const root=path.resolve(__dirname,'..','work','tutorial-recordings');
 (async()=>{const browser=await chromium.launch({executablePath:process.env.CHROMIUM_PATH||undefined,args:['--no-sandbox']});try{
 const page=await browser.newPage({viewport:{width:1366,height:768}}),errors=[];page.on('pageerror',e=>errors.push(e.message));
 await page.goto(origin);await page.evaluate(async()=>{
-window.qa=(await import('./game.js?v=51')).manager;
-window.configs=(await import('./tasks.js?v=51')).GAME_CONFIGS;
-window.make=(await import('./tasks.js?v=51')).buildCompetition;
+window.qa=(await import('./game.js?v=52')).manager;
+window.configs=(await import('./tasks.js?v=52')).GAME_CONFIGS;
+window.make=(await import('./tasks.js?v=52')).buildCompetition;
 window.RNG=(await import('./rng.js?v=20')).SeededRandom;
 await(await import('./asset-loader.js?v=20')).assetLoader.preload((await import('./asset-manifest.js?v=50')).COMPETITION_ASSETS);
 const cursor=document.createElement('img');cursor.id='recording-cursor';cursor.src='assets/cursor/pointer.png';Object.assign(cursor.style,{position:'fixed',width:'30px',height:'40px',zIndex:'999999',pointerEvents:'none',left:'-100px',top:'-100px',filter:'drop-shadow(0 2px 3px #000)'});document.body.append(cursor);
@@ -33,8 +33,8 @@ await hold(id==='memory'?32:6);
 if(id==='picking'){
 for(let i=0;i<2;i++){const target=await page.evaluate(()=>qa.active.current.target);await click(`[data-sku="${target}"]`);}
 }else if(id==='barcode'){
-const roll=await point('.seal-roll');await page.mouse.move(roll.x,roll.y);await page.mouse.down();
-for(let i=0;i<110;i++){const target=await page.evaluate(()=>{const a=qa.active,r=a.control.getBoundingClientRect();return {x:r.left+r.width/2,y:r.bottom-a.sim.target*r.height,sealed:a.sim.sealed};});if(target.sealed)break;await page.mouse.move(roll.x,target.y);await capture();}await page.mouse.up();
+const roll=await point('.seal-roll'),rail=await page.locator('.seal-control').boundingBox();await page.mouse.move(roll.x,rail.y);await page.mouse.down();
+for(let i=0;i<110;i++){const target=await page.evaluate(i=>{const a=qa.active,r=a.control.getBoundingClientRect();return {x:r.left+r.width/2,y:r.bottom-(1-Math.max(0,Math.min(1,(i-8)/90)))*r.height,sealed:a.sim.sealed};},i);if(target.sealed)break;await page.mouse.move(roll.x,target.y);await capture();}await page.mouse.up();
 }else if(id==='conveyor'){
 const carrier=await page.evaluate(()=>qa.active.active.carrier);await drag('[data-moving-box]',await point(`[data-chute="${carrier}"]`));
 }else if(id==='packing'){

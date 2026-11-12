@@ -3,7 +3,7 @@ export const GIFTS=["TEDDY BEAR","TRAIN SET","SNOW GLOBE","PUZZLE","ROBOT","RED 
 export const GAME_CONFIGS=[
   {id:"picking",name:"SPEED PICKING",time:15,max:100,action:"CLICK",instruction:"Find the requested SKU. Click the matching warehouse location.",hint:"A correct SKU immediately brings the next pick."},
   {id:"conveyor",name:"CONVEYOR RUSH",time:20,max:100,action:"DRAG",instruction:"Drag each moving box into its matching carrier zone.",hint:"Sort it before it leaves the conveyor."},
-  {id:"barcode",name:"PALLET SEALING",time:15,max:100,action:"HOLD",instruction:"Hold the film roll. Wrap the whole pallet from bottom to top.",hint:"Anchor the base for 1 second, then rise steadily. Hold at the top to seal."},
+  {id:"barcode",name:"PALLET SEALING",time:15,max:100,action:"HOLD",instruction:"Hold the film roll. Cover every part of the pallet. Start anywhere.",hint:"Move up or down. Fill every gap and avoid using too much film."},
   {id:"packing",name:"PACKING TETRIS",time:25,max:100,action:"DRAG",instruction:"Drag boxes onto the pallet. Fit every box without overlaps.",hint:"Green placement fits; red means blocked."},
   {id:"detective",name:"WMS DETECTIVE",time:15,max:100,action:"SELECT",instruction:"Select every row where the WMS SKU differs from the scanner SKU.",hint:"Flag the records, then confirm your selection."},
   {id:"loading",name:"TRUCK LOADING",time:20,max:100,action:"DRAG",instruction:"Load the last delivery deepest inside the truck.",hint:"Click a pallet then a slot, or drag it. Swap pallets to change the load order."},
