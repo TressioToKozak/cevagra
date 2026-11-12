@@ -1,4 +1,4 @@
-import {installEditingCursor} from "./editing-cursor.js?v=20";
+import {installEditingCursor} from "./editing-cursor.js?v=39";
 import { CompetitionSettings, LeaderboardManager, SqlLeaderboardStore, leaderboardCsv, normalizeName } from "./storage.js?v=29";
 import { ArcadeEffects, animateNumber } from "./effects.js?v=21";
 import { SeededRandom, createRunId, createRunSeed } from "./rng.js?v=20";

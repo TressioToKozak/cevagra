@@ -9,7 +9,7 @@ const origin=process.env.TEST_ORIGIN||'http://127.0.0.1:8002';
   // Exercise local fallback; SQL is covered by check-sql.cjs.
     await page.route('**/api/leaderboard', route => route.abort());
     page.on('pageerror',e=>errors.push(e.message));page.on('response',r=>{if(r.status()>=400)errors.push(`${r.status()} ${r.url()}`);});page.on('request',r=>{if(/\.(webp|png|svg)(\?|$)/.test(r.url()))requests.push(r.url());});
-  await page.goto(origin);await page.evaluate(async()=>{window.qa=(await import('./game.js?v=38')).manager;});
+  await page.goto(origin);await page.evaluate(async()=>{window.qa=(await import('./game.js?v=39')).manager;});
   assert.equal(await page.locator('#player-name').inputValue(),'');
   await page.clock.install();await page.clock.pauseAt(new Date(Date.now()+1000));
   const click=async selector=>page.locator(selector).evaluate(e=>e.click());

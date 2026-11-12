@@ -1,5 +1,7 @@
+import {installViewportCursor} from './viewport-cursor.js?v=39';
 /** Native CSS cannot prevent OS pointer hiding while typing. Only editing uses this fallback. */
 export function installEditingCursor(){
+  installViewportCursor();
   const overlay=document.createElement('img');overlay.className='editing-cursor';overlay.alt='';overlay.draggable=false;overlay.setAttribute('aria-hidden','true');overlay.hidden=true;overlay.src='assets/cursor/clicker-hover.png';
   let point=null,editing=null;
   const field=node=>node?.matches?.('#app input:not([type=checkbox]):not([type=radio]),#modal input, #app textarea,#modal textarea,[contenteditable="true"]');
