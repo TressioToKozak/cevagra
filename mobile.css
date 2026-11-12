@@ -79,3 +79,92 @@ dialog.leaderboard-modal{width:calc(100vw - 16px);max-height:calc(100dvh - 16px)
 #app .competition-shell[data-game="loading"] .truck-slot{padding:16px 0 2px}
 #app .competition-shell[data-game="loading"] .truck-slot>.load-pallet{width:100%;max-width:100%;min-width:0}
 #app .competition-shell[data-game="loading"] .truck-slot .pallet-copy b{font-size:6px}#app .competition-shell[data-game="loading"] .truck-slot .pallet-copy span{font-size:5px}#app .competition-shell[data-game="loading"] .truck-slot .pallet-copy small{display:none}
+
+/* Phone readability: ranking, memorization, SKU comparison and loading. */
+dialog.leaderboard-modal{width:calc(100vw - 16px);max-height:calc(100dvh - 16px);border-radius:10px}
+.leaderboard-modal .modal-head{right:8px;top:8px;width:44px;height:44px}
+.leaderboard-modal #modal-close{font-size:30px}
+.leaderboard-modal #modal-content{width:100%;min-width:0;min-height:0;max-height:calc(100dvh - 18px)}
+.leaderboard-modal .leaderboard-panel{padding:16px 12px;max-height:calc(100dvh - 18px);min-height:0}
+.leaderboard-modal .leaderboard-panel:before{display:none}
+.leaderboard-modal .leaderboard-title{display:block;min-height:0;padding:0 42px 12px 0}
+.leaderboard-modal .leaderboard-title h2{font-size:19px;line-height:1.15;white-space:normal;letter-spacing:0}
+.leaderboard-modal .leaderboard-title h2 span{display:block;margin-bottom:4px;font-size:12px;letter-spacing:.15em}
+.leaderboard-modal .leaderboard-title img{display:none}
+.leaderboard-modal .record-banner{flex:0 0 64px;grid-template-columns:44px minmax(0,1fr) auto;margin:0 0 12px;padding:0 8px;border:1px solid #826636;border-radius:7px;background:linear-gradient(110deg,#183047,#282516)}
+.leaderboard-modal .record-banner>img{width:38px;height:42px}.leaderboard-modal .record-banner strong{font-size:12px;letter-spacing:0}
+.leaderboard-modal .record-banner>b{min-width:0;padding:0 0 0 8px;font-size:30px}
+.leaderboard-modal .leaderboard-scroll{min-height:0;overflow:auto;scrollbar-gutter:auto;scroll-padding-top:40px;scroll-snap-type:none;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+.leaderboard-modal .leaderboard{width:100%;table-layout:fixed;font-size:13px}
+.leaderboard-modal .leaderboard th:nth-child(n+4),.leaderboard-modal .leaderboard td:nth-child(n+4){display:none}
+.leaderboard-modal .leaderboard th:first-child{width:44px}.leaderboard-modal .leaderboard th:nth-child(2){width:auto}.leaderboard-modal .leaderboard th:nth-child(3){width:70px}
+.leaderboard-modal .leaderboard th{height:40px;padding:8px 6px;font-size:10px;letter-spacing:0;white-space:normal}
+.leaderboard-modal .leaderboard td{height:56px;padding:8px 6px;font-size:13px;line-height:1.3}
+.leaderboard-modal .leaderboard td:nth-child(2){white-space:normal;overflow-wrap:anywhere}.leaderboard-modal .leaderboard td:nth-child(3){font-size:16px;text-align:center;border-radius:0 7px 7px 0}
+.leaderboard-modal .leaderboard td img{width:30px;height:34px}.leaderboard-modal .leaderboard tr.current td:nth-child(3){border-right:3px solid #55b98a}
+.leaderboard-modal:after{opacity:.2}.leaderboard-modal .leaderboard-empty{padding:32px 12px;font-size:14px}
+
+#app .competition-shell[data-game="memory"] .memory-memorize .memory-heading{flex-wrap:wrap;justify-content:center;gap:8px;padding:10px}
+#app .memory-memorize .memory-heading h2{font-size:19px;text-align:center}
+#app .memory-memorize .memory-heading>span:not(.visually-hidden){display:none}
+#app .memory-memorize .memory-display{display:flex;min-height:0;padding:8px;border:1px solid #3a5b76;border-radius:9px;background:#06182cdd}
+#app .memory-memorize .memory-platform{display:none}
+#app .competition-shell[data-game="memory"] .memory-memorize .gift-memory{position:static;inset:auto;width:100%;height:100%;grid-template-columns:repeat(6,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr));gap:10px 6px;align-items:stretch}
+#app .memory-memorize .memory-gift{grid-column:span 2;display:grid;grid-template-rows:minmax(0,1fr) auto;align-items:stretch;justify-content:stretch;min-width:0;min-height:0;height:100%;padding:8px 4px;border:1px solid #3d607d;border-radius:7px;background:#102b45;overflow:hidden}
+#app .memory-memorize .memory-gift:nth-child(4){grid-column:2/span 2}#app .memory-memorize .memory-gift:nth-child(5){grid-column:4/span 2}
+#app .memory-memorize .memory-gift>img{width:100%;height:100%;min-height:0;max-height:none;object-fit:contain;object-position:center}
+#app .memory-memorize .memory-gift figcaption{position:static;transform:none;max-width:100%;min-height:28px;display:grid;place-items:center;margin-top:6px;padding:4px 2px;border:0;background:transparent;font:800 clamp(10px,2.9vw,14px)/1.2 var(--mono);white-space:normal;overflow-wrap:anywhere;text-align:center}
+#app .competition-shell[data-game="memory"] .memory-memorize .memory-info{font-size:11px;line-height:1.3;padding:8px}
+
+#app .competition-shell[data-game="detective"] .detective-terminal{--wms-record-columns:24px 40px minmax(0,1fr) minmax(0,1fr);background:#071b2c}
+#app .competition-shell[data-game="detective"] .detective-columns{display:block;padding:8px 4px;background:#15334a}
+#app .detective-columns .wms-column-set{display:none}
+#app .detective-columns .wms-column-set:first-child{display:grid;grid-template-columns:24px 40px minmax(0,1fr) minmax(0,1fr);gap:5px;padding:0;text-align:center}
+#app .wms-column-location{grid-column:2}#app .wms-column-expected{grid-column:3}#app .wms-column-actual{grid-column:4}
+#app .detective-columns .wms-column-set>span{font-size:0;letter-spacing:0}#app .detective-columns small,#app .detective-columns .wms-column-flag{display:none}
+#app .wms-column-location:after{content:"RACK";font-size:9px}#app .wms-column-expected:after{content:"WMS SKU";font-size:11px}#app .wms-column-actual:after{content:"SCANNER SKU";font-size:11px}
+#app .competition-shell[data-game="detective"] .detective-row{grid-template-columns:var(--wms-record-columns);padding:6px 4px;gap:5px;background:#0c2337;background-image:none;border:1px solid #385b75;border-radius:5px}
+#app .competition-shell[data-game="detective"] .detective-row.selected{border-color:#7dccff;background:#204764;background-image:none;box-shadow:inset 0 0 0 1px #7dccff}
+#app .competition-shell[data-game="detective"] .detective-row:hover{background-image:none}
+#app .competition-shell[data-game="detective"] .wms-barcode,#app .competition-shell[data-game="detective"] .record-flag,#app .competition-shell[data-game="detective"] .compare-arrow,#app .competition-shell[data-game="detective"] .record-location small,#app .competition-shell[data-game="detective"] .record-code small{display:none}
+#app .competition-shell[data-game="detective"] .record-code{justify-content:center;align-items:center}
+#app .competition-shell[data-game="detective"] .record-code b{font-size:clamp(12px,3.9vw,18px);letter-spacing:-.04em;white-space:nowrap}
+#app .competition-shell[data-game="detective"] .record-location{justify-content:center}#app .competition-shell[data-game="detective"] .record-location b{font-size:13px}
+#app .competition-shell[data-game="detective"] .detective-footer{padding:7px;gap:8px}#app .competition-shell[data-game="detective"] .terminal-confirm{font-size:11px;width:72%}
+
+#app .competition-shell[data-game="loading"] .loading-layout{grid-template-rows:minmax(110px,.8fr) minmax(190px,1.2fr) 44px;gap:8px}
+#app .competition-shell[data-game="loading"] .truck-scene{display:block;min-height:0;height:100%;padding:0;overflow:hidden}
+#app .competition-shell[data-game="loading"] .truck-body{height:100%;max-height:none;padding:8px;display:flex;flex-direction:column;gap:6px;border:1px solid #658098;border-radius:8px;background:#0a2036}
+#app .competition-shell[data-game="loading"] .trailer-art{display:none}
+#app .competition-shell[data-game="loading"] .load-arrow{position:static;inset:auto;min-height:20px;flex-shrink:0;padding:2px 0;gap:4px;border:0;background:none;font-size:9px}
+#app .competition-shell[data-game="loading"] .load-arrow b{font-size:15px}
+#app .competition-shell[data-game="loading"] .truck-slots{position:static;inset:auto;flex:1;height:auto;min-height:0;grid-template-columns:repeat(4,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr));gap:6px}
+#app .competition-shell[data-game="loading"] .truck-slot{min-width:0;min-height:0;justify-content:center;padding:18px 2px 3px;border:1px dashed #8ca5b9;border-radius:5px;background:#122e46;overflow:hidden}
+#app .competition-shell[data-game="loading"] .truck-slot>small{top:4px;font-size:9px;letter-spacing:0}
+#app .competition-shell[data-game="loading"] .slot-placeholder{font-size:9px;line-height:1.2}
+#app .competition-shell[data-game="loading"] .truck-slot.drag-over{background:#6b5520;border:2px solid #ffd173}
+#app .competition-shell[data-game="loading"] .truck-slot.occupied{background:#194a50;border-color:#8bcfcb}
+#app .competition-shell[data-game="loading"] .pallet-yard{display:grid;grid-template-columns:1fr;grid-template-rows:18px minmax(0,1fr);gap:6px;padding:8px;margin:0;background:#091e32;border:1px solid #496983}
+#app .competition-shell[data-game="loading"] .pallet-yard:before{content:"PALLETS TO LOAD";font:800 10px/18px var(--mono);letter-spacing:.08em;color:#b8d5e9}
+#app .competition-shell[data-game="loading"] .pallet-yard-sign{display:none}
+#app .competition-shell[data-game="loading"] .pallet-yard-cards{grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(4,minmax(0,1fr));gap:6px;height:100%;min-height:0;align-items:stretch}
+.load-pallet.pallet-art{min-height:0;aspect-ratio:auto;display:flex;align-items:center;justify-content:center;padding:6px;border:1px solid #7eabc7;border-radius:6px;background:#14354d;color:#fff;overflow:hidden}
+.load-pallet.pallet-art .pallet-crate,.load-pallet.pallet-art .pallet-label-art{display:none}
+.load-pallet.pallet-art .pallet-copy{position:static;inset:auto;display:flex;align-items:center;justify-content:center;gap:4px;min-width:0;max-width:100%;padding:0;color:#fff}
+#app .competition-shell[data-game="loading"] .pallet-copy b,.load-pallet.pallet-art .pallet-copy b{font:900 clamp(12px,3.4vw,16px)/1.1 var(--sans);white-space:normal;overflow-wrap:anywhere;text-align:center;color:#fff}
+#app .competition-shell[data-game="loading"] .pallet-copy>span,.load-pallet.pallet-art .pallet-copy>span{display:block;height:1.2em;max-width:100%;overflow:hidden;font:800 12px/1.2 var(--mono);color:#ffd474;text-align:center}
+#app .competition-shell[data-game="loading"] .pallet-copy small,.load-pallet.pallet-art .pallet-copy small{display:none}
+#app .competition-shell[data-game="loading"] .pallet-yard .load-pallet{width:100%;height:100%;max-width:none}
+#app .competition-shell[data-game="loading"] .truck-slot>.load-pallet{width:100%;height:100%;max-width:100%;padding:3px;border:0;background:transparent}
+#app .competition-shell[data-game="loading"] .truck-slot .pallet-copy b{font-size:9px}#app .competition-shell[data-game="loading"] .truck-slot .pallet-copy>span{font-size:10px}
+@media(max-height:700px){#app .competition-shell[data-game="loading"] .pallet-yard{padding:5px;gap:4px}#app .competition-shell[data-game="loading"] .pallet-yard-cards{gap:4px}#app .competition-shell[data-game="loading"] .pallet-yard .load-pallet{padding:3px}#app .competition-shell[data-game="loading"] .pallet-yard .pallet-copy{gap:2px}#app .competition-shell[data-game="loading"] .pallet-yard .pallet-copy b{font-size:12px}#app .competition-shell[data-game="loading"] .pallet-yard .pallet-copy>span{font-size:10px}}
+.leaderboard-modal .leaderboard th{background:#102d46}
+#app .competition-shell[data-game="loading"] .truck-slot>small,#app .competition-shell[data-game="loading"] .slot-placeholder{visibility:visible}
+#app .competition-shell[data-game="loading"] .truck-slot>small{color:#ffdc81;white-space:nowrap}
+#app .competition-shell[data-game="loading"] .slot-placeholder{color:#bdd3e5}
+/* In the four-second study phase the gifts take priority over repeated instructions. */
+#app .competition-shell[data-game="memory"]:has(.memory-memorize) .instruction-card{display:none}
+#app .competition-shell[data-game="memory"] .memory-memorize .memory-heading{flex-wrap:nowrap;gap:8px;padding:8px}
+#app .memory-memorize .memory-phase-pill{width:64px;height:22px}
+#app .memory-memorize .memory-heading h2{font-size:17px}
+@media(max-height:700px){#app .competition-shell[data-game="memory"] .memory-memorize .memory-info{display:none}}
