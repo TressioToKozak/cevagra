@@ -111,8 +111,6 @@ dialog.leaderboard-modal{width:calc(100vw - 16px);max-height:calc(100dvh - 16px)
 #app .competition-shell[data-game="barcode"] .instruction-card>strong{position:static;grid-column:1;grid-row:1;width:auto;height:auto;overflow:visible;clip-path:none}
 #app .competition-shell[data-game="barcode"] .instruction-card>span{grid-column:2;grid-row:1;min-width:0;width:auto;white-space:normal;overflow-wrap:normal;word-break:normal}
 #app .competition-shell[data-game="detective"] .record-code b{font-size:clamp(11px,3.2vw,15px)}
-#app .competition-shell[data-game="loading"] .truck-scene{grid-template-columns:38px minmax(560px,1fr) 32px;overflow-x:auto;overflow-y:hidden;overscroll-behavior-x:contain;scrollbar-width:thin;scrollbar-color:#e0b75d #102638}
-#app .competition-shell[data-game="loading"] .truck-cab,#app .competition-shell[data-game="loading"] .rear-door{display:block}
 #app .competition-shell[data-game="loading"] .truck-body{height:160px;max-height:100%;align-self:center}
 #app .competition-shell[data-game="loading"] .truck-slot>small{font-size:9px}
 #app .competition-shell[data-game="loading"] .pallet-yard{grid-template-columns:36px minmax(0,1fr);padding:6px;gap:6px}
@@ -121,3 +119,49 @@ dialog.leaderboard-modal{width:calc(100vw - 16px);max-height:calc(100dvh - 16px)
 #app .competition-shell[data-game="loading"] .pallet-copy b{font-size:clamp(6px,8cqw,12px);letter-spacing:-.04em}
 #app .competition-shell[data-game="loading"] .pallet-copy span{font-size:clamp(6px,6cqw,9px)}
 .leaderboard-modal .leaderboard th{background:#102d46}
+
+/* Phone screens: keep the entire briefing and its real gameplay demo in view. */
+#app .warehouse-gate{height:100dvh;min-height:0;padding:10px;gap:8px;overflow:hidden;justify-content:center}
+#app .warehouse-gate .gate-panel,#app .warehouse-gate:has(.briefing-demo) .gate-panel{padding:0 6px;gap:7px;flex:0 1 auto;min-height:0}
+#app .mission-brand{height:28px}#app .gate-logo{width:140px;height:64px;transform:translate(-18px,-19px)}
+#app .mission-identification{display:flex;justify-content:space-between;align-items:center;gap:6px}
+#app .mission-kicker{font-size:9px;letter-spacing:.15em}#app .mission-identification .eyebrow{font-size:9px}#app .mission-progress{display:none}
+#app .mission-heading{padding:4px 0;gap:10px}#app .mission-icon-frame{flex-basis:38px;width:38px;height:42px}#app .briefing-icon{width:32px;height:32px}
+#app .gate-panel h1{font-size:clamp(22px,6.5vw,29px);line-height:1.05}
+#app .gate-panel .briefing-objective{font-size:14px;line-height:1.3;margin:0}#app .gate-panel .briefing-hint,#app .gate-panel .mission-paused{display:none}
+#app .briefing-facts{min-height:28px}#app .briefing-facts>span,#app .briefing-facts strong{font-size:10px;padding:5px 8px}
+#app .gate-panel .primary{min-height:44px;height:44px;font-size:20px}#app .challenge-readiness:empty{display:none}
+#app .briefing-demo{margin:0;width:100%;min-height:0;flex:0 1 auto}
+#app .briefing-demo figcaption{padding:7px 10px;font-size:9px}
+#app .briefing-demo>img{width:100%;height:auto;max-height:36dvh;object-fit:contain}
+/* Restore the full trailer in one view, without horizontal movement. */
+#app .competition-shell[data-game="loading"] .loading-layout{grid-template-rows:minmax(120px,.7fr) minmax(0,1.3fr) 46px}
+#app .competition-shell[data-game="loading"] .truck-scene{grid-template-columns:minmax(0,1fr);overflow:hidden}
+#app .competition-shell[data-game="loading"] .truck-cab,#app .competition-shell[data-game="loading"] .rear-door{display:none}
+#app .competition-shell[data-game="loading"] .truck-body{width:100%;height:160px;max-height:100%}
+#app .competition-shell[data-game="loading"] .pallet-yard{grid-template-columns:26px minmax(0,1fr);padding:4px;gap:4px}
+#app .competition-shell[data-game="loading"] .pallet-yard-cards{grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(4,minmax(0,1fr));gap:4px}
+#app .competition-shell[data-game="loading"] .pallet-yard .load-pallet{height:100%;width:100%;max-width:100%;aspect-ratio:auto}
+#app .competition-shell[data-game="loading"] .pallet-copy{color:#080808!important;-webkit-text-fill-color:#080808!important;gap:1px}
+#app .competition-shell[data-game="loading"] .pallet-copy b{font-size:clamp(7px,2.3vw,11px);white-space:normal;line-height:1}
+#app .competition-shell[data-game="loading"] .pallet-copy>span{font-size:clamp(7px,2.1vw,10px);line-height:1}
+#app .competition-shell[data-game="loading"] .pallet-copy small{display:none}
+#app .competition-shell[data-game="loading"] .truck-slot .pallet-copy b{font-size:5px}#app .competition-shell[data-game="loading"] .truck-slot .pallet-copy>span{font-size:5px}
+/* Use the available width for the true-unit packing grid and its matching boxes. */
+#app .competition-shell[data-game="packing"] .pallet-board{width:100%;height:100%;aspect-ratio:auto;background-size:100% 100%}
+#app .competition-shell[data-game="packing"] .pallet-grid{height:72%;aspect-ratio:auto}
+#app .competition-shell[data-game="packing"] .shape-copy{max-width:100%;gap:0;padding:1px 2px;bottom:1px}
+#app .competition-shell[data-game="packing"] .shape-copy strong{display:none}
+#app .competition-shell[data-game="packing"] .shape-copy small{font-size:8px;letter-spacing:-.07em}
+/* Keep paper labels readable, including browsers with automatic darkening. */
+#app .competition-shell[data-game="barcode"] .carton-label{color-scheme:only light;background:#fff!important;color:#080808!important;-webkit-text-fill-color:#080808!important}
+#app .competition-shell[data-game="barcode"] .barcode-sku{font-size:9px;font-size:clamp(8px,14cqw,16px);letter-spacing:-.035em;color:#080808!important;-webkit-text-fill-color:#080808!important}
+@media(orientation:landscape){
+ #app .warehouse-gate{display:grid;grid-template-columns:1fr 1fr;align-content:center;gap:10px}
+ #app .briefing-demo>img{max-height:65dvh}
+ #app .gate-panel h1{font-size:23px}#app .gate-panel .briefing-objective{font-size:12px}
+}
+#app .competition-shell[data-game="loading"] .pallet-yard .load-pallet{width:auto;height:100%;aspect-ratio:4/3;max-width:100%;color-scheme:only light}
+@media(orientation:portrait) and (max-height:700px){
+ #app .competition-shell[data-game="loading"] .pallet-yard-cards{grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:repeat(3,minmax(0,1fr))}
+}
