@@ -23,6 +23,7 @@ function render(){
   $('results').replaceChildren();
   for(const run of rows.slice(start,start+PAGE_SIZE)){const tr=document.createElement('tr');for(const value of [run.name,run.email||'—',run.score]){const td=document.createElement('td');td.textContent=String(value??'');tr.append(td);}$('results').append(tr);}
   if(!rows.length){const tr=document.createElement('tr'),td=document.createElement('td');td.colSpan=3;td.className='empty-state';td.textContent='No completed runs yet.';tr.append(td);$('results').append(tr);}
+  $('backup-folder').hidden=mode!=='sql'||['localhost','127.0.0.1','[::1]'].includes(location.hostname);
   $('result-count').textContent=rows.length;
   $('delete').disabled=!rows.length;$('export').disabled=!rows.length;
 }

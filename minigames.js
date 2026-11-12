@@ -201,6 +201,8 @@ export class ConveyorRush extends BaseMinigame {
     this.trackStart=(trackRect.left-beltRect.left)/scale;this.trackEnd=(trackRect.right-beltRect.left)/scale;
     this.boxWidth=boxRect.width/scale;this.startX=this.trackStart-this.boxWidth;this.endX=this.trackEnd;
     this.travelDuration=Math.max(2.6,3.8-this.index*.11);
+    const phoneSpeed=parseFloat(globalThis.getComputedStyle?.(this.root)?.getPropertyValue("--conveyor-speed-multiplier"));
+    if(phoneSpeed>1)this.travelDuration/=phoneSpeed;
     this.speed=(this.endX-this.startX)/this.travelDuration;
     this.x=this.startX+progress*(this.endX-this.startX);
     // Parcel coordinates share the belt origin; clipping hides entry/exit off the surface.
