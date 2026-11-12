@@ -263,9 +263,9 @@ body.menu-active #app{height:100dvh;padding:0;overflow:hidden}
 .menu-logo{display:block;width:100%;height:18.3vh;margin:0 0 -1.2vh;object-fit:contain}
 .menu-content h1{margin:0;color:#f5f6f8;font-family:"Arial Narrow","Roboto Condensed",Impact,Haettenschweiler,sans-serif;font-weight:900;line-height:.98;text-transform:uppercase;text-shadow:0 3px 10px #0008}
 .menu-content h1 span,.menu-content h1 strong{display:block;white-space:nowrap}
-.menu-content h1 span{font-size:clamp(34px,3.35vw,64px);letter-spacing:.015em}
-.menu-content h1 strong{margin-top:.5vh;color:#f20b25;font-size:clamp(27px,2.65vw,51px);letter-spacing:.018em}
-.menu-details{margin:2.3vh 0 0;color:#a6afc2;font:500 clamp(11px,1.05vw,20px)/1.2 "Arial Narrow","Roboto Condensed",Arial,sans-serif;letter-spacing:.18em;white-space:nowrap;text-shadow:0 2px 5px #000}
+.menu-content h1 span{font-size:clamp(37px,3.65vw,70px);letter-spacing:.015em}
+.menu-content h1 strong{margin-top:.5vh;color:#f20b25;font-size:clamp(29px,2.85vw,55px);letter-spacing:.018em}
+.menu-details{margin:2.3vh 0 0;color:#a6afc2;font:500 clamp(12px,1.12vw,21px)/1.2 "Arial Narrow","Roboto Condensed",Arial,sans-serif;letter-spacing:.18em;white-space:nowrap;text-shadow:0 2px 5px #000}
 .menu-details i{padding:0 .55em;color:#ec1730;font-style:normal}
 .menu-form{position:relative;width:100%;margin-top:5.1vh}
 .menu-input-wrap{position:relative;width:100%;height:8.1vh;min-height:54px;max-height:88px}
@@ -747,12 +747,12 @@ body.results-active #app{overflow:hidden}
 #app .results-screen{height:100%;min-height:0;grid-template-rows:auto auto minmax(0,1fr) auto}
 #app .results-screen.storage-failed{grid-template-rows:auto auto minmax(0,1fr) auto auto}
 #app .menu-content{top:5%;left:53%;width:40%;max-width:600px}
-#app .menu-logo{height:125px;margin-bottom:0}
+#app .menu-logo{height:145px;margin-bottom:0}
 #app .menu-form{margin-top:20px}
-#app .menu-input-wrap{height:60px;min-height:0;margin-bottom:12px}
-#app .menu-input-wrap input{padding:0 55px;font-size:20px}
+#app .menu-input-wrap{height:68px;min-height:0;margin-bottom:12px}
+#app .menu-input-wrap input{padding:0 55px;font-size:23px}
 #app .menu-email-wrap input{padding:0 22px}
-#app .menu-start{height:76px;min-height:0}
+#app .menu-start{width:84%;height:76px;min-height:0;margin-left:auto;margin-right:auto}
 #app .menu-leaderboard{height:54px;min-height:0;margin-top:18px}
 #app .menu-error{height:28px;min-height:0;padding-top:0;font-size:13px}
 
@@ -785,7 +785,7 @@ body.results-active #app{overflow:hidden}
 .competition-hud strong{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
 /* Fixed icon geometry keeps it separate from text on wide displays. */
-#app .menu-input-wrap>span{left:28px;top:14px;width:14px;height:14px;min-width:0;min-height:0;transform:translateX(-50%)}
+#app .menu-input-wrap>span{left:28px;top:18px;width:14px;height:14px;min-width:0;min-height:0;transform:translateX(-50%)}
 #app .menu-input-wrap>span:after{top:110%;width:24px;height:13px;min-width:0;min-height:0}
 #app .menu-input-wrap input{background:#071a30;color:#fff;color-scheme:dark}
 #app .menu-input-wrap input:autofill{box-shadow:inset 0 0 0 1000px #071a30;-webkit-text-fill-color:#fff;caret-color:#ffd779}
@@ -828,8 +828,8 @@ body.results-active #app{overflow:hidden}
 /* Compact menu controls, centered below the existing title. */
 #app .menu-form{width:80%;max-width:480px;margin-left:auto;margin-right:auto}
 #app .menu-email-wrap input{padding:0 55px}
-#app .menu-email-icon{position:absolute;z-index:2;left:14px;top:18px;width:28px;height:24px;color:#6486aa;pointer-events:none}
-#app .menu-leaderboard{width:86%}
+#app .menu-email-icon{position:absolute;z-index:2;left:14px;top:22px;width:28px;height:24px;color:#6486aa;pointer-events:none}
+#app .menu-leaderboard{width:74%}
 /* Passive looping tutorial; it never blocks readiness or starts a game timer. */
 .briefing-demo{position:absolute;left:50%;right:4%;top:50%;transform:translateY(-50%);margin:0;border:1px solid #547c97;border-radius:12px;background:#041625ed;box-shadow:0 20px 60px #0008;overflow:hidden;pointer-events:none}
 .briefing-demo figcaption{display:flex;justify-content:space-between;gap:12px;padding:16px 20px;color:#f6ce77;font:800 12px var(--mono);letter-spacing:.12em;border-bottom:1px solid #28465b}
