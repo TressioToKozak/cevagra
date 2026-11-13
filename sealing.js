@@ -11,8 +11,11 @@ export class SealSimulation {
     if(!this.holding){if(this.started&&!this.broken){this.gap+=dt;if(this.gap>.35){this.breaks++;this.broken=true;}}return;}
     if(y<-.035||y>1.035){this.outside+=dt;return;}
     this.started=true;
-    for(let i=0;i<this.layers.length;i++)if(Math.abs(i/(this.layers.length-1)-y)<=.085)this.layers[i]+=dt/1.35;
-    if(this.layers[Math.round(clamp(y)*(this.layers.length-1))]>2.1)this.waste+=dt*.6;
+    for(let i=0;i<this.layers.length;i++)if(Math.abs(i/(this.layers.length-1)-y)<=.085+1e-12)this.layers[i]+=dt/1.35;
+    // Interpolation is symmetric under y -> 1-y, including the centre seam.
+    const position=clamp(y)*(this.layers.length-1),lower=Math.floor(position),fraction=position-lower;
+    const local=this.layers[lower]*(1-fraction)+this.layers[Math.min(lower+1,this.layers.length-1)]*fraction;
+    if(local>2.1+1e-12)this.waste+=dt*.6;
     // An average cannot conceal a bare patch: every height needs a full wrap.
     this.sealed=this.layers.every(layer=>layer>=1);
   }
@@ -41,6 +44,7 @@ export class SealFilmVisual {
       const count=Math.max(1,Math.ceil(dt/1.35*VISUAL_COLUMNS*2));
       for(let row=0;row<VISUAL_ROWS;row++){
         const earned=sim.layers[row]-this.previous[row];if(earned<=0)continue;
+        if(sim.layers[row]>2.1&&this.previous[row]<3)for(let face=0;face<4;face++)this.dirty.add(face);
         for(let sample=0;sample<count;sample++){
           const angle=(this.elapsed+dt*(sample+.5)/count)/1.35*360+25;
           const col=Math.floor(wrapAngle(45-angle)/360*VISUAL_COLUMNS);
@@ -66,7 +70,7 @@ export function createPalletSealing(Base){return class PalletSealing extends Bas
     const art='assets/pallet-sealing/';
     const ribbonId=`seal-ribbon-${++ribbonSequence}`;
     const sides=['front','right','back','left'];
-    const faces=sides.map((side,index)=>`<div class="seal-face seal-face-${side}"><div class="seal-cartons"><img class="seal-carton-wall" src="${art}cartons-side-${index+1}.png" alt="Nine CEVA Logistics cartons, ${side} wall" draggable="false"></div><div class="seal-film"></div><span class="seal-finish-stamp">✓ SEALED</span></div>`).join('');
+    const faces=sides.map((side,index)=>`<div class="seal-face seal-face-${side}"><div class="seal-cartons"><img class="seal-carton-wall" src="${art}cartons-side-${index+1}.png" alt="Nine CEVA Logistics cartons, ${side} wall" draggable="false"></div><div class="seal-film"></div><div class="seal-overwrap" aria-hidden="true"></div><span class="seal-finish-stamp">✓ SEALED</span></div>`).join('');
     const blocks=[-.43,0,.43].flatMap(z=>[0,43,86].map(x=>`<div class="seal-pallet-block" style="left:${x}%;transform:translateZ(calc(var(--pallet-size)*${z}))">${sides.map(side=>`<i class="seal-block-${side}"></i>`).join('')}</div>`)).join('');
     const pallet=`<div class="seal-pallet" aria-hidden="true">${sides.map(side=>`<div class="seal-pallet-face seal-pallet-${side}"></div>`).join('')}<div class="seal-pallet-deck"></div><div class="seal-pallet-bottom"></div>${blocks}</div>`;
     this.root.innerHTML=`<section class="seal-layout" aria-label="Pallet sealing"><div class="seal-arena">
@@ -75,8 +79,9 @@ export function createPalletSealing(Base){return class PalletSealing extends Bas
       <span id="seal-status" class="visually-hidden" role="status" aria-live="polite">Hold the roll at any height and cover the whole pallet.</span>
       </div><footer class="seal-meters"><div><span>COVERAGE <b id="seal-coverage">0%</b></span><div class="seal-meter"><i id="seal-coverage-bar"></i></div><small>Cover every part. Start at any height.</small></div><div><span>FILM USED <b id="seal-usage">GOOD</b></span><div class="seal-meter seal-film-meter"><i id="seal-usage-bar"></i></div><small id="seal-feedback">Hold continuously for an unbroken seal.</small></div><div class="seal-penalties"><span>FILM BREAKS <b id="seal-breaks">0</b></span><small>Releasing the roll can tear the film.</small></div></footer></section>`;
     this.roll=this.root.querySelector('.seal-roll');this.control=this.root.querySelector('.seal-control');this.stack=this.root.querySelector('.seal-stack');
-    this.films=[...this.root.querySelectorAll('.seal-film')];
-    this.filmMasks=this.films.map(()=>{const canvas=document.createElement('canvas');canvas.width=32;canvas.height=64;const edge=document.createElement('canvas');edge.width=128;edge.height=256;return {canvas,ctx:canvas.getContext('2d'),data:new ImageData(32,64),edge,edgeCtx:edge.getContext('2d')};});
+    this.films=[...this.root.querySelectorAll('.seal-film')];this.overwraps=[...this.root.querySelectorAll('.seal-overwrap')];
+    this.filmMasks=this.films.map(()=>{const canvas=document.createElement('canvas');canvas.width=32;canvas.height=64;const edge=document.createElement('canvas');edge.width=128;edge.height=256;return {canvas,ctx:canvas.getContext('2d'),data:new ImageData(32,64),edge,edgeCtx:edge.getContext('2d'),over:document.createElement('canvas'),overData:new ImageData(32,64)};});
+    this.filmMasks.forEach(mask=>{mask.over.width=32;mask.over.height=64;mask.overCtx=mask.over.getContext('2d');});
     this.ribbon=this.root.querySelector('.seal-ribbon');this.ribbonPaths=['sheet','texture','strands'].map(name=>this.ribbon.querySelector('.seal-ribbon-'+name));
     this.ribbonBlend=this.ribbon.querySelector('linearGradient[id$="-edge"]');
     const observer=new ResizeObserver(()=>{this.geometryDirty=true;});observer.observe(this.root.querySelector('.seal-workspace'));this.geometryDirty=true;
@@ -88,13 +93,20 @@ export function createPalletSealing(Base){return class PalletSealing extends Bas
     this.listen(this.roll,'keydown',event=>{if([' ','Enter','ArrowUp','ArrowDown'].includes(event.key)){event.preventDefault();this.keys.add(event.key);if(event.key===' '||event.key==='Enter')this.sim.hold(true);}});
     this.listen(this.roll,'keyup',event=>{this.keys.delete(event.key);if(event.key===' '||event.key==='Enter'){event.preventDefault();this.sim.hold(false);}});
     this.listen(this.roll,'blur',()=>{this.keys.clear();if(this.pointer===null)this.sim.hold(false);});
-    this.cleanups.push(()=>{this.cancelFrame(this.raf);this.keys.clear();this.sim.hold(false);if(this.pointer!==null&&this.roll.hasPointerCapture?.(this.pointer))this.roll.releasePointerCapture(this.pointer);this.pointer=null;});this.paint();
+    this.cleanups.push(()=>{this.cancelFrame(this.raf);this.rotationAnimation?.cancel();this.keys.clear();this.sim.hold(false);if(this.pointer!==null&&this.roll.hasPointerCapture?.(this.pointer))this.roll.releasePointerCapture(this.pointer);this.pointer=null;});this.paint();
   }
-  start(){this.last=this.now();const tick=now=>{if(this.locked||this.ctx.isActive?.()===false)return;const dt=Math.min(.05,Math.max(0,(now-this.last)/1000));this.last=now;if(this.keys.has('ArrowUp'))this.sim.y+=dt*.13;if(this.keys.has('ArrowDown'))this.sim.y-=dt*.13;this.sim.step(dt);this.liveScore=this.score();this.paint();if(this.sim.sealed){this.ctx.finish();return;}this.raf=this.frame(tick);};this.raf=this.frame(tick);}
+  start(){
+    this.rotationAnimation?.cancel();
+    this.rotationAnimation=this.stack.animate([{transform:'rotateX(-11deg) rotateY(25deg)'},{transform:'rotateX(-11deg) rotateY(385deg)'}],{duration:1350,iterations:Infinity,easing:'linear'});
+    this.rotationAnimation.currentTime=this.sim.elapsed*1000;
+    this.last=this.now();const tick=now=>{if(this.locked||this.ctx.isActive?.()===false)return;const dt=Math.min(.05,Math.max(0,(now-this.last)/1000));this.last=now;if(this.keys.has('ArrowUp'))this.sim.y+=dt*.13;if(this.keys.has('ArrowDown'))this.sim.y-=dt*.13;this.sim.step(dt);this.liveScore=this.score();this.paint();if(this.sim.sealed){this.ctx.finish();return;}this.raf=this.frame(tick);};this.raf=this.frame(tick);}
   paint(){
     const s=this.sim,y=clamp(s.y,-.08,1.08),outside=s.y<-.035||s.y>1.035;
     this.roll.style.bottom=`${y*100}%`;this.roll.classList.toggle('is-held',s.holding);this.roll.setAttribute('aria-pressed',String(s.holding));
-    this.stack.style.transform=`rotateX(-11deg) rotateY(${s.elapsed/1.35*360+25}deg)`;
+    if(this.rotationAnimation){
+      const expected=s.elapsed*1000;
+      if(this.rotationAnimation.playState==='paused'||Math.abs((this.rotationAnimation.currentTime||0)-expected)>35)this.rotationAnimation.currentTime=expected;
+    }else this.stack.style.transform=`rotateX(-11deg) rotateY(${s.elapsed/1.35*360+25}deg)`;
     this.filmVisual.sync(s);this.paintFilm();
     this.paintRibbon(s.holding&&!outside);
     this.root.classList.toggle('seal-complete',s.sealed);
@@ -109,11 +121,15 @@ export function createPalletSealing(Base){return class PalletSealing extends Bas
     const visual=this.filmVisual,now=this.now();
     // Only changed wall masks, at most 30 times/s; lighting never rerasterizes coverage.
     if(visual.dirty.size&&(this.maskTime===undefined||now-this.maskTime>=1000/30||this.sim.sealed)){
-      for(const face of visual.dirty){const mask=this.filmMasks[face],bytes=mask.data.data;
+      for(const face of visual.dirty){const mask=this.filmMasks[face],bytes=mask.data.data;let overChanged=false,hasOver=false;
         for(let row=0;row<64;row++)for(let col=0;col<32;col++){
           const d=visual.density(face,(col+.5)/32,row),i=((63-row)*32+col)*4;
+          const excess=clamp((d-1.5)/1.5)*clamp((this.sim.layers[row]-2.1)/.9),overAlpha=Math.round(excess*190);
+          overChanged||=mask.overData.data[i+3]!==overAlpha;mask.overData.data[i+3]=overAlpha;hasOver||=overAlpha>0;
           bytes[i+3]=Math.round(255*(d<=0?0:Math.min(.98,.90*Math.min(1,d)+.04*Math.max(0,d-1))));
         }
+        if(overChanged){mask.overCtx.putImageData(mask.overData,0,0);const image='url("'+mask.over.toDataURL()+'")';this.overwraps[face].style.maskImage=image;this.overwraps[face].style.webkitMaskImage=image;}
+        this.overwraps[face].classList.toggle('is-visible',hasOver);
         // A thin turned edge only where deposited film meets bare cardboard.
         const edge=mask.edgeCtx;edge.clearRect(0,0,128,256);
         for(let row=0;row<64;row++)for(let col=0;col<32;col++){
@@ -129,7 +145,7 @@ export function createPalletSealing(Base){return class PalletSealing extends Bas
       }
       visual.dirty.clear();this.maskTime=now;this.maskWrites=(this.maskWrites||0)+1;
     }
-    const angle=this.sim.elapsed/1.35*360+25,bucket=Math.floor(angle/3);
+    const angle=this.sim.elapsed/1.35*360+25,bucket=Math.floor(angle/.5);
     if(bucket!==this.lightBucket){this.lightBucket=bucket;this.films.forEach((film,face)=>{
       const normal=(angle+face*90)*Math.PI/180,light=Math.pow(Math.max(0,Math.cos(normal-.5)),5);
       film.style.setProperty('--film-light',(.18+light*.82).toFixed(2));
@@ -148,17 +164,20 @@ export function createPalletSealing(Base){return class PalletSealing extends Bas
     return {x:g.width/2+(g.x+x-g.width/2)*scale,y:g.height/2+(g.y+ry-g.height/2)*scale};
   }
   paintRibbon(visible){
-    const svg=this.ribbon;svg.style.opacity=visible?'.86':'0';if(!visible)return;
+    const svg=this.ribbon;svg.style.opacity=visible?'.86':'0';if(!visible){this.ribbonY=null;this.ribbonLast=this.now();return;}
     if(this.geometryDirty||!this.sealGeometry)this.measureSeal();const g=this.sealGeometry;if(!g.width)return;
-    const contact=sealContact(this.sim.elapsed/1.35*360+25),y=clamp(this.sim.y),top=this.projectSeal(contact,clamp(y+.085)),bottom=this.projectSeal(contact,clamp(y-.085));
+    const contact=sealContact(this.sim.elapsed/1.35*360+25),y=clamp(this.sim.y),now=this.now(),dt=clamp((now-(this.ribbonLast??now))/1000,0,.1);
+    this.ribbonLast=now;this.ribbonY??=y;this.ribbonY+=(y-this.ribbonY)*(1-Math.exp(-dt/.12));this.ribbonY=clamp(this.ribbonY,y-.07,y+.07);
+    const height=clamp(this.ribbonY),top=this.projectSeal(contact,clamp(height+.085)),bottom=this.projectSeal(contact,clamp(height-.085));
+    const bend=1.5+clamp((y-height)*g.loadHeight*.15,-3,3);
     const end=g.rollX,endY=g.railTop+(1-y)*g.railHeight,half=g.railHeight*.085;
     svg.setAttribute('viewBox',`0 0 ${g.width} ${g.height}`);
     this.ribbonBlend.setAttribute('x1',top.x);this.ribbonBlend.setAttribute('x2',end);
-    const edge=t=>{const x=top.x+(bottom.x-top.x)*t,sy=top.y+(bottom.y-top.y)*t,ey=endY+(t*2-1)*half,m=(x+end)/2;return `M ${x} ${sy} Q ${m} ${(sy+ey)/2+1.5} ${end} ${ey}`;};
-    const sheet=edge(0)+` L ${end} ${endY+half} Q ${(bottom.x+end)/2} ${(bottom.y+endY+half)/2+1.5} ${bottom.x} ${bottom.y} Z`;
+    const edge=t=>{const x=top.x+(bottom.x-top.x)*t,sy=top.y+(bottom.y-top.y)*t,ey=endY+(t*2-1)*half,m=(x+end)/2;return `M ${x} ${sy} Q ${m} ${(sy+ey)/2+bend} ${end} ${ey}`;};
+    const sheet=edge(0)+` L ${end} ${endY+half} Q ${(bottom.x+end)/2} ${(bottom.y+endY+half)/2+bend} ${bottom.x} ${bottom.y} Z`;
     this.ribbonPaths[0].setAttribute('d',sheet);this.ribbonPaths[1].setAttribute('d',sheet);
     this.ribbonPaths[2].setAttribute('d',[0,.13,.32,.56,.79,1].map(edge).join(' '));
-    this.ribbonContact={...contact,top,bottom,end,endY};
+    this.ribbonContact={...contact,top,bottom,end,endY,height,rollHeight:y};
   }
   score(){return this.sim?.score||0;}
 };}
