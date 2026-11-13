@@ -1,4 +1,4 @@
-import {createPalletSealing} from "./sealing.js?v=57";
+import {createPalletSealing} from "./sealing.js?v=58";
 import { SeededRandom } from "./rng.js?v=20";
 import { CARRIERS } from "./tasks.js?v=52";
 import { scoreClassification, scoreStandard, scoreSpeedPicking } from "./scoring.js?v=53";
@@ -80,7 +80,10 @@ export class BaseMinigame {
   score(){return 0;}
   complete(){this.locked=true;return {score:this.score(),mistakes:this.mistakes,correct:this.correct,attempts:this.correct+this.mistakes};}
   listen(node,event,handler){const guarded=e=>{if(!this.locked&&this.ctx.isActive?.()!==false)handler(e);};node.addEventListener(event,guarded);this.cleanups.push(()=>node.removeEventListener(event,guarded));}
-  timeout(handler,delay){const id=setTimeout(handler,delay);this.cleanups.push(()=>clearTimeout(id));return id;}
+  now(){return this.ctx.clock?.now()??performance.now();}
+  frame(handler){return this.ctx.clock?this.ctx.clock.frame(handler):requestAnimationFrame(handler);}
+  cancelFrame(id){if(this.ctx.clock)this.ctx.clock.cancel(id);else cancelAnimationFrame(id);}
+  timeout(handler,delay){const id=this.ctx.clock?this.ctx.clock.timeout(handler,delay):setTimeout(handler,delay);this.cleanups.push(()=>this.ctx.clock?this.ctx.clock.cancel(id):clearTimeout(id));return id;}
   cleanup(){this.locked=true;this.dragGhost?.remove();this.dragGhost=null;this.cleanups.splice(0).forEach(fn=>fn());}
   flash(symbol,text,anchor){if(this.ctx.feedback)this.ctx.feedback(symbol==="×"?"error":"success",text,anchor);else this.ctx.flash(symbol,text);this.ctx.update();}
   get remaining(){return this.ctx.remaining();}
@@ -176,7 +179,7 @@ export class ConveyorRush extends BaseMinigame {
     this.cleanups.push(()=>this.resizeObserver?.disconnect());
   }
   prepare(){this.spawn();this.x=this.trackStart;this.position();}
-  start(){if(!this.active)this.spawn();this.measureTrack(true);this.lastFrame=performance.now();const tick=now=>{if(this.locked)return;const seconds=(now-this.lastFrame)/1000;this.lastFrame=now;if(this.active&&!this.dragging&&!this.settling){this.x+=this.speed*seconds;this.position();if(this.box&&this.x>this.endX)this.miss();}if(!this.locked)this.raf=requestAnimationFrame(tick);};this.raf=requestAnimationFrame(tick);this.cleanups.push(()=>cancelAnimationFrame(this.raf));}
+  start(){if(!this.active)this.spawn();this.measureTrack(true);this.lastFrame=this.now();const tick=now=>{if(this.locked)return;const seconds=(now-this.lastFrame)/1000;this.lastFrame=now;if(this.active&&!this.dragging&&!this.settling){this.x+=this.speed*seconds;this.position();if(this.box&&this.x>this.endX)this.miss();}if(!this.locked)this.raf=this.frame(tick);};this.raf=this.frame(tick);this.cleanups.push(()=>this.cancelFrame(this.raf));}
   spawn(){
     if(this.locked||this.index>=this.data.parcels.length)return;
     this.active=this.data.parcels[this.index];
@@ -239,7 +242,7 @@ export class PackingTetris extends BaseMinigame {
     const grid=this.root.querySelector(".pallet-grid");
     this.resizeObserver=globalThis.ResizeObserver?new ResizeObserver(()=>{const previous=this.packingGrid;this.syncGeometry();if(previous&&this.gridChanged(previous))this.packingDrags.forEach(drag=>drag.cancel());}):null;
     this.resizeObserver?.observe(grid);this.cleanups.push(()=>this.resizeObserver?.disconnect());
-    const geometryFrame=requestAnimationFrame(()=>{if(!this.locked)this.syncGeometry();});this.cleanups.push(()=>cancelAnimationFrame(geometryFrame));
+    const geometryFrame=this.frame(()=>{if(!this.locked)this.syncGeometry();});this.cleanups.push(()=>this.cancelFrame(geometryFrame));
   }
   boxMarkup(box,asset){return `<span class="shape-art"><img src="${asset}" alt="" draggable="false"></span><span class="shape-copy"><strong>${box.id}</strong><small>${box.w} × ${box.h}</small></span>`;}
   bindShape(element,box){

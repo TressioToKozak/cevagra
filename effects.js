@@ -1,7 +1,8 @@
 const reduced=()=>globalThis.matchMedia?.("(prefers-reduced-motion: reduce)").matches??false;
 
 export class ArcadeEffects {
-  constructor(root){
+  constructor(root,clock=null){
+    this.clock=clock;
     this.root=root;
     this.host=root?.closest?.(".competition-shell")||root;
     this.layer=root?document.createElement("div"):null;
@@ -10,7 +11,8 @@ export class ArcadeEffects {
     this.cancelFlights=()=>this.nodes.forEach(node=>{if(node.classList.contains("parcel-exit")){node.getAnimations().forEach(a=>a.cancel());node.remove();this.nodes.delete(node);}});globalThis.addEventListener?.("resize",this.cancelFlights,{passive:true});
     this.shaking=false;this.animations=new Set();this.nodes=new Set();this.pulses=new Map();this.presses=new Map();this.feedbacks=new Map();this.bindings=[];
   }
-  later(callback,delay){const id=setTimeout(()=>{this.timers.delete(id);callback();},delay);this.timers.add(id);return id;}
+  later(callback,delay){const run=()=>{this.timers.delete(id);callback();},id=this.clock?this.clock.timeout(run,delay):setTimeout(run,delay);this.timers.add(id);return id;}
+  cancelLater(id){if(this.clock)this.clock.cancel(id);else clearTimeout(id);}
   animate(node,frames,duration=200,options={}){
     if(reduced()||!node?.animate)return null;
     const animation=node.animate(frames,{duration,easing:"cubic-bezier(.2,.7,.2,1)",fill:"forwards",...options});if(document.timeline?.currentTime!=null)animation.startTime=document.timeline.currentTime;this.animations.add(animation);
@@ -44,7 +46,7 @@ export class ArcadeEffects {
   clearPress(){this.presses.forEach(animations=>animations.forEach(a=>a.cancel()));this.presses.clear();}
   pulse(node,className="inspection-pulse",duration=220){
     if(!node)return;
-    const key=this.pulses.get(node);if(key){clearTimeout(key.timer);this.timers.delete(key.timer);node.classList.remove(key.className);}
+    const key=this.pulses.get(node);if(key){this.cancelLater(key.timer);this.timers.delete(key.timer);node.classList.remove(key.className);}
     if(className==="scanner-confirm"){const label=node.querySelector(".carton-label");if(label)node.style.setProperty("--label-scan-distance",`${label.clientHeight*.8}px`);}
     if(className==="scan-pulse")node.style.setProperty("--scan-distance",`${node.clientHeight}px`);node.classList.add(className);
     // Restart an existing decorative CSS animation without moving the actual control.
@@ -67,7 +69,7 @@ export class ArcadeEffects {
   feedback(kind,text,anchor=this.root){
     if(!anchor||!this.layer)return;
     const success=kind==="success";
-    const previous=this.feedbacks.get(anchor);if(previous){clearTimeout(previous);this.timers.delete(previous);}
+    const previous=this.feedbacks.get(anchor);if(previous){this.cancelLater(previous);this.timers.delete(previous);}
     anchor.classList.remove("feedback-correct","feedback-wrong");anchor.classList.add(success?"feedback-correct":"feedback-wrong");
     this.feedbacks.set(anchor,this.later(()=>{anchor.classList.remove("feedback-correct","feedback-wrong");this.feedbacks.delete(anchor);},260));
     this.layer.replaceChildren();
@@ -91,7 +93,7 @@ export class ArcadeEffects {
     if(reduced()||!anchor)return;
     const burst=document.createElement("span");burst.className="success-burst";burst.innerHTML="<i></i><i></i><i></i><i></i><i></i><i></i>";anchor.append(burst);this.nodes.add(burst);this.later(()=>{burst.remove();this.nodes.delete(burst);},520);
   }
-  destroy(){this.clearPress();this.bindings.splice(0).forEach(unbind=>unbind());globalThis.removeEventListener?.("resize",this.cancelFlights);this.timers.forEach(clearTimeout);this.timers.clear();this.animations.forEach(a=>a.cancel());this.animations.clear();this.nodes.forEach(n=>n.remove());this.nodes.clear();this.pulses.forEach((value,node)=>node.classList.remove(value.className));this.pulses.clear();this.feedbacks.forEach((_,node)=>node.classList.remove("feedback-correct","feedback-wrong"));this.feedbacks.clear();this.root?.classList.remove("arcade-shake","feedback-correct","feedback-wrong");this.layer?.remove();this.shaking=false;}
+  destroy(){this.clearPress();this.bindings.splice(0).forEach(unbind=>unbind());globalThis.removeEventListener?.("resize",this.cancelFlights);this.timers.forEach(id=>this.cancelLater(id));this.timers.clear();this.animations.forEach(a=>a.cancel());this.animations.clear();this.nodes.forEach(n=>n.remove());this.nodes.clear();this.pulses.forEach((value,node)=>node.classList.remove(value.className));this.pulses.clear();this.feedbacks.forEach((_,node)=>node.classList.remove("feedback-correct","feedback-wrong"));this.feedbacks.clear();this.root?.classList.remove("arcade-shake","feedback-correct","feedback-wrong");this.layer?.remove();this.shaking=false;}
 }
 
 export function animateNumber(node,to,duration=800){

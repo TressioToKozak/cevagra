@@ -88,9 +88,9 @@ export function createPalletSealing(Base){return class PalletSealing extends Bas
     this.listen(this.roll,'keydown',event=>{if([' ','Enter','ArrowUp','ArrowDown'].includes(event.key)){event.preventDefault();this.keys.add(event.key);if(event.key===' '||event.key==='Enter')this.sim.hold(true);}});
     this.listen(this.roll,'keyup',event=>{this.keys.delete(event.key);if(event.key===' '||event.key==='Enter'){event.preventDefault();this.sim.hold(false);}});
     this.listen(this.roll,'blur',()=>{this.keys.clear();if(this.pointer===null)this.sim.hold(false);});
-    this.cleanups.push(()=>{cancelAnimationFrame(this.raf);this.keys.clear();this.sim.hold(false);if(this.pointer!==null&&this.roll.hasPointerCapture?.(this.pointer))this.roll.releasePointerCapture(this.pointer);this.pointer=null;});this.paint();
+    this.cleanups.push(()=>{this.cancelFrame(this.raf);this.keys.clear();this.sim.hold(false);if(this.pointer!==null&&this.roll.hasPointerCapture?.(this.pointer))this.roll.releasePointerCapture(this.pointer);this.pointer=null;});this.paint();
   }
-  start(){this.last=performance.now();const tick=now=>{if(this.locked||this.ctx.isActive?.()===false)return;const dt=Math.min(.05,Math.max(0,(now-this.last)/1000));this.last=now;if(this.keys.has('ArrowUp'))this.sim.y+=dt*.13;if(this.keys.has('ArrowDown'))this.sim.y-=dt*.13;this.sim.step(dt);this.liveScore=this.score();this.paint();if(this.sim.sealed){this.ctx.finish();return;}this.raf=requestAnimationFrame(tick);};this.raf=requestAnimationFrame(tick);}
+  start(){this.last=this.now();const tick=now=>{if(this.locked||this.ctx.isActive?.()===false)return;const dt=Math.min(.05,Math.max(0,(now-this.last)/1000));this.last=now;if(this.keys.has('ArrowUp'))this.sim.y+=dt*.13;if(this.keys.has('ArrowDown'))this.sim.y-=dt*.13;this.sim.step(dt);this.liveScore=this.score();this.paint();if(this.sim.sealed){this.ctx.finish();return;}this.raf=this.frame(tick);};this.raf=this.frame(tick);}
   paint(){
     const s=this.sim,y=clamp(s.y,-.08,1.08),outside=s.y<-.035||s.y>1.035;
     this.roll.style.bottom=`${y*100}%`;this.roll.classList.toggle('is-held',s.holding);this.roll.setAttribute('aria-pressed',String(s.holding));
@@ -106,7 +106,7 @@ export function createPalletSealing(Base){return class PalletSealing extends Bas
     this.correct=Math.round(s.coverage*24);this.mistakes=s.breaks+Math.floor(s.outside)+Math.floor(s.waste);
   }
   paintFilm(){
-    const visual=this.filmVisual,now=performance.now();
+    const visual=this.filmVisual,now=this.now();
     // Only changed wall masks, at most 30 times/s; lighting never rerasterizes coverage.
     if(visual.dirty.size&&(this.maskTime===undefined||now-this.maskTime>=1000/30||this.sim.sealed)){
       for(const face of visual.dirty){const mask=this.filmMasks[face],bytes=mask.data.data;

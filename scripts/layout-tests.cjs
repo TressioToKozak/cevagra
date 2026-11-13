@@ -7,7 +7,7 @@ const {chromium}=require('playwright');
   page.on('pageerror',e=>errors.push(e.message));
   await page.goto(process.env.TEST_ORIGIN||'http://127.0.0.1:8002/');
   await page.evaluate(async()=>{
-   window.qa=(await import('./game.js?v=57')).manager;
+   window.qa=(await import('./game.js?v=58')).manager;
    const tasks=await import('./tasks.js?v=52');window.configs=tasks.GAME_CONFIGS;window.make=tasks.buildCompetition;
    window.RNG=(await import('./rng.js?v=20')).SeededRandom;
   });
