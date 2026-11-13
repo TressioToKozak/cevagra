@@ -95,7 +95,16 @@ export const GAME_ASSETS={
   ],
   "barcode": [
     "assets/barcode-hunt/background/background-barcode-hunt.webp",
-    "assets/barcode-hunt/boxes/box-front-square-label.webp"
+    "assets/pallet-sealing/cartons-side-1.png",
+    "assets/pallet-sealing/cartons-side-2.png",
+    "assets/pallet-sealing/cartons-side-3.png",
+    "assets/pallet-sealing/cartons-side-4.png",
+    "assets/pallet-sealing/cartons-top.png",
+    "assets/pallet-sealing/pallet-deck.png",
+    "assets/pallet-sealing/pallet-face.png",
+    "assets/pallet-sealing/stretch-film.png",
+    "assets/pallet-sealing/stretch-ribbon.png",
+    "assets/pallet-sealing/stretch-roll.png"
   ],
   "packing": [
     "assets/packing-tetris/background-packing-tetris.webp",
