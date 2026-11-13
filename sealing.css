@@ -70,15 +70,15 @@
 .seal-turntable{bottom:calc(20% - var(--load-size)*.25 - var(--pallet-height)*.7)}
 /* One film material, masked by paint() on each outward-facing 3D wall.
    Fine tension lines stay with the material; lighting changes with rotation. */
-.seal-film{position:absolute;inset:0;pointer-events:none;backface-visibility:hidden;transform:translateZ(.8px);opacity:1;mask-mode:alpha;mask-repeat:no-repeat;-webkit-mask-repeat:no-repeat;mask-size:100% 100%;-webkit-mask-size:100% 100%;background:repeating-linear-gradient(179deg,transparent 0 7px,#fff5 7.6px,#18232e24 8.4px,transparent 9.3px,transparent 18px,#ffffff55 18.6px,transparent 20px),repeating-linear-gradient(173deg,transparent 0 37px,#ffffff30 38px,transparent 39px,transparent 63px,#18232e18 64px,transparent 65px),url('assets/pallet-sealing/stretch-film.png') center/100% 100% no-repeat;box-shadow:inset 1px 0 2px #ffffff55,inset -1px 0 2px #ffffff44}
-.seal-film::before{content:'';position:absolute;inset:0;background:var(--film-edge) center/100% 100% no-repeat;pointer-events:none}
-.seal-film::after{content:'';position:absolute;inset:0;opacity:var(--film-light,.3);background:radial-gradient(ellipse at 37% 25%,#ffffff45,transparent 32%),linear-gradient(101deg,transparent 17%,#ffffff18 25%,transparent 28%,transparent 57%,#ffffff30 63%,transparent 72%);background-size:170% 140%;background-position:var(--film-shift,0%) 0;pointer-events:none}
+.seal-film{position:absolute;inset:0;pointer-events:none;backface-visibility:hidden;transform:translateZ(.8px);opacity:1;mask-mode:alpha;mask-repeat:no-repeat;-webkit-mask-repeat:no-repeat;mask-size:100% 100%;-webkit-mask-size:100% 100%;background:repeating-linear-gradient(179deg,transparent 0 7px,#ffffffa6 7.4px,#26344040 8.5px,transparent 9.8px,transparent 18px,#ffffff99 18.5px,transparent 20.3px),repeating-linear-gradient(173deg,transparent 0 37px,#ffffff70 37.7px,transparent 39.4px,transparent 63px,#26344030 64px,transparent 65.4px),url('assets/pallet-sealing/stretch-film.png') center/100% 100% no-repeat;background-color:#f4f7f918;box-shadow:inset 2px 0 4px #ffffff85,inset -2px 0 4px #ffffff70}
+.seal-film::before{content:'';position:absolute;inset:0;background:var(--film-edge) center/100% 100% no-repeat,linear-gradient(90deg,#ffffff9c,transparent 2%,transparent 98%,#ffffff9c);pointer-events:none}
+.seal-film::after{content:'';position:absolute;inset:0;opacity:var(--film-light,.45);background:radial-gradient(ellipse at 37% 25%,#ffffff8c,transparent 34%),linear-gradient(101deg,transparent 17%,#ffffff40 25%,transparent 28%,transparent 57%,#ffffff73 63%,transparent 72%);background-size:170% 140%;background-position:var(--film-shift,0%) 0;pointer-events:none}
 .seal-face-right .seal-film{background-position:0 3px,0 17px,center}
 .seal-face-back .seal-film{background-position:0 9px,0 31px,center}
 .seal-face-left .seal-film{background-position:0 14px,0 7px,center}
-.seal-ribbon-sheet{stroke:#ffffff85;stroke-width:.8}
+.seal-ribbon-sheet{stroke:#ffffffb8;stroke-width:.8}
 
-.seal-ribbon-strands{stroke-opacity:.62}
+.seal-ribbon-strands{stroke-opacity:.8}
 .seal-roll-spool{border:0;border-radius:0;background:none;box-shadow:none}
 .seal-roll-spool:before{display:none}
 .seal-roll-spool>img{display:block;width:100%;height:100%;object-fit:contain;pointer-events:none;filter:drop-shadow(2px 5px 4px #0008)}

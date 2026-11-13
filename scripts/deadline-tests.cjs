@@ -2,7 +2,7 @@ const assert=require('node:assert/strict'),{chromium}=require('playwright');
 (async()=>{const browser=await chromium.launch({executablePath:process.env.CHROMIUM_PATH||undefined,args:['--no-sandbox']});try{
  const p=await browser.newPage({viewport:{width:1366,height:768}}),errors=[];p.on('pageerror',e=>errors.push(e.message));
  await p.goto(process.env.TEST_ORIGIN||'http://127.0.0.1:8002/');await p.evaluate(async()=>{
-  window.qa=(await import('./game.js?v=58')).manager;
+  window.qa=(await import('./game.js?v=59')).manager;
   const {assetLoader}=await import('./asset-loader.js?v=20');await assetLoader.preload((await import('./asset-manifest.js?v=55')).COMPETITION_ASSETS);
   window.testNow=1000;Object.defineProperty(performance,'now',{configurable:true,value:()=>testNow});
   window.setup=async id=>{const {GAME_CONFIGS,buildCompetition}=await import('./tasks.js?v=52'),{SeededRandom}=await import('./rng.js?v=20');qa.reset();document.body.classList.remove('menu-active','results-active');qa.playerName='DEADLINE QA';qa.runId=crypto.randomUUID();qa.runSeed='DEADLINE';qa.gameConfigs=GAME_CONFIGS;qa.tasks=buildCompetition('DEADLINE',new SeededRandom('DEADLINE'));qa.index=GAME_CONFIGS.findIndex(c=>c.id===id);qa.state='countdown';await qa.startGame();clearInterval(qa.timer);qa.timer=null;if(id==='conveyor')cancelAnimationFrame(qa.active.raf);if(id==='memory')qa.active.hide();window.stage=qa.active;window.oldToken=qa.stageToken;};
