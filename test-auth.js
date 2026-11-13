@@ -3,7 +3,7 @@ const OFFLINE_SESSION='ceva-panel-offline-v1',api=new URL('api/panel/',import.me
 let opening=null;
 function offlineSession(){try{return sessionStorage.getItem(OFFLINE_SESSION)==='signed-in';}catch{return false;}}
 function saveOffline(active){try{active?sessionStorage.setItem(OFFLINE_SESSION,'signed-in'):sessionStorage.removeItem(OFFLINE_SESSION);}catch{}}
-async function openTests(){if(!opening)opening=import('./game.js?v=56').then(()=>document.body.classList.remove('test-login-active')).catch(e=>{opening=null;throw e;});await opening;}
+async function openTests(){if(!opening)opening=import('./game.js?v=57').then(()=>document.body.classList.remove('test-login-active')).catch(e=>{opening=null;throw e;});await opening;}
 form.onsubmit=async event=>{
   event.preventDefault();button.disabled=true;error.textContent='';
   const username=document.getElementById('test-username').value,password=document.getElementById('test-password').value;
