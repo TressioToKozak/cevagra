@@ -5,7 +5,7 @@ import { CompetitionSettings, LeaderboardManager, SqlLeaderboardStore, leaderboa
 import { ArcadeEffects, animateNumber } from "./effects.js?v=58";
 import { SeededRandom, createRunId, createRunSeed } from "./rng.js?v=20";
 import { GAME_CONFIGS, TRANSITION_SECONDS, buildCompetition, buildGameOrder } from "./tasks.js?v=52";
-import { MINIGAME_CLASSES } from "./minigames.js?v=59";
+import { MINIGAME_CLASSES } from "./minigames.js?v=61";
 import { sumScores } from "./scoring.js?v=20";
 import { StageGuard } from "./lifecycle.js?v=23";
 import { assetLoader, ASSET_PRIORITY } from "./asset-loader.js?v=20";
@@ -60,7 +60,7 @@ const RESULT_ICONS={
 
 export class CompetitionManager {
   constructor({root=app,seed=requestedSeed,loader=assetLoader}={}){this.root=root;this.debugSeed=seed;this.loader=loader;this.flowSerial=0;this.guard=new StageGuard(()=>this.now());this.interfaceEffects=new ArcadeEffects();this.interfaceEffects.bindPress(root);this.interfaceEffects.bindPress(modal);this.reset();}
-  now(){return this.testMode?.clock.now()??performance.now();}
+  now(){return this.testMode?.clock.deadlineNow()??performance.now();}
   cancelFlashFrame(){if(this.testMode)this.testMode.clock.cancel(this.flashFrame);else cancelAnimationFrame(this.flashFrame);}
   clearReturnTimer(){clearTimeout(this.returnTimer);this.returnTimer=null;this.returnDeadline=null;}
   armReturnTimer(milliseconds){this.clearReturnTimer();this.returnDeadline=Date.now()+milliseconds;this.returnState=this.state;this.returnTimer=setTimeout(()=>this.checkReturnTimer(),milliseconds);}
@@ -222,7 +222,7 @@ function showOrganizer(){if(!organizerEnabled)return;modal.classList.remove("lea
   };modal.showModal();}
 $("#modal-close").onclick=()=>modal.close();
 installEditingCursor();
-if(TEST_MODE){const {mountTestPanel}=await import("./test-panel.js?v=58");mountTestPanel(manager,{GAME_CONFIGS,buildCompetition,SeededRandom,createRunSeed,RESULT_ICONS,GAMEPLAY_BACKGROUNDS});}else manager.landing();
+if(TEST_MODE){const {mountTestPanel}=await import("./test-panel.js?v=61");mountTestPanel(manager,{GAME_CONFIGS,buildCompetition,SeededRandom,createRunSeed,RESULT_ICONS,GAMEPLAY_BACKGROUNDS});}else manager.landing();
 
 // The server handles shared backups. Offline tabs preserve their local board daily.
 if(!TEST_MODE)startDailyBackups(()=>leaderboard.store.online===false?leaderboard.getLeaderboard():null);

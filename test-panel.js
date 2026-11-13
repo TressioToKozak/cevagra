@@ -1,4 +1,4 @@
-import {TestGameClock} from './test-clock.js?v=58';
+import {TestGameClock} from './test-clock.js?v=61';
 
 export function mountTestPanel(manager,{GAME_CONFIGS,buildCompetition,SeededRandom,createRunSeed,RESULT_ICONS,GAMEPLAY_BACKGROUNDS}){
   document.body.classList.add('test-mode');
@@ -27,8 +27,14 @@ export function mountTestPanel(manager,{GAME_CONFIGS,buildCompetition,SeededRand
     if(kind==='playing'){
       const cell=view.querySelector('.competition-hud>div');cell.replaceChildren(button);
       const tools=document.createElement('div');tools.className='test-play-tools';const record=currentAttempt();
-      tools.innerHTML=`<span class="test-last-score">${record?attemptText(record):'No completed attempt yet'}</span><button type="button" class="test-pause" aria-label="Stop game" aria-pressed="false">STOP</button>`;
-      view.querySelector('.competition-hud').after(tools);const pause=tools.querySelector('.test-pause');pause.onclick=()=>togglePause(view,pause);return;
+      tools.innerHTML=`<span class="test-last-score">${record?`Last: ${record.score} / ${record.max}`:'First attempt'}</span><div class="test-control-actions"><button type="button" class="test-control test-pause" aria-label="Stop game" aria-pressed="false" title="Freeze the game, animations and timer">STOP</button><button type="button" class="test-control test-time" aria-label="Stop time only" aria-pressed="false" title="Freeze only the timer; keep playing and scoring">STOP TIME</button></div>`;
+      view.querySelector('.competition-hud').after(tools);const pause=tools.querySelector('.test-pause');pause.onclick=()=>togglePause(view,pause);
+      const time=tools.querySelector('.test-time');time.onclick=()=>{
+        if(manager.state!=='playing')return;
+        if(clock.timeStopped)clock.resumeTime();else clock.stopTime();
+        time.textContent=clock.timeStopped?'RESUME TIME':'STOP TIME';time.setAttribute('aria-pressed',String(clock.timeStopped));time.setAttribute('aria-label',clock.timeStopped?'Resume timer':'Stop time only');
+        view.querySelector('.clock').classList.toggle('test-time-frozen',clock.timeStopped);manager.updateHud();
+      };return;
     }
     button.classList.add('test-back-floating');view.append(button);
     if(kind==='briefing'){
@@ -38,7 +44,7 @@ export function mountTestPanel(manager,{GAME_CONFIGS,buildCompetition,SeededRand
   }
   function showPicker(){
     manager.reset();document.body.classList.remove('menu-active','results-active');document.body.classList.add('test-picker-active');
-    root.innerHTML=`<section class="test-picker"><header><div><p class="eyebrow">CEVA · TEST MODE</p><h1>Choose a minigame</h1><p>Open the instructions, play, then try again.</p></div><div class="test-picker-actions"><a class="test-panel-link" href="panel/">← Back to panel</a><img src="assets/menu/logo-light.webp" alt="CEVA Logistics" draggable="false"></div></header><div class="test-games">${GAME_CONFIGS.map((game,i)=>`<a class="test-game-card" data-test-game="${game.id}" draggable="false" href="?game=${game.id}"><div class="test-card-art" style="background-image:url('${GAMEPLAY_BACKGROUNDS[game.id]}')"><img src="assets/results/icons/${RESULT_ICONS[game.id]}.svg" alt="" draggable="false"><span>${String(i+1).padStart(2,'0')}</span></div><div class="test-card-copy"><h2>${escape(game.name)}</h2><p>${game.time} seconds · ${game.max} points</p>${attempts[game.id]?`<small class="test-card-score">${attemptText(attempts[game.id])}</small>`:''}<span>OPEN GAME <b aria-hidden="true">↗</b></span></div></a>`).join('')}</div></section>`;
+    root.innerHTML=`<section class="test-picker"><header><div><p class="eyebrow">CEVA · TEST MODE</p><h1>Choose a minigame</h1><p>Open the instructions, play, then try again.</p></div><div class="test-picker-actions"><a class="test-panel-link" href="panel/">← Back to panel</a><img src="assets/menu/logo-light.webp" alt="CEVA Logistics" draggable="false"></div></header><div class="test-games">${GAME_CONFIGS.map((game,i)=>`<a class="test-game-card" data-test-game="${game.id}" draggable="false" href="?game=${game.id}"><div class="test-card-art"><img src="assets/test-previews/${game.id}.webp?v=61" alt="Gameplay preview: ${escape(game.name)}" draggable="false" decoding="async"><span>${String(i+1).padStart(2,'0')}</span></div><div class="test-card-copy"><h2>${escape(game.name)}</h2><p>${game.time} seconds · ${game.max} points</p>${attempts[game.id]?`<small class="test-card-score">${attemptText(attempts[game.id])}</small>`:''}<span>OPEN GAME <b aria-hidden="true">↗</b></span></div></a>`).join('')}</div></section>`;
     root.querySelectorAll('[data-test-game]').forEach(link=>link.onclick=event=>{if(event.button||event.ctrlKey||event.metaKey||event.shiftKey||event.altKey)return;event.preventDefault();navigate(link.dataset.testGame);});
   }
   function showBriefing(id){
