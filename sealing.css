@@ -16,7 +16,7 @@
 .seal-cartons{position:absolute;inset:0;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);gap:1px;overflow:hidden}.seal-cartons img{width:112%;height:116%;max-width:none;object-fit:fill;transform:translate(-5%,-7%);pointer-events:none;filter:sepia(.1) brightness(.95)}
 .seal-top{position:absolute;left:0;top:calc((var(--load-height) - var(--load-size))*.5);width:var(--load-size);height:var(--load-size);transform:rotateX(90deg) translateZ(calc(var(--load-height)*.5));background:repeating-linear-gradient(0deg,transparent 0 32%,#8c613b 32% 33%),repeating-linear-gradient(90deg,#c99558 0 31%,#e3bf8a 31% 33%);backface-visibility:hidden}
 .seal-wood{position:absolute;top:100%;left:-4%;width:108%;height:24px;background:repeating-linear-gradient(0deg,#583a22 0 4px,#bf945c 5px 9px,#3c291d 10px 17px,#d2a877 18px 23px);border:1px solid #a6804e;box-shadow:0 5px 5px #0008}
-.seal-film{position:absolute;inset:-1px;overflow:hidden;transform:translateZ(1px);pointer-events:none}.seal-film>i{position:absolute;left:0;right:0;height:4.5%;background:repeating-linear-gradient(176deg,#e1f4ff55 0 1px,#f2faff15 2px 4px,#fff6 5px,#8ba6c322 6px);border-bottom:1px solid #f5fbff80;box-shadow:inset 8px 0 8px #fff3,inset -8px 0 8px #e4f5ff55}
+
 .seal-turntable{position:absolute;left:4%;right:11%;height:23%;bottom:4%;border:10px solid #25313b;border-top-color:#b78d3c;border-bottom:16px solid #08131d;border-radius:50%;background:radial-gradient(ellipse,#263844,#101c27 72%);box-shadow:0 15px 12px #000a,inset 0 0 0 4px #eab93c,inset 0 0 40px #000}
 .seal-turntable:before,.seal-turntable:after{content:'➜';position:absolute;top:28%;font-size:22px;color:#6fdf9a;text-shadow:0 0 10px #6bffa3}.seal-turntable:before{left:9%}.seal-turntable:after{right:9%;transform:rotate(180deg)}.seal-turntable>span{position:absolute;bottom:-13px;left:0;right:0;text-align:center;font:800 7px var(--mono);letter-spacing:.16em;color:#9bb4c5}
 .seal-shadow{position:absolute;bottom:12%;height:15%;left:15%;right:25%;border-radius:50%;background:#000b;filter:blur(8px)}
@@ -38,8 +38,7 @@
 
 /* Let the wrapped load itself show progress; no pace guide or instruction panels. */
 .seal-workspace{left:12%;right:12%;top:2%;bottom:4%;--load-size:clamp(150px,44cqh,345px)}
-.seal-film>i{background:linear-gradient(105deg,#f4fbffb8,#e4edf54d 22%,#fff9 54%,#d4e5f04d 78%,#f5fbffd1),repeating-linear-gradient(178deg,#fff9 0 1px,#e0edf54d 2px 4px,#f5fbffe6 5px,#a1b8c555 6px);border-bottom:1px solid #fff;box-shadow:inset 9px 0 12px #fff8,inset -9px 0 12px #f5fbff99}
-.seal-film>i.is-overwrapped{background-color:#eef7ff;box-shadow:inset 0 0 8px #fff9}
+
 .seal-finish-stamp{position:absolute;left:20%;right:20%;top:43%;padding:10px 2px;border:2px solid #f6ce77;border-radius:4px;background:#082337ed;color:#ffe3a5;font:900 18px var(--mono);letter-spacing:.12em;text-align:center;opacity:0;transform:translateZ(3px);pointer-events:none}
 .seal-complete .seal-finish-stamp{opacity:1}.seal-complete .seal-film{animation:sealFinishShine .65s ease-out}.seal-complete .seal-turntable{box-shadow:0 0 24px #ffd47788,inset 0 0 0 4px #ffd477,inset 0 0 40px #000}
 @keyframes sealFinishShine{0%,100%{filter:brightness(1)}40%{filter:brightness(1.6)}}
@@ -48,7 +47,7 @@
 .seal-warning .seal-grip{border-color:#ff4863;color:#ffb2bf;box-shadow:0 0 16px #ff365366;background:#471728cc}
 
 /* A single continuous film surface: density blends between covered heights. */
-.seal-film{inset:0;transform:translateZ(.3px);opacity:1;background:linear-gradient(105deg,#f5fbff91,#dce9f14d 25%,#ffffffa1 54%,#d4e5f033 78%,#f5fbffb3),repeating-linear-gradient(177deg,#fff7 0 .6px,#d4e2eb22 1px 4px,#f2faffb3 5px,#a6bdca11 6px);box-shadow:inset 7px 0 10px #fff5,inset -7px 0 10px #f5fbff66;mask-mode:alpha;mask-repeat:no-repeat;-webkit-mask-repeat:no-repeat}
+
 .seal-ribbon{inset:0;width:100%;height:100%;z-index:3;background:none;clip-path:none;box-shadow:none;pointer-events:none;overflow:visible}
 
 /* Supplied CEVA textures. Each side image is one complete nine-carton wall. */
@@ -69,9 +68,12 @@
 .seal-pallet-block>i{position:absolute;inset:0;display:block;background:url('assets/pallet-sealing/pallet-deck.png') center/300% 300% no-repeat;backface-visibility:hidden}
 .seal-block-front{transform:translateZ(calc(var(--block-size)*.5))}.seal-block-right{transform:rotateY(90deg) translateZ(calc(var(--block-size)*.5))}.seal-block-back{transform:rotateY(180deg) translateZ(calc(var(--block-size)*.5))}.seal-block-left{transform:rotateY(270deg) translateZ(calc(var(--block-size)*.5))}
 .seal-turntable{bottom:calc(20% - var(--load-size)*.25 - var(--pallet-height)*.7)}
-/* The supplied alpha texture follows the existing per-height coverage mask. */
-.seal-film{inset:0;transform:translateZ(.5px);background:url('assets/pallet-sealing/stretch-film.png') center/100% 100% no-repeat,linear-gradient(105deg,#ffffff0a,#e7f1f900 30%,#ffffff16 58%,#e7f1f900 80%,#ffffff0a);opacity:1;box-shadow:inset 3px 0 5px #fff2,inset -3px 0 5px #fff2}
-.seal-ribbon-strands{stroke-opacity:.22}
+/* One film material, masked by paint() on each outward-facing 3D wall.
+   PNG alpha alone is too faint: broad reflections and fine wrap seams supply contrast. */
+.seal-film{position:absolute;inset:0;pointer-events:none;backface-visibility:hidden;transform:translateZ(.8px);opacity:1;mask-mode:alpha;mask-repeat:no-repeat;-webkit-mask-repeat:no-repeat;background:repeating-linear-gradient(178deg,transparent 0 7px,#fff8 7.5px,#ffffff18 8.5px,transparent 10px,transparent 17px,#172b3d24 18px,#fff5 19px,transparent 20px),linear-gradient(103deg,#ffffff52,transparent 17%,#ffffff12 35%,#ffffff70 49%,transparent 60%,#ffffff22 81%,#ffffff66),repeating-linear-gradient(164deg,transparent 0 31px,#ffffff2b 32px,transparent 34px,transparent 57px),url('assets/pallet-sealing/stretch-film.png') center/100% 100% no-repeat;box-shadow:inset 2px 0 5px #ffffff70,inset -2px 0 6px #ffffff66}
+.seal-ribbon-sheet{stroke:#ffffff85;stroke-width:.8}
+
+.seal-ribbon-strands{stroke-opacity:.62}
 .seal-roll-spool{border:0;border-radius:0;background:none;box-shadow:none}
 .seal-roll-spool:before{display:none}
 .seal-roll-spool>img{display:block;width:100%;height:100%;object-fit:contain;pointer-events:none;filter:drop-shadow(2px 5px 4px #0008)}
