@@ -220,7 +220,7 @@ function showOrganizer(){if(!organizerEnabled)return;modal.classList.remove("lea
   };modal.showModal();}
 $("#modal-close").onclick=()=>modal.close();
 installEditingCursor();
-if(TEST_MODE){const {mountTestPanel}=await import("./test-panel.js?v=53");mountTestPanel(manager,{GAME_CONFIGS,buildCompetition,SeededRandom,createRunSeed,RESULT_ICONS,GAMEPLAY_BACKGROUNDS});}else manager.landing();
+if(TEST_MODE){const {mountTestPanel}=await import("./test-panel.js?v=54");mountTestPanel(manager,{GAME_CONFIGS,buildCompetition,SeededRandom,createRunSeed,RESULT_ICONS,GAMEPLAY_BACKGROUNDS});}else manager.landing();
 
 // The server handles shared backups. Offline tabs preserve their local board daily.
 if(!TEST_MODE)startDailyBackups(()=>leaderboard.store.online===false?leaderboard.getLeaderboard():null);

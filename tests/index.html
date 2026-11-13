@@ -14,16 +14,17 @@
   <link rel="stylesheet" href="mobile.css?v=46" media="(max-width:600px), (max-width:950px) and (pointer:coarse) and (max-height:500px)">
 <link rel="stylesheet" href="sealing.css?v=52">
 <link rel="icon" type="image/svg+xml" href="assets/ceva-icon.svg?v=2"><link rel="alternate icon" type="image/png" href="assets/menu/logo-light.png"><link rel="apple-touch-icon" href="assets/menu/logo-light.png">
-  <link rel="stylesheet" href="test-panel.css?v=53">
+  <link rel="stylesheet" href="test-panel.css?v=54">
+  <link rel="stylesheet" href="test-auth.css?v=54">
 </head>
-<body>
-  <main id="app" tabindex="-1"></main>
+<body class="test-login-active">
+  <main id="app" tabindex="-1"><section class="test-login-screen"><form id="test-login-form" class="test-login-card"><img src="assets/menu/logo-light.webp" alt="CEVA Logistics"><p class="eyebrow">COMPETITION CONTROL</p><h1>Test panel <span>sign in.</span></h1><p class="intro">Sign in with your panel credentials.</p><label for="test-username">Username</label><input id="test-username" name="username" autocomplete="username" required maxlength="100"><label for="test-password">Password</label><input id="test-password" name="password" type="password" autocomplete="current-password" required maxlength="200"><p id="test-login-error" role="alert"></p><button id="test-sign-in" type="submit">Sign in</button></form></section></main>
 
   <dialog id="modal" aria-labelledby="modal-title">
     <div class="modal-head"><span id="modal-kicker">CONTROL PANEL</span><button id="modal-close" aria-label="Close dialog">×</button></div>
     <div id="modal-content"></div>
   </dialog>
 
-  <script type="module" src="game.js?v=53"></script>
+  <script type="module" src="test-auth.js?v=54"></script>
 </body>
 </html>
