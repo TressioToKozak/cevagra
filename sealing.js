@@ -20,7 +20,7 @@ export class SealSimulation {
     this.sealed=this.layers.every(layer=>layer>=1);
   }
   get coverage(){return this.layers.reduce((sum,n)=>sum+clamp(n),0)/this.layers.length;}
-  get score(){return Math.round(clamp(Math.pow(this.coverage,2.4)*70+(this.sealed?30:0)-this.waste*6-this.outside*10-this.breaks*12,0,100));}
+  get score(){return Math.round(clamp(Math.pow(this.coverage,1.9)*70+(this.sealed?30:0)-this.waste*6-this.outside*10-this.breaks*12,0,100));}
 }
 // Rendering only. Angular bins retain where the moving web touched the load;
 // SealSimulation remains the sole authority for coverage, penalties and completion.
