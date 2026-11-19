@@ -34,8 +34,6 @@ function fitViewport(){
   app.style.setProperty("--screen-width",`${width/scale}px`);
   app.style.setProperty("--screen-height",`${height/scale}px`);
 }
-window.addEventListener("resize",fitViewport);
-window.visualViewport?.addEventListener("resize",fitViewport);
 
 document.addEventListener("visibilitychange",()=>document.documentElement.classList.toggle("motion-suspended",document.hidden));
 const TEST_MODE=/\/tests?(?:\/index\.html|\/)?$/.test(location.pathname);
@@ -44,6 +42,8 @@ const protocol=TEST_MODE?null:await createGameProtocol();
 const settings=new CompetitionSettings();
 const analytics=TEST_MODE?{setPlaying(){},completed(){}}:createGameAnalytics();
 const app=$("#app"),modal=$("#modal"),modalContent=$("#modal-content"),leaderboard=new LeaderboardManager(new SqlLeaderboardStore());
+window.addEventListener("resize",fitViewport);
+window.visualViewport?.addEventListener("resize",fitViewport);
 leaderboard.store.onchange=()=>{if(modal.open&&modal.classList.contains("leaderboard-modal"))showLeaderboard(modal.dataset.currentRun||"",false);};
 if(!TEST_MODE){void leaderboard.store.sync();window.addEventListener("online",()=>void leaderboard.store.sync());}
 fitViewport();
