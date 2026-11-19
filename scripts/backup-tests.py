@@ -1,3 +1,4 @@
+import secrets
 import http.cookiejar
 from datetime import datetime, timedelta
 from io import BytesIO
@@ -79,7 +80,12 @@ class BackupTests(unittest.TestCase):
         def post(path, data):
             request = urllib.request.Request(origin + path, json.dumps(data).encode(), {'Content-Type': 'application/json'})
             return json.load(client.open(request))
-        post('/api/panel/login', {'username': 'ceva', 'password': 'ceva'})
+        server.allow_insecure_localhost = True
+        password = secrets.token_urlsafe(24)
+        credentials = patch.dict('os.environ', {'PANEL_USERNAME': 'backup-test', 'PANEL_PASSWORD': password})
+        credentials.start()
+        self.addCleanup(credentials.stop)
+        post('/api/panel/login', {'username': 'backup-test', 'password': password})
         response = post('/api/panel/delete', {'confirmation': 'DELETE', 'ids': ['run-1']})
         self.assertTrue((self.directory / response['backup']).exists())
         self.assertEqual(sheet_values((self.directory / response['backup']).read_bytes())[1], ['650'])

@@ -1,14 +1,13 @@
-import {localStatistics} from './analytics.js?v=47';
 import {backupDate,createBrowserBackup,chooseBackupDirectory,startDailyBackups} from './backup-store.js?v=43';
 import {resultsWorkbook} from './excel.js?v=2';
-import {LeaderboardManager, LocalLeaderboardStore} from './storage.js?v=29';
+import {LeaderboardManager, LocalLeaderboardStore} from './storage.js?v=64';
 const $=id=>document.getElementById(id),local=new LeaderboardManager(new LocalLeaderboardStore());
 const api=new URL('api/panel/',new URL('./',import.meta.url));
 const PAGE_SIZE=10;
 let rows=[],mode='sql',page=0,statistics=null;
 const number=new Intl.NumberFormat('en-GB');
 function renderStatistics(){
-  const stats=mode==='local'?localStatistics(local.getLeaderboard()):statistics;
+  const stats=statistics;
   $('stat-visits').textContent=stats?number.format(stats.visits):'—';
   $('stat-games').textContent=stats?number.format(stats.games):'—';
   const seconds=Math.floor((stats?.playMs||0)/1000),hours=Math.floor(seconds/3600),minutes=Math.floor(seconds%3600/60);
@@ -16,12 +15,6 @@ function renderStatistics(){
   $('stat-player').textContent=stats?.topPlayer?.name||'No games yet';
   $('stat-player-detail').textContent=stats?.topPlayer?`${number.format(stats.topPlayer.count)} completed ${stats.topPlayer.count===1?'game':'games'}${stats.topPlayer.email?' · '+stats.topPlayer.email:''}`:'Complete a game to appear here';
 }
-
-const OFFLINE_SESSION='ceva-panel-offline-v1';
-let offlineSignedIn=false;
-try{offlineSignedIn=sessionStorage.getItem(OFFLINE_SESSION)==='signed-in';}catch{}
-function localSession(active){offlineSignedIn=active;try{active?sessionStorage.setItem(OFFLINE_SESSION,'signed-in'):sessionStorage.removeItem(OFFLINE_SESSION);}catch{}}
-function showLocalResults(){if(!offlineSignedIn){showLogin();return;}mode='local';rows=local.getLeaderboard();$('status').textContent='Offline mode · Results saved in this browser';$('login-screen').hidden=true;$('panel-screen').hidden=false;render();}
 
 function showLogin(message=''){rows=[];page=0;$('results').replaceChildren();$('result-count').textContent='0';$('confirm').close();$('statistics-dialog').close();$('panel-screen').hidden=true;$('login-screen').hidden=false;$('login-error').textContent=message;}
 function render(){
@@ -42,14 +35,13 @@ function render(){
 }
 async function refresh(){
   try{const response=await fetch(new URL('results',api),{cache:'no-store',signal:AbortSignal.timeout(5000)});if(response.status===401){showLogin();return;}if(!response.ok)throw Error();const data=await response.json();if(!Array.isArray(data.runs))throw Error();rows=data.runs;statistics=data.statistics||null;mode='sql';$('status').textContent=`Shared competition results · ${rows.length} ${rows.length===1?'run':'runs'}`;}
-  catch{showLocalResults();return;}
+  catch{showLogin('Server connection required. Offline sign-in is disabled.');return;}
   $('login-screen').hidden=true;$('panel-screen').hidden=false;rows.sort(LeaderboardManager.compareRuns);render();
 }
 function exportExcel(snapshot=rows,name=`Leaderboard - ${backupDate()}.xlsx`,blob=resultsWorkbook(snapshot)){const url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download=name;link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
 let statisticsRefreshing=false;
 async function refreshStatistics(){
   if(statisticsRefreshing||!$('statistics-dialog').open||document.hidden||$('panel-screen').hidden)return;
-  if(mode==='local'){renderStatistics();return;}
   statisticsRefreshing=true;
   try{
     const response=await fetch(new URL('results',api),{cache:'no-store',signal:AbortSignal.timeout(5000)});
@@ -95,20 +87,13 @@ $('login-form').onsubmit=async event=>{
   event.preventDefault();$('sign-in').disabled=true;$('login-error').textContent='';
   const username=$('username').value,password=$('password').value;
   try{
-    let response;
-    try{response=await fetch(new URL('login',api),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username,password}),signal:AbortSignal.timeout(5000)});}catch{}
-    if(!response||[404,405,501,502,503,504].includes(response.status)){
-      if(username!=='ceva'||password!=='ceva')throw Error('Incorrect username or password.');
-      localSession(true);$('password').value='';showLocalResults();
-    }else{
-      if(!response.ok)throw Error(response.status===401?'Incorrect username or password.':'Sign in is unavailable. Please try again.');
-      localSession(false);$('password').value='';await refresh();
-    }
+    const response=await fetch(new URL('login',api),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username,password}),signal:AbortSignal.timeout(5000)});
+    if(!response.ok)throw Error(response.status===401?'Incorrect username or password.':'Server sign-in is unavailable. Contact the administrator.');
+    if((await response.json()).authenticated!==true)throw Error('Server session could not be verified.');$('password').value='';await refresh();
   }catch(error){showLogin(error.message);}
   finally{$('sign-in').disabled=false;}
 };
 $('logout').onclick=async()=>{
-  if(mode==='local'){localSession(false);showLogin();return;}
   try{const response=await fetch(new URL('logout',api),{method:'POST',headers:{'Content-Type':'application/json'},body:'{}',signal:AbortSignal.timeout(10000)});if(!response.ok&&response.status!==401)throw Error();showLogin();}
   catch{$('status').textContent='Sign out failed. Please try again.';}
 };

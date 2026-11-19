@@ -23,7 +23,7 @@ export class LocalLeaderboardStore {
 // Keep the synchronous local API: SQL synchronization never blocks a screen.
 export class SqlLeaderboardStore extends LocalLeaderboardStore {
   constructor(){super();this.revision=0;this.remote=[];this.deleted=new Set();this.acknowledged=new Set();this.syncing=null;this.onchange=()=>{};}
-  read(){const local=super.read();const rows=new Map(this.remote.map(run=>[run.id,run]));for(const run of local.runs)rows.set(run.id,run);return {version:3,runs:[...rows.values()].filter(run=>!this.deleted.has(run.id))};}
+  read(){const local=super.read();const rows=new Map(this.remote.map(run=>[run.id,run]));if(this.online!==true)for(const run of local.runs)rows.set(run.id,run);return {version:3,runs:[...rows.values()].filter(run=>!this.deleted.has(run.id))};}
   write(data){const saved=super.write(data);this.pending=data.runs;this.revision++;void this.sync();return saved;}
   clear(){this.pending=[];return super.clear();}
   async request(options){const response=await fetch(new URL("api/leaderboard",document.baseURI),{...options,signal:AbortSignal.timeout(5000),cache:"no-store"});if(!response.ok)throw new Error("Leaderboard unavailable");return response.json();}
@@ -32,14 +32,7 @@ export class SqlLeaderboardStore extends LocalLeaderboardStore {
     const revision=this.revision;
     this.syncing=(async()=>{
       try{
-        // Retry locally retained runs using stable IDs; SQL ignores duplicates.
-        let pending;
-        while((pending=(this.pending||super.read().runs).filter(run=>!this.acknowledged.has(run.id))).length){
-          const batch=pending.slice(0,100);
-          const result=await this.request({method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({runs:batch})});
-          if(!Array.isArray(result.saved)||!batch.every(run=>result.saved.includes(run.id)))throw new Error("Incomplete save");
-          for(const id of result.saved)this.acknowledged.add(id);
-        }
+        // Only server-verified sessions can write the shared leaderboard.
         const result=await this.request();
         if(!Array.isArray(result.runs))throw new Error("Invalid leaderboard");
         this.deleted=new Set(result.deleted||[]);for(const id of this.deleted)this.acknowledged.add(id);

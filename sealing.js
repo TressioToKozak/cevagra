@@ -99,7 +99,7 @@ export function createPalletSealing(Base){return class PalletSealing extends Bas
     this.rotationAnimation?.cancel();
     this.rotationAnimation=this.stack.animate([{transform:'rotateX(-11deg) rotateY(25deg)'},{transform:'rotateX(-11deg) rotateY(385deg)'}],{duration:1350,iterations:Infinity,easing:'linear'});
     this.rotationAnimation.currentTime=this.sim.elapsed*1000;
-    this.last=this.now();const tick=now=>{if(this.locked||this.ctx.isActive?.()===false)return;const dt=Math.min(.05,Math.max(0,(now-this.last)/1000));this.last=now;if(this.keys.has('ArrowUp'))this.sim.y+=dt*.13;if(this.keys.has('ArrowDown'))this.sim.y-=dt*.13;this.sim.step(dt);this.liveScore=this.score();this.paint();if(this.sim.sealed){this.ctx.finish();return;}this.raf=this.frame(tick);};this.raf=this.frame(tick);}
+    this.last=this.now();const tick=now=>{if(this.locked||this.ctx.isActive?.()===false)return;const dt=Math.min(.05,Math.max(0,(now-this.last)/1000));this.last=now;if(this.keys.has('ArrowUp'))this.sim.y+=dt*.13;if(this.keys.has('ArrowDown'))this.sim.y-=dt*.13;this.sim.step(dt);if(dt>0)this.ctx.trace?.({type:'wrap',dt,y:clamp(this.sim.y,-.1,1.1),holding:this.sim.holding});this.liveScore=this.score();this.paint();if(this.sim.sealed){this.ctx.finish();return;}this.raf=this.frame(tick);};this.raf=this.frame(tick);}
   paint(){
     const s=this.sim,y=clamp(s.y,-.08,1.08),outside=s.y<-.035||s.y>1.035;
     this.roll.style.bottom=`${y*100}%`;this.roll.classList.toggle('is-held',s.holding);this.roll.setAttribute('aria-pressed',String(s.holding));

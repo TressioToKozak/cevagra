@@ -5,3 +5,7 @@ __pycache__/
 work/
 /leaderboard backups/*
 !/leaderboard backups/.gitkeep
+
+.env
+.env.*
+!.env.example
