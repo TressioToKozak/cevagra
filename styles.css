@@ -797,6 +797,8 @@ body.results-active #app{overflow:hidden}
 .competition-shell[data-game="loading"] .loading-layout{grid-template-rows:minmax(0,1.1fr) minmax(0,1fr) 62px}
 .competition-shell[data-game="loading"] .pallet-yard{grid-template-columns:52px minmax(0,1fr);padding:4px;gap:4px}
 .competition-shell[data-game="loading"] .pallet-yard-cards{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;align-items:center}
+/* Keep each waiting pallet in its original bay when another leaves or returns. */
+.competition-shell[data-game="loading"] .pallet-yard-cards>.load-pallet{grid-column:var(--yard-column);grid-row:1}
 .competition-shell[data-game="loading"] .load-pallet{width:100%;max-height:100%;flex:none;container-type:inline-size}
 .load-pallet.pallet-art .pallet-copy{left:20%;right:16%;top:19%;bottom:23%;gap:2px}
 .load-pallet.pallet-art .pallet-copy b{font-size:clamp(9px,8cqw,20px)}
@@ -816,6 +818,7 @@ body.results-active #app{overflow:hidden}
 @media(max-width:1100px){
  .competition-shell[data-game="loading"] .loading-layout{grid-template-rows:minmax(0,1fr) minmax(0,1.4fr) 54px}
  .competition-shell[data-game="loading"] .pallet-yard-cards{grid-template-columns:repeat(4,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr))}
+ .competition-shell[data-game="loading"] .pallet-yard-cards>.load-pallet{grid-column:var(--yard-compact-column);grid-row:var(--yard-compact-row)}
  .competition-shell[data-game="loading"] .load-pallet{width:min(100%,180px);justify-self:center}
 }
 .load-pallet.pallet-art{container-type:inline-size}

@@ -162,6 +162,8 @@ dialog.leaderboard-modal{width:calc(100vw - 16px);max-height:calc(100dvh - 16px)
  #app .gate-panel h1{font-size:23px}#app .gate-panel .briefing-objective{font-size:12px}
 }
 #app .competition-shell[data-game="loading"] .pallet-yard .load-pallet{width:auto;height:100%;aspect-ratio:4/3;max-width:100%;color-scheme:only light}
+#app .competition-shell[data-game="loading"] .pallet-yard-cards>.load-pallet{grid-column:var(--yard-phone-column);grid-row:var(--yard-phone-row)}
 @media(orientation:portrait) and (max-height:700px){
+ #app .competition-shell[data-game="loading"] .pallet-yard-cards>.load-pallet{grid-column:var(--yard-short-column);grid-row:var(--yard-short-row)}
  #app .competition-shell[data-game="loading"] .pallet-yard-cards{grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:repeat(3,minmax(0,1fr))}
 }
