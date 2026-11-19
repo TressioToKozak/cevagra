@@ -6,8 +6,8 @@ const origin=process.env.TEST_ORIGIN||'http://127.0.0.1:8002';
  const browser=await chromium.launch({executablePath:process.env.CHROMIUM_PATH||undefined,args:['--no-sandbox']});
  try{
   const page=await browser.newPage({viewport:{width:1920,height:1080}}),errors=[],requests=[];
-  // Exercise local fallback; SQL is covered by check-sql.cjs.
-    await page.route('**/api/game/capabilities',route=>route.abort());await page.route('**/api/session',route=>route.abort());
+  // Explicit practice capability for static UI tests; network outages are covered by result-save.
+    await page.route('**/api/game/capabilities',route=>route.fulfill({json:{protocol:0,verifiedScores:false}}));await page.route('**/api/session',route=>route.abort());
     await page.route('**/api/leaderboard', route => route.abort());await page.route('**/api/statistics',route=>route.fulfill({json:{saved:true}}));
     page.on('pageerror',e=>errors.push(e.message));page.on('response',r=>{if(r.status()>=400)errors.push(`${r.status()} ${r.url()}`);});page.on('request',r=>{if(/\.(webp|png|svg)(\?|$)/.test(r.url()))requests.push(r.url());});
   await page.goto(origin);await page.evaluate(async()=>{window.qa=(await import('./game.js?v=72')).manager;});

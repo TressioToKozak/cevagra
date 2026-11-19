@@ -6,8 +6,8 @@ const origin = process.env.TEST_ORIGIN || 'http://127.0.0.1:8002/';
   try {
     const page = await browser.newPage();
     const errors = [];
-    // Exercise local fallback; SQL is covered by check-sql.cjs.
-    await page.route('**/api/game/capabilities',route=>route.abort());await page.route('**/api/session',route=>route.abort());
+    // Explicit practice capability for static UI tests; network outages are covered by result-save.
+    await page.route('**/api/game/capabilities',route=>route.fulfill({json:{protocol:0,verifiedScores:false}}));await page.route('**/api/session',route=>route.abort());
     await page.route('**/api/leaderboard', route => route.abort());
     await page.route('**/api/statistics', route => route.fulfill({json:{saved:true}}));
     page.on('pageerror', e => errors.push(e.message));
