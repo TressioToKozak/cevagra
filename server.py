@@ -11,8 +11,11 @@ import os
 from pathlib import Path
 import sqlite3
 from urllib.parse import urlsplit, parse_qs, quote
-from game_sessions import SCHEMA, APIError, handle as gameplay_api, limit as rate_limit
-from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
+from game_sessions import SCHEMA, APIError, handle as gameplay_api, complete_work, VerificationWork, worker, limit as rate_limit
+from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer as BaseThreadingHTTPServer
+from threading import RLock, Condition
+from contextlib import contextmanager
+import verifier_pool
 
 from backups import BackupManager
 from stats_state import snapshot as statistics_snapshot
@@ -22,22 +25,91 @@ from excel_io import MIME
 ROOT = Path(__file__).resolve().parent
 
 
+_schema_lock = RLock()
+_initialized_databases = {}
+_writer_gates = {}
+
+
+class WriterGate:
+    def __init__(self):
+        self.condition = Condition()
+        self.next_ticket = 0
+        self.serving = 0
+
+    @contextmanager
+    def acquire(self):
+        with self.condition:
+            ticket = self.next_ticket
+            self.next_ticket += 1
+            while ticket != self.serving:
+                self.condition.wait()
+        try:
+            yield
+        finally:
+            with self.condition:
+                self.serving += 1
+                self.condition.notify_all()
+
+
+@contextmanager
+def writer_turn(path, write):
+    if not write:
+        yield
+        return
+    key = str(Path(path).resolve())
+    with _schema_lock:
+        gate = _writer_gates.setdefault(key, WriterGate())
+    with gate.acquire():
+        yield
+
+
+class ThreadingHTTPServer(BaseThreadingHTTPServer):
+    request_queue_size = 128
+    daemon_threads = True
+
+
 def connect(path):
+    path = Path(path).resolve()
     db = sqlite3.connect(path, timeout=10)
-    db.execute('CREATE TABLE IF NOT EXISTS runs (id TEXT PRIMARY KEY, payload TEXT NOT NULL)')
-    db.execute('CREATE TABLE IF NOT EXISTS deleted_runs (id TEXT PRIMARY KEY)')
-    db.execute('CREATE TABLE IF NOT EXISTS panel_sessions (token_hash TEXT PRIMARY KEY, expires REAL NOT NULL)')
-    db.execute('CREATE TABLE IF NOT EXISTS statistics_visits (id TEXT PRIMARY KEY, play_ms INTEGER NOT NULL DEFAULT 0)')
-    db.execute('CREATE TABLE IF NOT EXISTS statistics_runs (id TEXT PRIMARY KEY, name TEXT NOT NULL, email TEXT NOT NULL)')
-    db.execute('CREATE TABLE IF NOT EXISTS statistics_meta (key TEXT PRIMARY KEY, value TEXT NOT NULL)')
-    db.execute("INSERT OR IGNORE INTO statistics_meta VALUES ('since', ?)", (time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()),))
-    db.executescript(SCHEMA)
-    if not db.execute("SELECT 1 FROM statistics_meta WHERE key='statistics_seeded_v1'").fetchone():
-        rows = [json.loads(r[0]) for r in db.execute('SELECT payload FROM runs')]
-        db.executemany('INSERT OR IGNORE INTO statistics_runs VALUES (?, ?, ?)', [(r['id'], r.get('name', ''), r.get('email', '') or '') for r in rows])
-        db.execute("INSERT INTO statistics_meta VALUES ('statistics_seeded_v1','1')")
-    db.commit()
-    return db
+    try:
+        identity = (path.stat().st_dev, path.stat().st_ino)
+        with _schema_lock:
+            if _initialized_databases.get(str(path)) != identity:
+                # WAL permits readers during writes; FULL keeps accepted results durable.
+                db.execute('PRAGMA journal_mode=WAL')
+                db.execute('CREATE TABLE IF NOT EXISTS runs (id TEXT PRIMARY KEY, payload TEXT NOT NULL)')
+                db.execute('CREATE TABLE IF NOT EXISTS deleted_runs (id TEXT PRIMARY KEY)')
+                db.execute('CREATE TABLE IF NOT EXISTS panel_sessions (token_hash TEXT PRIMARY KEY, expires REAL NOT NULL)')
+                db.execute('CREATE TABLE IF NOT EXISTS statistics_visits (id TEXT PRIMARY KEY, play_ms INTEGER NOT NULL DEFAULT 0)')
+                db.execute('CREATE TABLE IF NOT EXISTS statistics_runs (id TEXT PRIMARY KEY, name TEXT NOT NULL, email TEXT NOT NULL)')
+                db.execute('CREATE TABLE IF NOT EXISTS statistics_meta (key TEXT PRIMARY KEY, value TEXT NOT NULL)')
+                db.execute("INSERT OR IGNORE INTO statistics_meta VALUES ('since', ?)", (time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()),))
+                db.executescript(SCHEMA)
+                if not db.execute("SELECT 1 FROM statistics_meta WHERE key='statistics_seeded_v1'").fetchone():
+                    rows = [json.loads(r[0]) for r in db.execute('SELECT payload FROM runs')]
+                    db.executemany('INSERT OR IGNORE INTO statistics_runs VALUES (?, ?, ?)', [(r['id'], r.get('name', ''), r.get('email', '') or '') for r in rows])
+                    db.execute("INSERT INTO statistics_meta VALUES ('statistics_seeded_v1','1')")
+                db.commit()
+                if len(_initialized_databases) > 256:
+                    _initialized_databases.clear()
+                _initialized_databases[str(path)] = identity
+        db.execute('PRAGMA synchronous=FULL')
+        return db
+    except Exception:
+        db.close()
+        raise
+
+
+@contextmanager
+def database(path, write=False):
+    # Only short write transactions take a fair ticket; readers stay concurrent.
+    with writer_turn(path, write):
+        db = connect(path)
+        try:
+            with db:
+                yield db
+        finally:
+            db.close()
 
 
 def statistics(db, rows=None):
@@ -45,6 +117,10 @@ def statistics(db, rows=None):
 
 
 class Handler(SimpleHTTPRequestHandler):
+    def setup(self):
+        super().setup()
+        self.connection.settimeout(15)
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, directory=str(ROOT), **kwargs)
 
@@ -57,7 +133,7 @@ class Handler(SimpleHTTPRequestHandler):
             if not token:
                 return False
             token_hash = hashlib.sha256(token.value.encode()).hexdigest()
-            with connect(self.server.db_path) as db:
+            with database(self.server.db_path) as db:
                 return db.execute('SELECT 1 FROM panel_sessions WHERE token_hash = ? AND expires > ?', (token_hash, time.time())).fetchone() is not None
         except (sqlite3.Error, ValueError, CookieError):
             return False
@@ -105,7 +181,7 @@ class Handler(SimpleHTTPRequestHandler):
             return
         if route in {'/api/panel/export', '/api/panel/backups', '/api/panel/backup', '/api/panel/backup/download'}:
             try:
-                with connect(self.server.db_path) as db:
+                with database(self.server.db_path) as db:
                     db.execute('BEGIN')
                     value, filename = admin_data.get(db, self, route, parse_qs(urlsplit(self.path).query))
                 if filename:
@@ -131,7 +207,7 @@ class Handler(SimpleHTTPRequestHandler):
             self.path = '/panel/index.html'
         if route in {'/api/leaderboard', '/api/panel/results'}:
             try:
-                with connect(self.server.db_path) as db:
+                with database(self.server.db_path) as db:
                     rows = [json.loads(row[0]) for row in db.execute('SELECT payload FROM runs')]
                     deleted = [row[0] for row in db.execute('SELECT id FROM deleted_runs')]
                     stats = statistics(db, rows) if route == '/api/panel/results' else None
@@ -171,15 +247,6 @@ class Handler(SimpleHTTPRequestHandler):
         if self.path == '/api/leaderboard':
             self.reply(410, {'error': 'Direct score uploads disabled; use a verified game session'})
             return
-        try:
-            with connect(self.server.db_path) as db:
-                rate_limit(db, ('login:' if self.path == '/api/panel/login' else 'write:')+self.client_address[0], 8 if self.path == '/api/panel/login' else 3000, 600 if self.path == '/api/panel/login' else 60, time.time())
-        except APIError as error:
-            self.reply(error.status, {'error': error.message})
-            return
-        except sqlite3.Error:
-            self.reply(503, {'error': 'Database unavailable'})
-            return
         origin = self.headers.get('Origin')
         expected = getattr(self.server, 'public_origin', None) or ('http' if getattr(self.server, 'allow_insecure_localhost', False) else 'https')+'://'+self.headers.get('Host', '')
         if origin and origin != expected:
@@ -197,15 +264,26 @@ class Handler(SimpleHTTPRequestHandler):
             maximum = 7_000_000 if self.path in {'/api/panel/import', '/api/panel/import-preview'} else 1_000_000
             if not 0 < length <= maximum:
                 raise ValueError()
-            data = json.loads(self.rfile.read(length))
+            payload = self.rfile.read(length)
+            self.request_received_at = time.time()
+            with database(self.server.db_path, write=True) as db:
+                rate_limit(db, ('login:' if self.path == '/api/panel/login' else 'write:')+self.client_address[0], 8 if self.path == '/api/panel/login' else 12000, 600 if self.path == '/api/panel/login' else 60, time.time())
+            data = json.loads(payload)
             if self.path in {'/api/session', '/api/statistics', '/api/game/start', '/api/game/stage', '/api/game/events', '/api/game/end', '/api/game/finish'}:
-                with connect(self.server.db_path) as db:
+                with database(self.server.db_path, write=True) as db:
                     db.execute('BEGIN IMMEDIATE')
                     value, cookie = gameplay_api(db, self, self.path, data)
+                if isinstance(value, VerificationWork):
+                    # Node runs without any SQLite transaction/connection held open.
+                    task = value
+                    result = worker(task.payload)
+                    with database(self.server.db_path, write=True) as db:
+                        db.execute('BEGIN IMMEDIATE')
+                        value, cookie = complete_work(db, self, task, result)
                 self.reply(200, value, cookie)
                 return
             if self.path in {'/api/panel/import-preview', '/api/panel/import', '/api/panel/visibility', '/api/panel/statistics/reset'}:
-                with connect(self.server.db_path) as db:
+                with database(self.server.db_path, write=True) as db:
                     db.execute('BEGIN IMMEDIATE')
                     result = admin_data.post(db, self, self.path, data)
                 self.reply(200, result)
@@ -225,7 +303,7 @@ class Handler(SimpleHTTPRequestHandler):
                     self.reply(401, {'error': 'Incorrect username or password.'})
                     return
                 token = secrets.token_urlsafe(32)
-                with connect(self.server.db_path) as db:
+                with database(self.server.db_path, write=True) as db:
                     db.execute('DELETE FROM panel_sessions WHERE expires <= ?', (time.time(),))
                     db.execute('INSERT INTO panel_sessions VALUES (?, ?)', (hashlib.sha256(token.encode()).hexdigest(), time.time() + 28800))
                 self.reply(200, {'authenticated': True}, self.session_cookie(token, 28800))
@@ -234,7 +312,7 @@ class Handler(SimpleHTTPRequestHandler):
                 cookie = SimpleCookie(self.headers.get('Cookie', ''))
                 token = cookie.get('ceva_panel_session')
                 if token:
-                    with connect(self.server.db_path) as db:
+                    with database(self.server.db_path, write=True) as db:
                         db.execute('DELETE FROM panel_sessions WHERE token_hash = ?', (hashlib.sha256(token.value.encode()).hexdigest(),))
                 self.reply(200, {'authenticated': False}, self.session_cookie('', 0))
                 return
@@ -244,7 +322,7 @@ class Handler(SimpleHTTPRequestHandler):
                 ids = data.get('ids')
                 if not isinstance(ids, list) or len(ids) > 100000 or not all(isinstance(id, str) and 0 < len(id) <= 200 for id in ids):
                     raise ValueError()
-                with connect(self.server.db_path) as db:
+                with database(self.server.db_path, write=True) as db:
                     db.execute('BEGIN IMMEDIATE')
                     statistics(db, [json.loads(row[0]) for row in db.execute('SELECT payload FROM runs')])
                     selected = set(ids)
@@ -276,6 +354,10 @@ def main():
     parser.add_argument('--allow-insecure-localhost', action='store_true', help='Development only: non-Secure cookies on loopback HTTP')
     parser.add_argument('--public-origin', default=os.environ.get('PUBLIC_ORIGIN'), help='Canonical HTTPS origin behind the TLS proxy')
     args = parser.parse_args()
+    try:
+        verifier_pool.default_workers()
+    except ValueError as error:
+        parser.error(str(error))
     if args.allow_insecure_localhost and args.host not in {'127.0.0.1', '::1', 'localhost'}:
         parser.error('Insecure development cookies require a loopback bind address')
     if args.public_origin:
@@ -284,7 +366,7 @@ def main():
             parser.error('PUBLIC_ORIGIN must be a canonical HTTPS origin')
     db_path = Path(args.db).resolve()
     db_path.parent.mkdir(parents=True, exist_ok=True)
-    with connect(db_path) as db:
+    with database(db_path, write=True) as db:
         epoch = hashlib.sha256((os.environ.get('PANEL_USERNAME', '')+'\0'+os.environ.get('PANEL_PASSWORD', '')).encode()).hexdigest()
         previous = db.execute("SELECT value FROM statistics_meta WHERE key='admin_auth_epoch_v2'").fetchone()
         if not previous or previous[0] != epoch:
@@ -305,6 +387,7 @@ def main():
         server.backups.stopped.set()
         server.statistics_backups.stopped.set()
         server.server_close()
+        verifier_pool.close()
 
 
 if __name__ == '__main__':

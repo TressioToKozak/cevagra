@@ -13,6 +13,8 @@ Set these environment variables using a protected service environment file
   authentication. No account, password or offline login is built in.
 - `PUBLIC_ORIGIN`: the canonical HTTPS origin, without a path or trailing query.
 - Optionally `LEADERBOARD_DB`, `LEADERBOARD_BACKUP_DIR`, `BACKUP_TIMEZONE`.
+- `VERIFIER_WORKERS` optionally selects 1–4 persistent Node workers. The default
+  follows the available CPU quota, capped at four (four workers on a 4-vCPU VPS).
 
 `.env.example` contains empty placeholders; the application does not load `.env`
 automatically. Keep actual secrets out of Git. Bind the backend to loopback or a
@@ -126,3 +128,50 @@ Only modern `.xlsx` files are supported. Formula cells, encrypted archives,
 external worksheet links and oversized/invalid ZIPs are rejected; formulas are
 never evaluated. Uploaded workbooks are read from their visible cells, so Excel
 edits take effect even if a previous backup's embedded snapshot is still present.
+
+## Concurrency and timing
+
+Node verification uses a bounded worker pool and runs outside SQLite transactions.
+Before applying a result, the server rechecks the owner, expiry and exact session
+state; concurrent/replayed verification cannot overwrite newer checkpoints.
+SQLite uses WAL, FULL synchronization and short, fair write transactions. Final
+result insertion remains atomic and idempotent.
+
+Action freshness is measured when the server finishes receiving the request body,
+before database queueing. Completion bonuses use the last accepted server-received
+action time only when replay confirms completion. Timeout scoring still uses the
+stage deadline; no client completion timestamp or score is accepted.
+
+The browser keeps one checkpoint request in flight and buffers subsequent actions
+until its nonce arrives. Stage end waits for all buffered actions. Limits remain:
+400 events per checkpoint, 6,000 events per stage, 360 game requests per visitor
+per minute, 10 starts per visitor per minute, and 8 login attempts per transport IP
+per 10 minutes. Shared-IP admission allows 120 visitors/minute and 600/hour; the
+outer write ceiling is 12,000/minute per transport IP. Configure per-client proxy
+limits as above, particularly when all traffic reaches Python through one proxy.
+
+Run `node scripts/run-tests.cjs concurrency` for worker reuse, atomic limits,
+verification races, server timing and buffered-action delivery checks. The load
+benchmark is separate: `node scripts/load-benchmark.cjs` uses disposable local
+servers and databases; it cannot target production.
+
+## Lost acknowledgements and result status
+
+The client retries transient failures for checkpoints, stage end and final save
+(up to three attempts). The server returns a receipt only for an identical last
+checkpoint or the matching completed-stage nonce, after checking the visitor's
+server cookie, ownership, expiry and limits. Changed payloads and forged nonces
+remain invalid. Receipts cannot append actions, advance a stage twice or resurrect
+a deleted result. Concurrent duplicate verification returns the original receipt.
+
+Analytics and gameplay import one version of the visitor-session module, sharing
+the same in-flight session request. A failed/timed-out capability probe does not
+silently select local practice: starting tries the real server and shows an error
+if unavailable. Static hosts returning 404/405 retain clearly labeled practice.
+
+Results say SAVED TO LEADERBOARD only after the final server response. An
+unconfirmed official run does not create a local ranking entry or record badge.
+Transient final-save failures expose RETRY SAVE and keep the result open; permanent
+verification errors are not retried. No client score is uploaded during recovery.
+Run `node scripts/run-tests.cjs result-save concurrency security verified-flow` to
+check dropped acknowledgements, rejected saves, nonce receipts and normal play.

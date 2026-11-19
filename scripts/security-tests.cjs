@@ -28,7 +28,7 @@ const ageStage=(db,id,seconds)=>execFileSync('python3',['-c',"import sqlite3,jso
    assert.equal((await post('/api/game/events',{gameId:game.id,nonce:stage.nonce,seq:1,events:[{type:'wrap',at:999999,dt:.05,y:0,holding:true}]},cookie)).status,400,'Client clock cannot fast-forward server time');
    assert.equal((await post('/api/game/events',{gameId:game.id,nonce:stage.nonce,seq:1,events:[{type:'submit',at:0,score:1000}]},cookie)).status,400,'Result fields cannot be smuggled into events');
   }
-  ageStage(f.db,game.id,config.time+.02);const r=await post('/api/game/end',{gameId:game.id,nonce:stage.nonce},cookie);assert.equal(r.status,200,await r.clone().text());const graded=await r.json();assert.equal(graded.result.score,0,'Server computes zero for no correct actions');assert.equal((await post('/api/game/end',{gameId:game.id,nonce:stage.nonce},cookie)).status,409,'Stage receipts cannot be replayed');
+  ageStage(f.db,game.id,config.time+.02);const r=await post('/api/game/end',{gameId:game.id,nonce:stage.nonce},cookie);assert.equal(r.status,200,await r.clone().text());const graded=await r.json();assert.equal(graded.result.score,0,'Server computes zero for no correct actions');assert.deepEqual(await (await post('/api/game/end',{gameId:game.id,nonce:stage.nonce},cookie)).json(),graded,'Exact stage retry returns its receipt without advancing twice');
  }
  assert.equal((await post('/api/game/finish',{gameId:game.id,score:1000},cookie)).status,400);
  const finish=await post('/api/game/finish',{gameId:game.id},cookie);assert.equal(finish.status,200);const run=(await finish.json()).run;assert.equal(run.score,0);assert.equal(run.verification,'server-v1');assert.equal(run.id,game.id);
