@@ -1,0 +1,1650 @@
+{
+  "created": "2026-11-19T21:08:55.340Z",
+  "commit": "65fc035304b8ff7c744e8369fefc0474530260d9",
+  "environment": {
+    "node": "v24.19.0",
+    "python": "Python 3.12.14",
+    "cpu": "AMD EPYC 9V74 80-Core Processor",
+    "logicalCpus": 3,
+    "totalMemoryMiB": 9968,
+    "cpuMax": "200000 100000",
+    "memoryMax": "8589934592",
+    "chromium": "Chromium 151.0.7922.173 built on Debian GNU/Linux 13 (trixie)"
+  },
+  "admission": [
+    {
+      "players": 10,
+      "requests": 10,
+      "ok": 10,
+      "statuses": {
+        "200": 10
+      },
+      "p50Ms": 38,
+      "p95Ms": 85,
+      "maxMs": 85
+    },
+    {
+      "players": 20,
+      "requests": 20,
+      "ok": 20,
+      "statuses": {
+        "200": 20
+      },
+      "p50Ms": 39,
+      "p95Ms": 1020,
+      "maxMs": 1021
+    },
+    {
+      "players": 30,
+      "requests": 30,
+      "ok": 30,
+      "statuses": {
+        "200": 30
+      },
+      "p50Ms": 60,
+      "p95Ms": 1068,
+      "maxMs": 1073
+    },
+    {
+      "players": 40,
+      "requests": 40,
+      "ok": 30,
+      "statuses": {
+        "200": 30,
+        "429": 10
+      },
+      "p50Ms": 94,
+      "p95Ms": 1059,
+      "maxMs": 1060
+    },
+    {
+      "players": 50,
+      "requests": 50,
+      "ok": 30,
+      "statuses": {
+        "200": 30,
+        "429": 20
+      },
+      "p50Ms": 101,
+      "p95Ms": 1252,
+      "maxMs": 1256
+    }
+  ],
+  "finish": [
+    {
+      "players": 10,
+      "totalMs": 1038,
+      "first": {
+        "requests": 10,
+        "ok": 10,
+        "statuses": {
+          "200": 10
+        },
+        "p50Ms": 19,
+        "p95Ms": 1036,
+        "maxMs": 1036
+      },
+      "repeat": {
+        "requests": 10,
+        "ok": 10,
+        "statuses": {
+          "200": 10
+        },
+        "p50Ms": 21,
+        "p95Ms": 32,
+        "maxMs": 32
+      },
+      "sameIds": true,
+      "saved": 10,
+      "unique": 10,
+      "validScores": true,
+      "integrity": "ok"
+    },
+    {
+      "players": 20,
+      "totalMs": 126,
+      "first": {
+        "requests": 20,
+        "ok": 20,
+        "statuses": {
+          "200": 20
+        },
+        "p50Ms": 47,
+        "p95Ms": 103,
+        "maxMs": 123
+      },
+      "repeat": {
+        "requests": 20,
+        "ok": 20,
+        "statuses": {
+          "200": 20
+        },
+        "p50Ms": 40,
+        "p95Ms": 77,
+        "maxMs": 79
+      },
+      "sameIds": true,
+      "saved": 20,
+      "unique": 20,
+      "validScores": true,
+      "integrity": "ok"
+    },
+    {
+      "players": 30,
+      "totalMs": 1258,
+      "first": {
+        "requests": 30,
+        "ok": 30,
+        "statuses": {
+          "200": 30
+        },
+        "p50Ms": 1027,
+        "p95Ms": 1254,
+        "maxMs": 1255
+      },
+      "repeat": {
+        "requests": 30,
+        "ok": 30,
+        "statuses": {
+          "200": 30
+        },
+        "p50Ms": 47,
+        "p95Ms": 1033,
+        "maxMs": 1038
+      },
+      "sameIds": true,
+      "saved": 30,
+      "unique": 30,
+      "validScores": true,
+      "integrity": "ok"
+    },
+    {
+      "players": 40,
+      "totalMs": 1025,
+      "first": {
+        "requests": 40,
+        "ok": 40,
+        "statuses": {
+          "200": 40
+        },
+        "p50Ms": 69,
+        "p95Ms": 1015,
+        "maxMs": 1021
+      },
+      "repeat": {
+        "requests": 40,
+        "ok": 40,
+        "statuses": {
+          "200": 40
+        },
+        "p50Ms": 155,
+        "p95Ms": 1069,
+        "maxMs": 1215
+      },
+      "sameIds": true,
+      "saved": 40,
+      "unique": 40,
+      "validScores": true,
+      "integrity": "ok"
+    },
+    {
+      "players": 50,
+      "totalMs": 1467,
+      "first": {
+        "requests": 50,
+        "ok": 50,
+        "statuses": {
+          "200": 50
+        },
+        "p50Ms": 169,
+        "p95Ms": 1461,
+        "maxMs": 1464
+      },
+      "repeat": {
+        "requests": 50,
+        "ok": 50,
+        "statuses": {
+          "200": 50
+        },
+        "p50Ms": 1024,
+        "p95Ms": 1426,
+        "maxMs": 1428
+      },
+      "sameIds": true,
+      "saved": 50,
+      "unique": 50,
+      "validScores": true,
+      "integrity": "ok"
+    }
+  ],
+  "gameplay": [
+    {
+      "players": 10,
+      "durationSeconds": 57.6,
+      "completed": 10,
+      "api": {
+        "requests": 1467,
+        "ok": 1467,
+        "statuses": {
+          "200": 1467
+        },
+        "p50Ms": 9,
+        "p95Ms": 84,
+        "maxMs": 1487
+      },
+      "byRoute": {
+        "/api/game/start": {
+          "requests": 10,
+          "ok": 10,
+          "statuses": {
+            "200": 10
+          },
+          "p50Ms": 482,
+          "p95Ms": 1255,
+          "maxMs": 1255
+        },
+        "/api/game/stage": {
+          "requests": 90,
+          "ok": 90,
+          "statuses": {
+            "200": 90
+          },
+          "p50Ms": 4,
+          "p95Ms": 1020,
+          "maxMs": 1024
+        },
+        "/api/game/events": {
+          "requests": 1217,
+          "ok": 1217,
+          "statuses": {
+            "200": 1217
+          },
+          "p50Ms": 9,
+          "p95Ms": 63,
+          "maxMs": 1487
+        },
+        "/api/game/end": {
+          "requests": 90,
+          "ok": 90,
+          "statuses": {
+            "200": 90
+          },
+          "p50Ms": 47,
+          "p95Ms": 163,
+          "maxMs": 1458
+        },
+        "/api/statistics": {
+          "requests": 50,
+          "ok": 50,
+          "statuses": {
+            "200": 50
+          },
+          "p50Ms": 4,
+          "p95Ms": 28,
+          "maxMs": 59
+        },
+        "/api/game/finish": {
+          "requests": 10,
+          "ok": 10,
+          "statuses": {
+            "200": 10
+          },
+          "p50Ms": 15,
+          "p95Ms": 1029,
+          "maxMs": 1029
+        }
+      },
+      "ping": {
+        "requests": 282,
+        "ok": 282,
+        "statuses": {
+          "200": 282
+        },
+        "p50Ms": 2,
+        "p95Ms": 9,
+        "maxMs": 72
+      },
+      "frames": {
+        "wallMs": 10021,
+        "fps": 27.5,
+        "p95FrameMs": 64,
+        "maxFrameMs": 111.4,
+        "over50ms": 50,
+        "longTasks": 0,
+        "maxLongTaskMs": 0,
+        "timerDriftMs": 0
+      },
+      "scoreComparisons": 90,
+      "scoreLossByGame": {
+        "detective": {
+          "stages": 10,
+          "affected": 0,
+          "maxLoss": 0
+        },
+        "loading": {
+          "stages": 10,
+          "affected": 0,
+          "maxLoss": 0
+        },
+        "picking": {
+          "stages": 10,
+          "affected": 0,
+          "maxLoss": 0
+        },
+        "packing": {
+          "stages": 10,
+          "affected": 0,
+          "maxLoss": 0
+        },
+        "conveyor": {
+          "stages": 10,
+          "affected": 0,
+          "maxLoss": 0
+        },
+        "memory": {
+          "stages": 10,
+          "affected": 0,
+          "maxLoss": 0
+        },
+        "quality": {
+          "stages": 10,
+          "affected": 0,
+          "maxLoss": 0
+        },
+        "barcode": {
+          "stages": 10,
+          "affected": 0,
+          "maxLoss": 0
+        },
+        "final": {
+          "stages": 10,
+          "affected": 3,
+          "maxLoss": 2
+        }
+      },
+      "stagesWithQueueScoreLoss": 3,
+      "maxQueueScoreLoss": 2,
+      "scoreLossExamples": [
+        {
+          "game": "final",
+          "clientScore": 196,
+          "serverScore": 195,
+          "difference": 1
+        },
+        {
+          "game": "final",
+          "clientScore": 196,
+          "serverScore": 195,
+          "difference": 1
+        },
+        {
+          "game": "final",
+          "clientScore": 196,
+          "serverScore": 194,
+          "difference": 2
+        }
+      ],
+      "failures": [],
+      "apiErrors": [],
+      "saved": 10,
+      "unique": 10,
+      "integrity": "ok"
+    },
+    {
+      "players": 20,
+      "durationSeconds": 60.3,
+      "completed": 19,
+      "api": {
+        "requests": 2823,
+        "ok": 2822,
+        "statuses": {
+          "200": 2822,
+          "400": 1
+        },
+        "p50Ms": 10,
+        "p95Ms": 175,
+        "maxMs": 2520
+      },
+      "byRoute": {
+        "/api/game/start": {
+          "requests": 20,
+          "ok": 20,
+          "statuses": {
+            "200": 20
+          },
+          "p50Ms": 1290,
+          "p95Ms": 2119,
+          "maxMs": 2196
+        },
+        "/api/game/stage": {
+          "requests": 175,
+          "ok": 175,
+          "statuses": {
+            "200": 175
+          },
+          "p50Ms": 3,
+          "p95Ms": 1240,
+          "maxMs": 1425
+        },
+        "/api/game/events": {
+          "requests": 2338,
+          "ok": 2337,
+          "statuses": {
+            "200": 2337,
+            "400": 1
+          },
+          "p50Ms": 10,
+          "p95Ms": 109,
+          "maxMs": 2520
+        },
+        "/api/game/end": {
+          "requests": 174,
+          "ok": 174,
+          "statuses": {
+            "200": 174
+          },
+          "p50Ms": 45,
+          "p95Ms": 166,
+          "maxMs": 2109
+        },
+        "/api/statistics": {
+          "requests": 97,
+          "ok": 97,
+          "statuses": {
+            "200": 97
+          },
+          "p50Ms": 4,
+          "p95Ms": 30,
+          "maxMs": 87
+        },
+        "/api/game/finish": {
+          "requests": 19,
+          "ok": 19,
+          "statuses": {
+            "200": 19
+          },
+          "p50Ms": 1030,
+          "p95Ms": 1241,
+          "maxMs": 1241
+        }
+      },
+      "ping": {
+        "requests": 295,
+        "ok": 295,
+        "statuses": {
+          "200": 295
+        },
+        "p50Ms": 2,
+        "p95Ms": 11,
+        "maxMs": 64
+      },
+      "frames": {
+        "wallMs": 10004,
+        "fps": 25.3,
+        "p95FrameMs": 82,
+        "maxFrameMs": 112.2,
+        "over50ms": 72,
+        "longTasks": 0,
+        "maxLongTaskMs": 0,
+        "timerDriftMs": 1
+      },
+      "scoreComparisons": 174,
+      "scoreLossByGame": {
+        "detective": {
+          "stages": 19,
+          "affected": 0,
+          "maxLoss": 0
+        },
+        "loading": {
+          "stages": 20,
+          "affected": 0,
+          "maxLoss": 0
+        },
+        "quality": {
+          "stages": 19,
+          "affected": 0,
+          "maxLoss": 0
+        },
+        "packing": {
+          "stages": 19,
+          "affected": 0,
+          "maxLoss": 0
+        },
+        "picking": {
+          "stages": 20,
+          "affected": 0,
+          "maxLoss": 0
+        },
+        "conveyor": {
+          "stages": 19,
+          "affected": 0,
+          "maxLoss": 0
+        },
+        "memory": {
+          "stages": 20,
+          "affected": 0,
+          "maxLoss": 0
+        },
+        "barcode": {
+          "stages": 19,
+          "affected": 0,
+          "maxLoss": 0
+        },
+        "final": {
+          "stages": 19,
+          "affected": 6,
+          "maxLoss": 2
+        }
+      },
+      "stagesWithQueueScoreLoss": 6,
+      "maxQueueScoreLoss": 2,
+      "scoreLossExamples": [
+        {
+          "game": "final",
+          "clientScore": 196,
+          "serverScore": 195,
+          "difference": 1
+        },
+        {
+          "game": "final",
+          "clientScore": 196,
+          "serverScore": 195,
+          "difference": 1
+        },
+        {
+          "game": "final",
+          "clientScore": 196,
+          "serverScore": 195,
+          "difference": 1
+        },
+        {
+          "game": "final",
+          "clientScore": 196,
+          "serverScore": 194,
+          "difference": 2
+        },
+        {
+          "game": "final",
+          "clientScore": 199,
+          "serverScore": 198,
+          "difference": 1
+        },
+        {
+          "game": "final",
+          "clientScore": 196,
+          "serverScore": 195,
+          "difference": 1
+        }
+      ],
+      "failures": [
+        {
+          "player": 17,
+          "message": "events 400 Stale gameplay checkpoint"
+        }
+      ],
+      "apiErrors": [
+        {
+          "path": "/api/game/events",
+          "status": 400,
+          "ms": 2519.615087000013,
+          "error": "Stale gameplay checkpoint"
+        }
+      ],
+      "saved": 19,
+      "unique": 19,
+      "integrity": "ok"
+    },
+    {
+      "players": 30,
+      "durationSeconds": 41.3,
+      "completed": 0,
+      "api": {
+        "requests": 3010,
+        "ok": 2979,
+        "statuses": {
+          "200": 2979,
+          "400": 14,
+          "429": 17
+        },
+        "p50Ms": 16,
+        "p95Ms": 665,
+        "maxMs": 3055
+      },
+      "byRoute": {
+        "/api/game/start": {
+          "requests": 30,
+          "ok": 30,
+          "statuses": {
+            "200": 30
+          },
+          "p50Ms": 1563,
+          "p95Ms": 2825,
+          "maxMs": 2941
+        },
+        "/api/game/stage": {
+          "requests": 163,
+          "ok": 160,
+          "statuses": {
+            "200": 160,
+            "429": 3
+          },
+          "p50Ms": 4,
+          "p95Ms": 1484,
+          "maxMs": 1912
+        },
+        "/api/game/events": {
+          "requests": 2594,
+          "ok": 2567,
+          "statuses": {
+            "200": 2567,
+            "400": 14,
+            "429": 13
+          },
+          "p50Ms": 16,
+          "p95Ms": 419,
+          "maxMs": 3055
+        },
+        "/api/game/end": {
+          "requests": 133,
+          "ok": 133,
+          "statuses": {
+            "200": 133
+          },
+          "p50Ms": 46,
+          "p95Ms": 139,
+          "maxMs": 504
+        },
+        "/api/statistics": {
+          "requests": 90,
+          "ok": 89,
+          "statuses": {
+            "200": 89,
+            "429": 1
+          },
+          "p50Ms": 8,
+          "p95Ms": 391,
+          "maxMs": 1284
+        }
+      },
+      "ping": {
+        "requests": 202,
+        "ok": 202,
+        "statuses": {
+          "200": 202
+        },
+        "p50Ms": 2,
+        "p95Ms": 9,
+        "maxMs": 38
+      },
+      "frames": {
+        "wallMs": 10010,
+        "fps": 22.1,
+        "p95FrameMs": 82.2,
+        "maxFrameMs": 97.8,
+        "over50ms": 84,
+        "longTasks": 0,
+        "maxLongTaskMs": 0,
+        "timerDriftMs": 0
+      },
+      "scoreComparisons": 133,
+      "scoreLossByGame": {
+        "loading": {
+          "stages": 18,
+          "affected": 0,
+          "maxLoss": 0
+        },
+        "detective": {
+          "stages": 19,
+          "affected": 0,
+          "maxLoss": 0
+        },
+        "picking": {
+          "stages": 16,
+          "affected": 0,
+          "maxLoss": 0
+        },
+        "quality": {
+          "stages": 17,
+          "affected": 0,
+          "maxLoss": 0
+        },
+        "packing": {
+          "stages": 17,
+          "affected": 0,
+          "maxLoss": 0
+        },
+        "memory": {
+          "stages": 16,
+          "affected": 0,
+          "maxLoss": 0
+        },
+        "conveyor": {
+          "stages": 14,
+          "affected": 0,
+          "maxLoss": 0
+        },
+        "barcode": {
+          "stages": 16,
+          "affected": 0,
+          "maxLoss": 0
+        }
+      },
+      "stagesWithQueueScoreLoss": 0,
+      "maxQueueScoreLoss": 0,
+      "scoreLossExamples": [],
+      "failures": [
+        {
+          "player": 17,
+          "message": "events 400 Stale gameplay checkpoint"
+        },
+        {
+          "player": 16,
+          "message": "events 400 Stale gameplay checkpoint"
+        },
+        {
+          "player": 1,
+          "message": "events 400 Stale gameplay checkpoint"
+        },
+        {
+          "player": 4,
+          "message": "events 400 Stale gameplay checkpoint"
+        },
+        {
+          "player": 26,
+          "message": "events 400 Stale gameplay checkpoint"
+        },
+        {
+          "player": 25,
+          "message": "events 400 Stale gameplay checkpoint"
+        },
+        {
+          "player": 9,
+          "message": "events 400 Stale gameplay checkpoint"
+        },
+        {
+          "player": 29,
+          "message": "events 400 Stale gameplay checkpoint"
+        },
+        {
+          "player": 18,
+          "message": "events 400 Stale gameplay checkpoint"
+        },
+        {
+          "player": 7,
+          "message": "events 400 Stale gameplay checkpoint"
+        },
+        {
+          "player": 5,
+          "message": "events 400 Stale gameplay checkpoint"
+        },
+        {
+          "player": 8,
+          "message": "events 400 Stale gameplay checkpoint"
+        },
+        {
+          "player": 27,
+          "message": "events 400 Stale gameplay checkpoint"
+        },
+        {
+          "player": 6,
+          "message": "events 400 Stale gameplay checkpoint"
+        },
+        {
+          "player": 2,
+          "message": "events 429 Too many requests. Try again later."
+        },
+        {
+          "player": 28,
+          "message": "events 429 Too many requests. Try again later."
+        },
+        {
+          "player": 13,
+          "message": "events 429 Too many requests. Try again later."
+        },
+        {
+          "player": 12,
+          "message": "events 429 Too many requests. Try again later."
+        },
+        {
+          "player": 3,
+          "message": "events 429 Too many requests. Try again later."
+        },
+        {
+          "player": 20,
+          "message": "events 429 Too many requests. Try again later."
+        }
+      ],
+      "apiErrors": [
+        {
+          "path": "/api/game/events",
+          "status": 400,
+          "ms": 3054.8392149999854,
+          "error": "Stale gameplay checkpoint"
+        },
+        {
+          "path": "/api/game/events",
+          "status": 400,
+          "ms": 827.5963449999981,
+          "error": "Stale gameplay checkpoint"
+        },
+        {
+          "path": "/api/game/events",
+          "status": 400,
+          "ms": 1791.1025539999828,
+          "error": "Stale gameplay checkpoint"
+        },
+        {
+          "path": "/api/game/events",
+          "status": 400,
+          "ms": 2049.469309999986,
+          "error": "Stale gameplay checkpoint"
+        },
+        {
+          "path": "/api/game/events",
+          "status": 400,
+          "ms": 1895.0395509999944,
+          "error": "Stale gameplay checkpoint"
+        },
+        {
+          "path": "/api/game/events",
+          "status": 400,
+          "ms": 1551.603191000002,
+          "error": "Stale gameplay checkpoint"
+        },
+        {
+          "path": "/api/game/events",
+          "status": 400,
+          "ms": 2791.397549999994,
+          "error": "Stale gameplay checkpoint"
+        },
+        {
+          "path": "/api/game/events",
+          "status": 400,
+          "ms": 1975.633760000026,
+          "error": "Stale gameplay checkpoint"
+        },
+        {
+          "path": "/api/game/events",
+          "status": 400,
+          "ms": 2284.8496380000142,
+          "error": "Stale gameplay checkpoint"
+        },
+        {
+          "path": "/api/game/events",
+          "status": 400,
+          "ms": 1274.3202900000033,
+          "error": "Stale gameplay checkpoint"
+        },
+        {
+          "path": "/api/game/events",
+          "status": 400,
+          "ms": 1946.3171359999978,
+          "error": "Stale gameplay checkpoint"
+        },
+        {
+          "path": "/api/game/events",
+          "status": 400,
+          "ms": 2664.914389999991,
+          "error": "Stale gameplay checkpoint"
+        },
+        {
+          "path": "/api/game/events",
+          "status": 400,
+          "ms": 1366.820371000009,
+          "error": "Stale gameplay checkpoint"
+        },
+        {
+          "path": "/api/game/events",
+          "status": 400,
+          "ms": 1760.0763330000045,
+          "error": "Stale gameplay checkpoint"
+        },
+        {
+          "path": "/api/game/events",
+          "status": 429,
+          "ms": 2.519425999984378,
+          "error": "Too many requests. Try again later."
+        },
+        {
+          "path": "/api/game/events",
+          "status": 429,
+          "ms": 1.7722040000080597,
+          "error": "Too many requests. Try again later."
+        },
+        {
+          "path": "/api/game/events",
+          "status": 429,
+          "ms": 2.3219150000077207,
+          "error": "Too many requests. Try again later."
+        },
+        {
+          "path": "/api/game/events",
+          "status": 429,
+          "ms": 2.4279509999905713,
+          "error": "Too many requests. Try again later."
+        },
+        {
+          "path": "/api/game/events",
+          "status": 429,
+          "ms": 2.4329390000202693,
+          "error": "Too many requests. Try again later."
+        },
+        {
+          "path": "/api/game/events",
+          "status": 429,
+          "ms": 3.0598830000089947,
+          "error": "Too many requests. Try again later."
+        }
+      ],
+      "saved": 0,
+      "unique": 0,
+      "integrity": "ok"
+    },
+    {
+      "players": 40,
+      "durationSeconds": 33.1,
+      "completed": 0,
+      "api": {
+        "requests": 3048,
+        "ok": 3004,
+        "statuses": {
+          "200": 3004,
+          "400": 2,
+          "429": 42
+        },
+        "p50Ms": 14,
+        "p95Ms": 695,
+        "maxMs": 4369
+      },
+      "byRoute": {
+        "/api/game/start": {
+          "requests": 40,
+          "ok": 40,
+          "statuses": {
+            "200": 40
+          },
+          "p50Ms": 1892,
+          "p95Ms": 3417,
+          "maxMs": 3625
+        },
+        "/api/game/stage": {
+          "requests": 188,
+          "ok": 188,
+          "statuses": {
+            "200": 188
+          },
+          "p50Ms": 4,
+          "p95Ms": 1914,
+          "maxMs": 4369
+        },
+        "/api/game/events": {
+          "requests": 2562,
+          "ok": 2522,
+          "statuses": {
+            "200": 2522,
+            "400": 2,
+            "429": 38
+          },
+          "p50Ms": 13,
+          "p95Ms": 394,
+          "maxMs": 2999
+        },
+        "/api/game/end": {
+          "requests": 148,
+          "ok": 148,
+          "statuses": {
+            "200": 148
+          },
+          "p50Ms": 45,
+          "p95Ms": 107,
+          "maxMs": 485
+        },
+        "/api/statistics": {
+          "requests": 110,
+          "ok": 106,
+          "statuses": {
+            "200": 106,
+            "429": 4
+          },
+          "p50Ms": 6,
+          "p95Ms": 435,
+          "maxMs": 1014
+        }
+      },
+      "ping": {
+        "requests": 157,
+        "ok": 157,
+        "statuses": {
+          "200": 157
+        },
+        "p50Ms": 2,
+        "p95Ms": 19,
+        "maxMs": 1009
+      },
+      "frames": {
+        "wallMs": 10008,
+        "fps": 21.2,
+        "p95FrameMs": 93.6,
+        "maxFrameMs": 121.1,
+        "over50ms": 89,
+        "longTasks": 0,
+        "maxLongTaskMs": 0,
+        "timerDriftMs": 0
+      },
+      "scoreComparisons": 148,
+      "scoreLossByGame": {
+        "detective": {
+          "stages": 19,
+          "affected": 0,
+          "maxLoss": 0
+        },
+        "quality": {
+          "stages": 21,
+          "affected": 0,
+          "maxLoss": 0
+        },
+        "loading": {
+          "stages": 20,
+          "affected": 0,
+          "maxLoss": 0
+        },
+        "packing": {
+          "stages": 23,
+          "affected": 0,
+          "maxLoss": 0
+        },
+        "picking": {
+          "stages": 20,
+          "affected": 0,
+          "maxLoss": 0
+        },
+        "conveyor": {
+          "stages": 20,
+          "affected": 0,
+          "maxLoss": 0
+        },
+        "memory": {
+          "stages": 25,
+          "affected": 0,
+          "maxLoss": 0
+        }
+      },
+      "stagesWithQueueScoreLoss": 0,
+      "maxQueueScoreLoss": 0,
+      "scoreLossExamples": [],
+      "failures": [
+        {
+          "player": 18,
+          "message": "events 400 Stale gameplay checkpoint"
+        },
+        {
+          "player": 4,
+          "message": "events 400 Stale gameplay checkpoint"
+        },
+        {
+          "player": 3,
+          "message": "events 429 Too many requests. Try again later."
+        },
+        {
+          "player": 26,
+          "message": "events 429 Too many requests. Try again later."
+        },
+        {
+          "player": 36,
+          "message": "events 429 Too many requests. Try again later."
+        },
+        {
+          "player": 9,
+          "message": "events 429 Too many requests. Try again later."
+        },
+        {
+          "player": 10,
+          "message": "events 429 Too many requests. Try again later."
+        },
+        {
+          "player": 34,
+          "message": "events 429 Too many requests. Try again later."
+        },
+        {
+          "player": 35,
+          "message": "events 429 Too many requests. Try again later."
+        },
+        {
+          "player": 39,
+          "message": "events 429 Too many requests. Try again later."
+        },
+        {
+          "player": 20,
+          "message": "events 429 Too many requests. Try again later."
+        },
+        {
+          "player": 2,
+          "message": "events 429 Too many requests. Try again later."
+        },
+        {
+          "player": 12,
+          "message": "events 429 Too many requests. Try again later."
+        },
+        {
+          "player": 7,
+          "message": "events 429 Too many requests. Try again later."
+        },
+        {
+          "player": 31,
+          "message": "events 429 Too many requests. Try again later."
+        },
+        {
+          "player": 29,
+          "message": "events 429 Too many requests. Try again later."
+        },
+        {
+          "player": 13,
+          "message": "events 429 Too many requests. Try again later."
+        },
+        {
+          "player": 1,
+          "message": "events 429 Too many requests. Try again later."
+        },
+        {
+          "player": 15,
+          "message": "events 429 Too many requests. Try again later."
+        },
+        {
+          "player": 30,
+          "message": "events 429 Too many requests. Try again later."
+        }
+      ],
+      "apiErrors": [
+        {
+          "path": "/api/game/events",
+          "status": 400,
+          "ms": 2497.7906130000483,
+          "error": "Stale gameplay checkpoint"
+        },
+        {
+          "path": "/api/game/events",
+          "status": 400,
+          "ms": 2999.356471999956,
+          "error": "Stale gameplay checkpoint"
+        },
+        {
+          "path": "/api/game/events",
+          "status": 429,
+          "ms": 9.14155000000028,
+          "error": "Too many requests. Try again later."
+        },
+        {
+          "path": "/api/game/events",
+          "status": 429,
+          "ms": 30.60815399995772,
+          "error": "Too many requests. Try again later."
+        },
+        {
+          "path": "/api/game/events",
+          "status": 429,
+          "ms": 1.7403959999792278,
+          "error": "Too many requests. Try again later."
+        },
+        {
+          "path": "/api/game/events",
+          "status": 429,
+          "ms": 117.59680600004504,
+          "error": "Too many requests. Try again later."
+        },
+        {
+          "path": "/api/statistics",
+          "status": 429,
+          "ms": 30.119734000007156,
+          "error": "Too many requests. Try again later."
+        },
+        {
+          "path": "/api/game/events",
+          "status": 429,
+          "ms": 122.82180000003427,
+          "error": "Too many requests. Try again later."
+        },
+        {
+          "path": "/api/game/events",
+          "status": 429,
+          "ms": 24.47052500001155,
+          "error": "Too many requests. Try again later."
+        },
+        {
+          "path": "/api/game/events",
+          "status": 429,
+          "ms": 351.6521049999865,
+          "error": "Too many requests. Try again later."
+        },
+        {
+          "path": "/api/game/events",
+          "status": 429,
+          "ms": 577.0091670000111,
+          "error": "Too many requests. Try again later."
+        },
+        {
+          "path": "/api/game/events",
+          "status": 429,
+          "ms": 774.4867229999509,
+          "error": "Too many requests. Try again later."
+        },
+        {
+          "path": "/api/game/events",
+          "status": 429,
+          "ms": 8.594372999970801,
+          "error": "Too many requests. Try again later."
+        },
+        {
+          "path": "/api/game/events",
+          "status": 429,
+          "ms": 11.887079000007361,
+          "error": "Too many requests. Try again later."
+        },
+        {
+          "path": "/api/game/events",
+          "status": 429,
+          "ms": 476.62964399997145,
+          "error": "Too many requests. Try again later."
+        },
+        {
+          "path": "/api/game/events",
+          "status": 429,
+          "ms": 24.104914999974426,
+          "error": "Too many requests. Try again later."
+        },
+        {
+          "path": "/api/game/events",
+          "status": 429,
+          "ms": 158.33195399999386,
+          "error": "Too many requests. Try again later."
+        },
+        {
+          "path": "/api/game/events",
+          "status": 429,
+          "ms": 2454.144719999982,
+          "error": "Too many requests. Try again later."
+        },
+        {
+          "path": "/api/game/events",
+          "status": 429,
+          "ms": 2.18369099998381,
+          "error": "Too many requests. Try again later."
+        },
+        {
+          "path": "/api/game/events",
+          "status": 429,
+          "ms": 463.59925500000827,
+          "error": "Too many requests. Try again later."
+        }
+      ],
+      "saved": 0,
+      "unique": 0,
+      "integrity": "ok"
+    },
+    {
+      "players": 50,
+      "durationSeconds": 35.8,
+      "completed": 0,
+      "api": {
+        "requests": 3057,
+        "ok": 3002,
+        "statuses": {
+          "200": 3002,
+          "400": 7,
+          "429": 48
+        },
+        "p50Ms": 20,
+        "p95Ms": 1027,
+        "maxMs": 5932
+      },
+      "byRoute": {
+        "/api/game/start": {
+          "requests": 50,
+          "ok": 50,
+          "statuses": {
+            "200": 50
+          },
+          "p50Ms": 2556,
+          "p95Ms": 4906,
+          "maxMs": 5932
+        },
+        "/api/game/stage": {
+          "requests": 216,
+          "ok": 216,
+          "statuses": {
+            "200": 216
+          },
+          "p50Ms": 4,
+          "p95Ms": 2393,
+          "maxMs": 4702
+        },
+        "/api/game/events": {
+          "requests": 2505,
+          "ok": 2455,
+          "statuses": {
+            "200": 2455,
+            "400": 7,
+            "429": 43
+          },
+          "p50Ms": 18,
+          "p95Ms": 574,
+          "maxMs": 2667
+        },
+        "/api/game/end": {
+          "requests": 166,
+          "ok": 166,
+          "statuses": {
+            "200": 166
+          },
+          "p50Ms": 43,
+          "p95Ms": 114,
+          "maxMs": 1805
+        },
+        "/api/statistics": {
+          "requests": 120,
+          "ok": 115,
+          "statuses": {
+            "200": 115,
+            "429": 5
+          },
+          "p50Ms": 6,
+          "p95Ms": 273,
+          "maxMs": 1257
+        }
+      },
+      "ping": {
+        "requests": 167,
+        "ok": 167,
+        "statuses": {
+          "200": 167
+        },
+        "p50Ms": 2,
+        "p95Ms": 10,
+        "maxMs": 42
+      },
+      "frames": {
+        "wallMs": 10008,
+        "fps": 21.9,
+        "p95FrameMs": 103.2,
+        "maxFrameMs": 144.7,
+        "over50ms": 78,
+        "longTasks": 3,
+        "maxLongTaskMs": 83,
+        "timerDriftMs": 2
+      },
+      "scoreComparisons": 166,
+      "scoreLossByGame": {
+        "detective": {
+          "stages": 24,
+          "affected": 0,
+          "maxLoss": 0
+        },
+        "loading": {
+          "stages": 25,
+          "affected": 0,
+          "maxLoss": 0
+        },
+        "quality": {
+          "stages": 19,
+          "affected": 0,
+          "maxLoss": 0
+        },
+        "picking": {
+          "stages": 27,
+          "affected": 0,
+          "maxLoss": 0
+        },
+        "packing": {
+          "stages": 27,
+          "affected": 0,
+          "maxLoss": 0
+        },
+        "memory": {
+          "stages": 24,
+          "affected": 0,
+          "maxLoss": 0
+        },
+        "conveyor": {
+          "stages": 20,
+          "affected": 0,
+          "maxLoss": 0
+        }
+      },
+      "stagesWithQueueScoreLoss": 0,
+      "maxQueueScoreLoss": 0,
+      "scoreLossExamples": [],
+      "failures": [
+        {
+          "player": 45,
+          "message": "events 400 Stale gameplay checkpoint"
+        },
+        {
+          "player": 43,
+          "message": "events 400 Stale gameplay checkpoint"
+        },
+        {
+          "player": 5,
+          "message": "events 400 Stale gameplay checkpoint"
+        },
+        {
+          "player": 42,
+          "message": "events 400 Stale gameplay checkpoint"
+        },
+        {
+          "player": 0,
+          "message": "events 400 Stale gameplay checkpoint"
+        },
+        {
+          "player": 28,
+          "message": "events 400 Stale gameplay checkpoint"
+        },
+        {
+          "player": 23,
+          "message": "events 429 Too many requests. Try again later."
+        },
+        {
+          "player": 4,
+          "message": "events 429 Too many requests. Try again later."
+        },
+        {
+          "player": 33,
+          "message": "events 429 Too many requests. Try again later."
+        },
+        {
+          "player": 11,
+          "message": "events 429 Too many requests. Try again later."
+        },
+        {
+          "player": 44,
+          "message": "events 429 Too many requests. Try again later."
+        },
+        {
+          "player": 17,
+          "message": "events 429 Too many requests. Try again later."
+        },
+        {
+          "player": 47,
+          "message": "events 429 Too many requests. Try again later."
+        },
+        {
+          "player": 41,
+          "message": "events 429 Too many requests. Try again later."
+        },
+        {
+          "player": 14,
+          "message": "events 429 Too many requests. Try again later."
+        },
+        {
+          "player": 12,
+          "message": "events 429 Too many requests. Try again later."
+        },
+        {
+          "player": 19,
+          "message": "events 429 Too many requests. Try again later."
+        },
+        {
+          "player": 15,
+          "message": "events 429 Too many requests. Try again later."
+        },
+        {
+          "player": 27,
+          "message": "events 429 Too many requests. Try again later."
+        },
+        {
+          "player": 1,
+          "message": "events 429 Too many requests. Try again later."
+        }
+      ],
+      "apiErrors": [
+        {
+          "path": "/api/game/events",
+          "status": 400,
+          "ms": 2666.5674080000026,
+          "error": "Stale gameplay checkpoint"
+        },
+        {
+          "path": "/api/game/events",
+          "status": 400,
+          "ms": 2149.3036799999536,
+          "error": "Stale gameplay checkpoint"
+        },
+        {
+          "path": "/api/game/events",
+          "status": 400,
+          "ms": 2658.7706330000074,
+          "error": "Stale gameplay checkpoint"
+        },
+        {
+          "path": "/api/game/events",
+          "status": 400,
+          "ms": 1567.876326000027,
+          "error": "Stale gameplay checkpoint"
+        },
+        {
+          "path": "/api/game/events",
+          "status": 400,
+          "ms": 2060.3809239999973,
+          "error": "Stale gameplay checkpoint"
+        },
+        {
+          "path": "/api/game/events",
+          "status": 400,
+          "ms": 650.4202089999453,
+          "error": "Stale gameplay checkpoint"
+        },
+        {
+          "path": "/api/game/events",
+          "status": 429,
+          "ms": 3.9807879999862053,
+          "error": "Too many requests. Try again later."
+        },
+        {
+          "path": "/api/game/events",
+          "status": 429,
+          "ms": 2.4300429999711923,
+          "error": "Too many requests. Try again later."
+        },
+        {
+          "path": "/api/game/events",
+          "status": 429,
+          "ms": 74.12918200000422,
+          "error": "Too many requests. Try again later."
+        },
+        {
+          "path": "/api/game/events",
+          "status": 429,
+          "ms": 67.51578199997311,
+          "error": "Too many requests. Try again later."
+        },
+        {
+          "path": "/api/statistics",
+          "status": 429,
+          "ms": 113.07134000002407,
+          "error": "Too many requests. Try again later."
+        },
+        {
+          "path": "/api/game/events",
+          "status": 429,
+          "ms": 126.4352319999598,
+          "error": "Too many requests. Try again later."
+        },
+        {
+          "path": "/api/game/events",
+          "status": 429,
+          "ms": 112.1636619999772,
+          "error": "Too many requests. Try again later."
+        },
+        {
+          "path": "/api/game/events",
+          "status": 429,
+          "ms": 3.1317170000402257,
+          "error": "Too many requests. Try again later."
+        },
+        {
+          "path": "/api/game/events",
+          "status": 429,
+          "ms": 3.5331090000108816,
+          "error": "Too many requests. Try again later."
+        },
+        {
+          "path": "/api/game/events",
+          "status": 429,
+          "ms": 4.245768999971915,
+          "error": "Too many requests. Try again later."
+        },
+        {
+          "path": "/api/game/events",
+          "status": 429,
+          "ms": 4.279148000001442,
+          "error": "Too many requests. Try again later."
+        },
+        {
+          "path": "/api/game/events",
+          "status": 429,
+          "ms": 83.3849770000088,
+          "error": "Too many requests. Try again later."
+        },
+        {
+          "path": "/api/game/events",
+          "status": 429,
+          "ms": 2.010643999965396,
+          "error": "Too many requests. Try again later."
+        },
+        {
+          "path": "/api/statistics",
+          "status": 429,
+          "ms": 1.44251699995948,
+          "error": "Too many requests. Try again later."
+        }
+      ],
+      "saved": 0,
+      "unique": 0,
+      "integrity": "ok"
+    }
+  ],
+  "completedAt": "2026-11-19T21:21:21.588Z",
+  "method": {
+    "target": "Disposable local Python backend; no production traffic",
+    "freshRateLimitWindows": true,
+    "admission": "Separate fresh database for each concurrency level; all clients share transport IP",
+    "finish": "Authenticated server-issued visits; prevalidated-state database fixtures isolate /api/game/finish from gameplay verification; retry each submitted ID",
+    "gameplay": "Full nine-stage HTTP sessions with legal action traces, real wall-clock timing, sequential nonce acknowledgements, seal batches every 200 ms, action batches every 50 ms, heartbeat every 10 s; barriers align sealing and finalization",
+    "browser": "One headless Pallet Sealing rendering probe on the same 2-vCPU machine as backend and simulated clients; 10-second samples; not 50 independent player devices",
+    "scope": "One stress run per level, same-IP traffic, fast scripted actions and coordinated sealing; not a statistical production capacity guarantee"
+  },
+  "idlePing": {
+    "requests": 50,
+    "p50Ms": 2,
+    "p95Ms": 4,
+    "maxMs": 5
+  },
+  "idleBrowser": {
+    "wallMs": 10009,
+    "fps": 30.1,
+    "p95FrameMs": 57.6,
+    "maxFrameMs": 98.9,
+    "over50ms": 35,
+    "longTasks": 0,
+    "maxLongTaskMs": 0,
+    "timerDriftMs": 0
+  }
+}
