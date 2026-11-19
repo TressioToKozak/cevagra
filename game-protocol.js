@@ -1,5 +1,5 @@
 let visitPromise,visitCheckedAt=0;
-export function ensureServerVisit(){if(Date.now()-visitCheckedAt>60000)visitPromise=null;return visitPromise??=fetch(new URL('api/session',document.baseURI),{method:'POST',headers:{'Content-Type':'application/json'},body:'{}',signal:AbortSignal.timeout(5000)}).then(r=>{if(!r.ok)throw Error('Session unavailable');visitCheckedAt=Date.now();return true;}).catch(error=>{visitPromise=null;throw error;});}
+export function ensureServerVisit(){if(visitCheckedAt&&Date.now()-visitCheckedAt>60000)visitPromise=null;return visitPromise??=fetch(new URL('api/session',document.baseURI),{method:'POST',headers:{'Content-Type':'application/json'},body:'{}',signal:AbortSignal.timeout(5000)}).then(r=>{if(!r.ok)throw Error('Session unavailable');visitCheckedAt=Date.now();return true;}).catch(error=>{visitPromise=null;throw error;});}
 // A browser may render local feedback; only the server may publish a ranked run.
 export async function createGameProtocol(){
  let available=false;try{const r=await fetch(new URL('api/game/capabilities',document.baseURI),{cache:'no-store',signal:AbortSignal.timeout(1500)});available=r.ok&&(await r.json()).protocol===1;}catch{}

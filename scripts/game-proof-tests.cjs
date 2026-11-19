@@ -1,4 +1,5 @@
 const assert=require('node:assert/strict');
+(async()=>{const originalFetch=global.fetch;let calls=0,release;global.document={baseURI:'https://example.com/'};global.fetch=()=>{calls++;return new Promise(resolve=>release=resolve);};try{const {ensureServerVisit}=await import('../game-protocol.js');const first=ensureServerVisit(),second=ensureServerVisit();assert.equal(first,second,'concurrent startup shares the pending visitor request');assert.equal(calls,1);release({ok:true});await Promise.all([first,second]);assert.equal(await ensureServerVisit(),true);assert.equal(calls,1);console.log('PASS: concurrent startup creates one visitor session request');}finally{global.fetch=originalFetch;delete global.document;}})().catch(e=>{console.error(e);process.exitCode=1;});
 (async()=>{const {plan,replay}=await import('../game-verifier.mjs'),{SealSimulation}=await import('../sealing.js'),{packingInventoryLayout}=await import('../minigames.js');const game=plan('SERVER-PROOF');
  for(const config of game.configs){const t=game.tasks[config.id];let elapsed=2,events=[];
  if(config.id==='picking')events=t.rounds.map((r,i)=>({type:'pick',sku:r.target,at:(i+1)*100}));
