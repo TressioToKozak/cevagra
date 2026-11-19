@@ -1,6 +1,7 @@
 const assert=require('node:assert/strict'),{execFileSync}=require('node:child_process'),{startBackend}=require('./backend-fixture.cjs');
 const fallback=require('node:fs').readFileSync(require('node:path').join(__dirname,'../route-fallback.js'),'utf8');
 for(const path of ['/d12','/random-route','/api/private','/assets/missing.png','/.git/config']){let target=null;require('node:vm').runInNewContext(fallback,{window:{location:{pathname:path,replace:value=>target=value}}});assert.equal(target,['/d12','/random-route'].includes(path)?'/':null);}
+{let target=null;require('node:vm').runInNewContext(fallback,{URL,document:{currentScript:{src:'https://example.com/cevagra/route-fallback.js'}},window:{location:{pathname:'/cevagra/d12',replace:value=>target=value}}});assert.equal(target,'/cevagra/');}
 const query=(db,sql)=>JSON.parse(execFileSync('python3',['-c','import sqlite3,json,sys; d=sqlite3.connect(sys.argv[1]); print(json.dumps(d.execute(sys.argv[2]).fetchall()))',db,sql],{encoding:'utf8'}));
 const ageStage=(db,id,seconds)=>execFileSync('python3',['-c',"import sqlite3,json,sys,time; d=sqlite3.connect(sys.argv[1]); r=json.loads(d.execute('SELECT state FROM game_sessions WHERE id=?',(sys.argv[2],)).fetchone()[0]); r['started']=time.time()-float(sys.argv[3]); d.execute('UPDATE game_sessions SET state=? WHERE id=?',(json.dumps(r),sys.argv[2])); d.commit()",db,id,String(seconds)]);
 (async()=>{const f=await startBackend(),unconfigured=await startBackend({unconfigured:true,secure:true}),secure=await startBackend({secure:true});try{
