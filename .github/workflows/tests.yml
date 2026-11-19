@@ -14,7 +14,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        suite: [admin-data, security, game-proof, verified-flow, sealing-art, test-access, test-panel, sealing, statistics, node, backups, animation, background, browser, browser-backups, cursor-edges, deadline, edge, input-leaderboard, layout, interaction, mobile, mission, packing, polish, premium, return-menu, visual]
+        suite: [result-save, concurrency, admin-data, security, game-proof, verified-flow, sealing-art, test-access, test-panel, sealing, statistics, node, backups, animation, background, browser, browser-backups, cursor-edges, deadline, edge, input-leaderboard, layout, interaction, mobile, mission, packing, polish, premium, return-menu, visual]
     name: ${{ matrix.suite }}
     steps:
       - uses: actions/checkout@v4
@@ -24,7 +24,7 @@ jobs:
           cache: npm
       - run: npm ci --ignore-scripts
       - name: Install Playwright Chromium
-        if: matrix.suite != 'node' && matrix.suite != 'backups'
+        if: matrix.suite != 'node' && matrix.suite != 'backups' && matrix.suite != 'concurrency'
         run: npx playwright install --with-deps chromium
       - name: Run suite (starts local HTTP server)
         run: node scripts/run-tests.cjs ${{ matrix.suite }}

@@ -1,5 +1,5 @@
-import {createGameProtocol} from './game-protocol.js?v=64';
-import {createGameAnalytics} from './analytics.js?v=64';
+import {createGameProtocol} from './game-protocol.js?v=72';
+import {createGameAnalytics} from './analytics.js?v=72';
 import {startDailyBackups} from "./backup-store.js?v=43";
 import {installEditingCursor} from "./editing-cursor.js?v=39";
 import { CompetitionSettings, LeaderboardManager, SqlLeaderboardStore, leaderboardCsv, normalizeName } from "./storage.js?v=64";
@@ -66,7 +66,7 @@ export class CompetitionManager {
   clearReturnTimer(){clearTimeout(this.returnTimer);this.returnTimer=null;this.returnDeadline=null;}
   armReturnTimer(milliseconds){this.clearReturnTimer();this.returnDeadline=Date.now()+milliseconds;this.returnState=this.state;this.returnTimer=setTimeout(()=>this.checkReturnTimer(),milliseconds);}
   checkReturnTimer(){if(!this.returnDeadline||Date.now()<this.returnDeadline)return;if(this.state!==this.returnState){this.clearReturnTimer();return;}if(modal.open)modal.close();this.reset();this.landing();}
-  reset(){protocol?.abandon();this.testMode?.resetPause();this.clearReturnTimer();this.flowSerial++;this.briefingVersion=(this.briefingVersion||0)+1;this.preparedStage?.wrapper.remove();this.preparedStage=null;this.stageReady=false;this.state="menu";this.runId=null;this.cancelScoreAnimation?.();this.cancelScoreAnimation=null;this.stopTimer();this.active?.cleanup();this.effects?.destroy();this.active=null;this.playerName="";this.playerEmail="";this.index=-1;this.scores={};this.results=[];this.totalCorrect=0;this.totalAttempts=0;this.totalMistakes=0;this.transitioning=false;}
+  reset(){this.retryingSave=false;protocol?.abandon();this.testMode?.resetPause();this.clearReturnTimer();this.flowSerial++;this.briefingVersion=(this.briefingVersion||0)+1;this.preparedStage?.wrapper.remove();this.preparedStage=null;this.stageReady=false;this.state="menu";this.runId=null;this.cancelScoreAnimation?.();this.cancelScoreAnimation=null;this.stopTimer();this.active?.cleanup();this.effects?.destroy();this.active=null;this.playerName="";this.playerEmail="";this.index=-1;this.scores={};this.results=[];this.totalCorrect=0;this.totalAttempts=0;this.totalMistakes=0;this.transitioning=false;}
   landing(prefill="") {if(this.testMode)return this.testMode.exit();this.clearReturnTimer();this.state="menu";this.stopTimer();this.active?.cleanup();document.body.classList.remove("results-active");document.body.classList.add("menu-active");this.root.innerHTML=`<section class="menu-screen" aria-labelledby="menu-title"><div class="menu-content"><img draggable="false" class="menu-logo" fetchpriority="high" decoding="async" src="assets/menu/logo-light.webp" alt="CEVA Logistics"><h1 id="menu-title"><span>CHRISTMAS</span><strong>LOGISTICS CHALLENGE</strong></h1><p class="menu-details">9 GAMES <i>•</i> 3 MINUTES <i>•</i> 1,000 POINTS</p><form class="menu-form" id="start-form" autocomplete="off" novalidate><label class="visually-hidden" for="player-name">Participant name</label><div class="menu-input-wrap"><span aria-hidden="true"></span><input id="player-name" name="competition-participant" maxlength="24" value="${esc(prefill)}" placeholder="Enter your name..." autocomplete="one-time-code" data-lpignore="true" data-form-type="other" spellcheck="false"></div><label class="visually-hidden" for="player-email">Participant email</label><div class="menu-input-wrap menu-email-wrap"><svg class="menu-email-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m3 6 9 7 9-7"/></svg><input id="player-email" name="competition-contact" type="email" maxlength="254" placeholder="Enter your email..." autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" data-lpignore="true" data-1p-ignore data-form-type="other" required aria-describedby="name-error"></div><div class="menu-error" id="name-error" aria-live="polite"></div><button class="menu-start" type="submit"><i aria-hidden="true"></i><span>START GAME</span></button><button class="menu-leaderboard" type="button" id="leaderboard-button"><span aria-hidden="true">🏆</span> VIEW LEADERBOARD</button></form></div></section>`;if(protocol?.available===false)this.root.querySelector('.menu-details').textContent='PRACTICE MODE · LOCAL RESULTS ONLY';$("#start-form").onsubmit=event=>{event.preventDefault();const input=$("#player-name"),name=input.value.trim().replace(/\s+/g," ");if(!name){$("#name-error").textContent="Enter a participant name to begin.";return input.focus();}const emailInput=$("#player-email"),email=emailInput.value.trim();emailInput.value=email;if(!email||!emailInput.validity.valid){$("#name-error").textContent="Enter a valid email address to begin.";return emailInput.focus();}this.playerName=name;this.playerEmail=email;this.prepare();};$("#leaderboard-button").onclick=()=>showLeaderboard();this.preloadInBackground();}
   preloadInBackground(){
     this.loader.preload([...COMMON_ASSETS.filter(path=>path.includes("/menu/")),...COMMON_ASSETS.filter(path=>path.includes("/cursor/"))],()=>{},{priority:ASSET_PRIORITY.HIGH}).catch(()=>{});
@@ -75,7 +75,7 @@ export class CompetitionManager {
     if(globalThis.requestIdleCallback)requestIdleCallback(run,{timeout:500});else setTimeout(run,0);
   }
   prepare(){
-    if(protocol?.available)return this.prepareVerified();
+    if(protocol&&protocol.available!==false)return this.prepareVerified();
     if(this.state!=="menu")return;
     this.stopTimer();this.active?.cleanup();this.effects?.destroy();this.active=null;
     document.body.classList.remove("menu-active");this.scores={};this.results=[];this.totalCorrect=0;this.totalAttempts=0;this.totalMistakes=0;this.index=-1;
@@ -180,13 +180,14 @@ export class CompetitionManager {
   stopTimer(){analytics.setPlaying(false);this.interfaceEffects?.clearPress();this.cancelTransitionScore?.();this.cancelTransitionScore=null;this.cancelFlashFrame();this.flashFrame=null;if(this.timer)clearInterval(this.timer);this.timer=null;if(this.transitionHandle)clearTimeout(this.transitionHandle);this.transitionHandle=null;this.stageToken=null;this.guard?.cancel();}
   async finish(){
     if(this.testMode)return this.testMode.exit();
-    if(this.state==="results")return;this.state="results";this.stopTimer();
+    if(this.state==="results"&&!this.retryingSave)return;this.retryingSave=false;this.state="results";this.stopTimer();this.clearReturnTimer();this.cancelScoreAnimation?.();this.effects?.destroy();
     let score=sumScores(this.scores);const previousRecord=leaderboard.getHighScore();let accuracy=this.totalAttempts?Math.round(this.totalCorrect/this.totalAttempts*100):0;const timestamp=new Date().toISOString();let run={id:this.runId,name:this.playerName,email:this.playerEmail,normalizedName:normalizeName(this.playerName),score,accuracy,mistakes:this.totalMistakes,averageResponseTime:0,minigameScores:this.scores,timestamp,competitionSeed:this.runSeed,runSeed:this.runSeed,eventId:this.eventId,startedAt:this.startedAt,debugSeed:!!this.debugSeed};
-    let ranked=false;const finishSerial=this.flowSerial;
-    if(protocol?.game){try{run=await protocol.finish();score=run.score;accuracy=run.accuracy;this.totalMistakes=run.mistakes;this.scores=run.minigameScores;leaderboard.store.remote=[...leaderboard.store.remote.filter(r=>r.id!==run.id),run];leaderboard.store.online=true;ranked=true;}catch{}}
+    let ranked=false,saveError=null;const finishSerial=this.flowSerial;
+    if(protocol?.game){try{run=await protocol.finish();score=run.score;accuracy=run.accuracy;this.totalMistakes=run.mistakes;this.scores=run.minigameScores;leaderboard.store.remote=[...leaderboard.store.remote.filter(r=>r.id!==run.id),run];leaderboard.store.online=true;ranked=true;}catch(error){saveError=error;}}
     if(finishSerial!==this.flowSerial)return;
     analytics.completed(run);
-    const board=ranked?leaderboard.getLeaderboard():leaderboard.saveRun(run),rank=board.findIndex(row=>row.id===run.id)+1,isRecord=score>previousRecord;
+    const failedRanked=!!protocol?.game&&!ranked,canRetry=failedRanked&&!protocol.failed&&saveError?.retryable;
+    const board=ranked?leaderboard.getLeaderboard():failedRanked?[]:leaderboard.saveRun(run),rank=board.findIndex(row=>row.id===run.id)+1,isRecord=!failedRanked&&score>previousRecord;
     document.body.classList.remove("menu-active");
     document.body.classList.add("results-active");
     const gameCards=this.results.map(result=>{
@@ -194,23 +195,24 @@ export class CompetitionManager {
       const icon=RESULT_ICONS[result.id];
       return `<article class="results-game-card"><img draggable="false" src="assets/results/icons/${icon}.svg" alt=""><div class="results-game-copy"><div><h3>${esc(result.name)}</h3><strong>${result.score} <small>/ ${result.max}</small></strong></div><div class="results-progress" role="progressbar" aria-label="${esc(result.name)} score" aria-valuemin="0" aria-valuemax="${result.max}" aria-valuenow="${result.score}"><i style="width:${percent}%"></i></div></div></article>`;
     }).join("");
-    this.root.innerHTML=`<section class="results-screen ${isRecord?"new-record":""} ${leaderboard.lastSaveSucceeded?"":"storage-failed"}" aria-labelledby="results-title">
-      <header class="results-header"><span class="results-brand"><img draggable="false" class="results-logo" src="assets/menu/logo-light.webp" alt="CEVA Logistics"></span><div><p class="mission-kicker">MISSION REPORT</p><h1 id="results-title">CHRISTMAS RUN COMPLETE</h1></div>${isRecord?`<span class="results-record-badge">${ranked?'NEW COMPETITION RECORD':'LOCAL PRACTICE RECORD'}</span>`:""}</header>
+    this.root.innerHTML=`<section class="results-screen ${isRecord?"new-record":""} ${failedRanked||!leaderboard.lastSaveSucceeded?"storage-failed":""}" aria-labelledby="results-title">
+      <header class="results-header"><span class="results-brand"><img draggable="false" class="results-logo" src="assets/menu/logo-light.webp" alt="CEVA Logistics"></span><div><p class="mission-kicker" id="result-save-status" data-save-state="${ranked?'saved':failedRanked?'unconfirmed':'practice'}">${ranked?'SAVED TO LEADERBOARD':failedRanked?'LEADERBOARD SAVE NOT CONFIRMED':'LOCAL PRACTICE · NOT IN COMPETITION'}</p><h1 id="results-title">${failedRanked?'SAVE NOT CONFIRMED':'CHRISTMAS RUN COMPLETE'}</h1></div>${isRecord?`<span class="results-record-badge">${ranked?'NEW COMPETITION RECORD':'LOCAL PRACTICE RECORD'}</span>`:""}</header>
       <section class="results-summary" aria-label="Run summary"><div class="results-player hud-card"><span>PLAYER</span><strong>${esc(this.playerName)}</strong></div>
       <section class="results-final-score hud-card"><img draggable="false" src="assets/results/icons/score-star.svg" alt=""><div><span>FINAL SCORE</span><strong><b id="final-score">0</b><small>/ 1000</small></strong></div></section>
-      <section class="results-rank hud-card"><img draggable="false" src="assets/results/icons/rank-trophy.svg" alt=""><div><span>${ranked?'RANK':'LOCAL RANK'}</span><strong>${rank>0?'#'+rank:'—'}</strong><small>COMPETITION RECORD <b>${board[0]?.score??score}</b></small></div></section>
+      <section class="results-rank hud-card"><img draggable="false" src="assets/results/icons/rank-trophy.svg" alt=""><div><span>${ranked?'RANK':failedRanked?'NOT CONFIRMED':'LOCAL RANK'}</span><strong>${rank>0?'#'+rank:'—'}</strong><small>COMPETITION RECORD <b>${failedRanked?'—':board[0]?.score??score}</b></small></div></section>
       <section class="results-stats" aria-label="Run statistics"><div class="hud-card"><img draggable="false" src="assets/results/icons/accuracy.svg" alt=""><span>ACCURACY</span><strong>${accuracy}%</strong></div><div class="hud-card"><img draggable="false" src="assets/results/icons/mistakes.svg" alt=""><span>MISTAKES</span><strong>${this.totalMistakes}</strong></div><div class="hud-card"><img draggable="false" src="assets/results/icons/challenges.svg" alt=""><span>CHALLENGES</span><strong>${this.results.length} / 9</strong></div></section></section>
       <section class="results-games" aria-label="Challenge results">${gameCards}</section>
-      ${leaderboard.lastSaveSucceeded?"":'<div class="storage-warning" role="alert"><span>This result could not be saved permanently. Export your results before closing this page.</span><button class="secondary" id="export-unsaved">EXPORT CSV</button></div>'}<div class="results-actions"><button class="industrial-primary" id="return-start" aria-label="Return to Start"><span>RETURN TO START</span></button><button class="industrial-secondary" id="view-board" aria-label="Leaderboard"><span>LEADERBOARD</span></button></div>
+      ${failedRanked?`<div class="storage-warning" role="alert"><span>${canRetry?"Server save is not confirmed. Keep this page open and retry.":"Save could not be confirmed. Please contact the organizer before leaving this page."}</span>${canRetry?'<button class="industrial-secondary" id="retry-save">RETRY SAVE</button>':""}</div>`:leaderboard.lastSaveSucceeded?"":'<div class="storage-warning" role="alert"><span>This result could not be saved permanently. Export your results before closing this page.</span><button class="secondary" id="export-unsaved">EXPORT CSV</button></div>'}<div class="results-actions"><button class="industrial-primary" id="return-start" aria-label="Return to Start"><span>RETURN TO START</span></button><button class="industrial-secondary" id="view-board" aria-label="Leaderboard"><span>LEADERBOARD</span></button></div>
     </section>`;
     $("#return-start").onclick=()=>{this.reset();this.landing();};
     $("#view-board").onclick=()=>showLeaderboard(run.id);if($("#export-unsaved"))$("#export-unsaved").onclick=downloadCsv;
-    if(!ranked){const notice=document.createElement('p');notice.className='local-note';notice.setAttribute('role','status');notice.textContent=protocol?.game?'Server confirmation unavailable · local result shown. Check the leaderboard after reconnecting.':'Local practice result · not entered into the shared ranking.';this.root.querySelector('.results-header').after(notice);}
-    this.armReturnTimer(120000);
+    if(!ranked&&!failedRanked){const notice=document.createElement('p');notice.className='local-note';notice.setAttribute('role','status');notice.textContent=protocol?.game?'Server confirmation unavailable · local result shown. Check the leaderboard after reconnecting.':'Local practice result · not entered into the shared ranking.';this.root.querySelector('.results-header').after(notice);}
+    if(canRetry)$("#retry-save").onclick=()=>{const button=$("#retry-save");button.disabled=true;button.textContent="SAVING…";this.retryingSave=true;void this.finish();};
+    if(!failedRanked)this.armReturnTimer(120000);
     this.cancelScoreAnimation=animateNumber($("#final-score"),score,900);
     this.effects=new ArcadeEffects(this.root);
     if(isRecord)this.effects.burst($(".results-final-score"));
-    if(this.active?.action)this.effects.acknowledge(this.active.action==="RELEASE"?"SHIPMENT RELEASED":"SHIPMENT ON HOLD",this.active.action==="RELEASE"?"release":"hold");
+    if(!failedRanked&&this.active?.action)this.effects.acknowledge(this.active.action==="RELEASE"?"SHIPMENT RELEASED":"SHIPMENT ON HOLD",this.active.action==="RELEASE"?"release":"hold");
   }
 }
 

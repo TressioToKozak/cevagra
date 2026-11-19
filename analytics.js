@@ -1,4 +1,4 @@
-import {ensureServerVisit} from './game-protocol.js?v=64';
+import {ensureServerVisit} from './game-protocol.js?v=72';
 // Statistics use separate storage, so deleting leaderboard results keeps the totals.
 const KEY='ceva-competition-statistics-v1';
 function read(){try{const d=JSON.parse(localStorage.getItem(KEY));if(d&&typeof d.visits==='object'&&d.visits&&Array.isArray(d.runs))return d;}catch{}return {since:new Date().toISOString(),visits:{},runs:[]};}

@@ -1,0 +1,236 @@
+{
+  "created": "2026-11-19T22:59:45.412Z",
+  "clientCoalescing": true,
+  "commit": "269d03391f70af081aa49803a7334e86573c3edf",
+  "environment": {
+    "node": "v24.19.0",
+    "python": "Python 3.12.14",
+    "cpu": "AMD EPYC 9V74 80-Core Processor",
+    "logicalCpus": 3,
+    "totalMemoryMiB": 9968,
+    "cpuMax": "200000 100000",
+    "memoryMax": "8589934592"
+  },
+  "admission": [
+    {
+      "players": 50,
+      "requests": 50,
+      "ok": 50,
+      "statuses": {
+        "200": 50
+      },
+      "p50Ms": 186,
+      "p95Ms": 209,
+      "maxMs": 211
+    }
+  ],
+  "finish": [
+    {
+      "players": 50,
+      "totalMs": 155,
+      "first": {
+        "requests": 50,
+        "ok": 50,
+        "statuses": {
+          "200": 50
+        },
+        "p50Ms": 119,
+        "p95Ms": 143,
+        "maxMs": 144
+      },
+      "repeat": {
+        "requests": 50,
+        "ok": 50,
+        "statuses": {
+          "200": 50
+        },
+        "p50Ms": 110,
+        "p95Ms": 130,
+        "maxMs": 130
+      },
+      "sameIds": true,
+      "saved": 50,
+      "unique": 50,
+      "validScores": true,
+      "integrity": "ok"
+    }
+  ],
+  "gameplay": [
+    {
+      "players": 50,
+      "durationSeconds": 56.7,
+      "completed": 50,
+      "api": {
+        "requests": 5557,
+        "ok": 5557,
+        "statuses": {
+          "200": 5557
+        },
+        "p50Ms": 8,
+        "p95Ms": 665,
+        "maxMs": 1187
+      },
+      "byRoute": {
+        "/api/game/start": {
+          "requests": 50,
+          "ok": 50,
+          "statuses": {
+            "200": 50
+          },
+          "p50Ms": 317,
+          "p95Ms": 409,
+          "maxMs": 415
+        },
+        "/api/game/stage": {
+          "requests": 450,
+          "ok": 450,
+          "statuses": {
+            "200": 450
+          },
+          "p50Ms": 8,
+          "p95Ms": 391,
+          "maxMs": 638
+        },
+        "/api/game/events": {
+          "requests": 4307,
+          "ok": 4307,
+          "statuses": {
+            "200": 4307
+          },
+          "p50Ms": 8,
+          "p95Ms": 631,
+          "maxMs": 1187
+        },
+        "/api/game/end": {
+          "requests": 450,
+          "ok": 450,
+          "statuses": {
+            "200": 450
+          },
+          "p50Ms": 6,
+          "p95Ms": 846,
+          "maxMs": 937
+        },
+        "/api/statistics": {
+          "requests": 250,
+          "ok": 250,
+          "statuses": {
+            "200": 250
+          },
+          "p50Ms": 6,
+          "p95Ms": 1126,
+          "maxMs": 1173
+        },
+        "/api/game/finish": {
+          "requests": 50,
+          "ok": 50,
+          "statuses": {
+            "200": 50
+          },
+          "p50Ms": 118,
+          "p95Ms": 144,
+          "maxMs": 145
+        }
+      },
+      "ping": {
+        "requests": 275,
+        "ok": 275,
+        "statuses": {
+          "200": 275
+        },
+        "p50Ms": 2,
+        "p95Ms": 14,
+        "maxMs": 68
+      },
+      "frames": {
+        "wallMs": 10005,
+        "fps": 15.5,
+        "p95FrameMs": 113.2,
+        "maxFrameMs": 164.4,
+        "over50ms": 101,
+        "longTasks": 0,
+        "maxLongTaskMs": 0,
+        "timerDriftMs": 0
+      },
+      "scoreComparisons": 450,
+      "scoreLossByGame": {
+        "detective": {
+          "stages": 50,
+          "affected": 0,
+          "maxLoss": 0
+        },
+        "quality": {
+          "stages": 50,
+          "affected": 0,
+          "maxLoss": 0
+        },
+        "loading": {
+          "stages": 50,
+          "affected": 0,
+          "maxLoss": 0
+        },
+        "picking": {
+          "stages": 50,
+          "affected": 0,
+          "maxLoss": 0
+        },
+        "packing": {
+          "stages": 50,
+          "affected": 0,
+          "maxLoss": 0
+        },
+        "conveyor": {
+          "stages": 50,
+          "affected": 0,
+          "maxLoss": 0
+        },
+        "memory": {
+          "stages": 50,
+          "affected": 0,
+          "maxLoss": 0
+        },
+        "barcode": {
+          "stages": 50,
+          "affected": 0,
+          "maxLoss": 0
+        },
+        "final": {
+          "stages": 50,
+          "affected": 0,
+          "maxLoss": 0
+        }
+      },
+      "stagesWithQueueScoreLoss": 0,
+      "maxQueueScoreLoss": 0,
+      "scoreLossExamples": [],
+      "failures": [],
+      "apiErrors": [],
+      "saved": 50,
+      "unique": 50,
+      "integrity": "ok"
+    }
+  ],
+  "idleBrowser": {
+    "wallMs": 10012,
+    "fps": 33.5,
+    "p95FrameMs": 56.1,
+    "maxFrameMs": 130,
+    "over50ms": 26,
+    "longTasks": 0,
+    "maxLongTaskMs": 0,
+    "timerDriftMs": 0
+  },
+  "sourceSnapshot": {
+    "description": "Working tree recovery candidate on the base commit, published with this report; no production endpoint targeted.",
+    "sha256": {
+      "server.py": "26ce3884529b515672746f74d655f2aee884ae49e3110a80bc9f5310c0e13a7b",
+      "game_sessions.py": "b239f37beb8468189d64ebd5b001f10c583a468c112d85169f1451562f957ef3",
+      "verifier_pool.py": "f77c71cb01faef29ba4bc9f25586f7a2b0b1cc75bb6fc8fe8fd047d782641b68",
+      "game-verifier.mjs": "9a6e11999bd4bade1e9873f6863adbf76a57f179f0858498246a88f3d4fca34b",
+      "game-protocol.js": "5e12f5d3d1cb4d2634807d1cb56755e29e6a4a7fdaf92e5454053da174549439",
+      "game.js": "41c1ee34c4d2afabf1f61a7ee034824daa58e7bfba8237bd2da70c2e469e2fb9",
+      "analytics.js": "84dda755292087dd6a2bd6f4ab4fa2b7baa9b8b7dd3a6172928e0bf2c91a1ef9",
+      "scripts/load-benchmark.cjs": "8c3273b5dcee3abe22926b009f8ed3bcc0696e3669fd1e76cde1b5998c6eb053"
+    }
+  }
+}

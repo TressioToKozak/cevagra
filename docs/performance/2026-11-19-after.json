@@ -1,0 +1,1012 @@
+{
+  "created": "2026-11-19T22:35:24.413Z",
+  "clientCoalescing": true,
+  "commit": "269d03391f70af081aa49803a7334e86573c3edf",
+  "environment": {
+    "node": "v24.19.0",
+    "python": "Python 3.12.14",
+    "cpu": "AMD EPYC 9V74 80-Core Processor",
+    "logicalCpus": 3,
+    "totalMemoryMiB": 9968,
+    "cpuMax": "200000 100000",
+    "memoryMax": "8589934592"
+  },
+  "admission": [
+    {
+      "players": 10,
+      "requests": 10,
+      "ok": 10,
+      "statuses": {
+        "200": 10
+      },
+      "p50Ms": 23,
+      "p95Ms": 27,
+      "maxMs": 27
+    },
+    {
+      "players": 20,
+      "requests": 20,
+      "ok": 20,
+      "statuses": {
+        "200": 20
+      },
+      "p50Ms": 43,
+      "p95Ms": 49,
+      "maxMs": 49
+    },
+    {
+      "players": 30,
+      "requests": 30,
+      "ok": 30,
+      "statuses": {
+        "200": 30
+      },
+      "p50Ms": 51,
+      "p95Ms": 58,
+      "maxMs": 59
+    },
+    {
+      "players": 40,
+      "requests": 40,
+      "ok": 40,
+      "statuses": {
+        "200": 40
+      },
+      "p50Ms": 79,
+      "p95Ms": 93,
+      "maxMs": 94
+    },
+    {
+      "players": 50,
+      "requests": 50,
+      "ok": 50,
+      "statuses": {
+        "200": 50
+      },
+      "p50Ms": 114,
+      "p95Ms": 137,
+      "maxMs": 137
+    }
+  ],
+  "finish": [
+    {
+      "players": 10,
+      "totalMs": 30,
+      "first": {
+        "requests": 10,
+        "ok": 10,
+        "statuses": {
+          "200": 10
+        },
+        "p50Ms": 24,
+        "p95Ms": 28,
+        "maxMs": 28
+      },
+      "repeat": {
+        "requests": 10,
+        "ok": 10,
+        "statuses": {
+          "200": 10
+        },
+        "p50Ms": 15,
+        "p95Ms": 18,
+        "maxMs": 18
+      },
+      "sameIds": true,
+      "saved": 10,
+      "unique": 10,
+      "validScores": true,
+      "integrity": "ok"
+    },
+    {
+      "players": 20,
+      "totalMs": 60,
+      "first": {
+        "requests": 20,
+        "ok": 20,
+        "statuses": {
+          "200": 20
+        },
+        "p50Ms": 40,
+        "p95Ms": 49,
+        "maxMs": 57
+      },
+      "repeat": {
+        "requests": 20,
+        "ok": 20,
+        "statuses": {
+          "200": 20
+        },
+        "p50Ms": 35,
+        "p95Ms": 40,
+        "maxMs": 41
+      },
+      "sameIds": true,
+      "saved": 20,
+      "unique": 20,
+      "validScores": true,
+      "integrity": "ok"
+    },
+    {
+      "players": 30,
+      "totalMs": 69,
+      "first": {
+        "requests": 30,
+        "ok": 30,
+        "statuses": {
+          "200": 30
+        },
+        "p50Ms": 50,
+        "p95Ms": 66,
+        "maxMs": 66
+      },
+      "repeat": {
+        "requests": 30,
+        "ok": 30,
+        "statuses": {
+          "200": 30
+        },
+        "p50Ms": 49,
+        "p95Ms": 63,
+        "maxMs": 64
+      },
+      "sameIds": true,
+      "saved": 30,
+      "unique": 30,
+      "validScores": true,
+      "integrity": "ok"
+    },
+    {
+      "players": 40,
+      "totalMs": 120,
+      "first": {
+        "requests": 40,
+        "ok": 40,
+        "statuses": {
+          "200": 40
+        },
+        "p50Ms": 92,
+        "p95Ms": 114,
+        "maxMs": 114
+      },
+      "repeat": {
+        "requests": 40,
+        "ok": 40,
+        "statuses": {
+          "200": 40
+        },
+        "p50Ms": 95,
+        "p95Ms": 111,
+        "maxMs": 114
+      },
+      "sameIds": true,
+      "saved": 40,
+      "unique": 40,
+      "validScores": true,
+      "integrity": "ok"
+    },
+    {
+      "players": 50,
+      "totalMs": 147,
+      "first": {
+        "requests": 50,
+        "ok": 50,
+        "statuses": {
+          "200": 50
+        },
+        "p50Ms": 110,
+        "p95Ms": 139,
+        "maxMs": 140
+      },
+      "repeat": {
+        "requests": 50,
+        "ok": 50,
+        "statuses": {
+          "200": 50
+        },
+        "p50Ms": 114,
+        "p95Ms": 134,
+        "maxMs": 134
+      },
+      "sameIds": true,
+      "saved": 50,
+      "unique": 50,
+      "validScores": true,
+      "integrity": "ok"
+    }
+  ],
+  "gameplay": [
+    {
+      "players": 10,
+      "durationSeconds": 53.4,
+      "completed": 10,
+      "api": {
+        "requests": 2797,
+        "ok": 2797,
+        "statuses": {
+          "200": 2797
+        },
+        "p50Ms": 46,
+        "p95Ms": 102,
+        "maxMs": 185
+      },
+      "byRoute": {
+        "/api/game/start": {
+          "requests": 10,
+          "ok": 10,
+          "statuses": {
+            "200": 10
+          },
+          "p50Ms": 169,
+          "p95Ms": 185,
+          "maxMs": 185
+        },
+        "/api/game/stage": {
+          "requests": 90,
+          "ok": 90,
+          "statuses": {
+            "200": 90
+          },
+          "p50Ms": 4,
+          "p95Ms": 44,
+          "maxMs": 92
+        },
+        "/api/game/events": {
+          "requests": 2547,
+          "ok": 2547,
+          "statuses": {
+            "200": 2547
+          },
+          "p50Ms": 50,
+          "p95Ms": 100,
+          "maxMs": 166
+        },
+        "/api/game/end": {
+          "requests": 90,
+          "ok": 90,
+          "statuses": {
+            "200": 90
+          },
+          "p50Ms": 5,
+          "p95Ms": 173,
+          "maxMs": 179
+        },
+        "/api/statistics": {
+          "requests": 50,
+          "ok": 50,
+          "statuses": {
+            "200": 50
+          },
+          "p50Ms": 4,
+          "p95Ms": 141,
+          "maxMs": 146
+        },
+        "/api/game/finish": {
+          "requests": 10,
+          "ok": 10,
+          "statuses": {
+            "200": 10
+          },
+          "p50Ms": 16,
+          "p95Ms": 19,
+          "maxMs": 19
+        }
+      },
+      "ping": {
+        "requests": 260,
+        "ok": 260,
+        "statuses": {
+          "200": 260
+        },
+        "p50Ms": 2,
+        "p95Ms": 13,
+        "maxMs": 43
+      },
+      "frames": {
+        "wallMs": 10014,
+        "fps": 16.8,
+        "p95FrameMs": 110.9,
+        "maxFrameMs": 149.4,
+        "over50ms": 105,
+        "longTasks": 0,
+        "maxLongTaskMs": 0,
+        "timerDriftMs": 0
+      },
+      "scoreComparisons": 90,
+      "scoreLossByGame": {
+        "detective": {
+          "stages": 10,
+          "affected": 0,
+          "maxLoss": 0
+        },
+        "quality": {
+          "stages": 10,
+          "affected": 0,
+          "maxLoss": 0
+        },
+        "loading": {
+          "stages": 10,
+          "affected": 0,
+          "maxLoss": 0
+        },
+        "packing": {
+          "stages": 10,
+          "affected": 0,
+          "maxLoss": 0
+        },
+        "conveyor": {
+          "stages": 10,
+          "affected": 0,
+          "maxLoss": 0
+        },
+        "memory": {
+          "stages": 10,
+          "affected": 0,
+          "maxLoss": 0
+        },
+        "picking": {
+          "stages": 10,
+          "affected": 0,
+          "maxLoss": 0
+        },
+        "barcode": {
+          "stages": 10,
+          "affected": 0,
+          "maxLoss": 0
+        },
+        "final": {
+          "stages": 10,
+          "affected": 0,
+          "maxLoss": 0
+        }
+      },
+      "stagesWithQueueScoreLoss": 0,
+      "maxQueueScoreLoss": 0,
+      "scoreLossExamples": [],
+      "failures": [],
+      "apiErrors": [],
+      "saved": 10,
+      "unique": 10,
+      "integrity": "ok"
+    },
+    {
+      "players": 20,
+      "durationSeconds": 54.2,
+      "completed": 20,
+      "api": {
+        "requests": 3462,
+        "ok": 3462,
+        "statuses": {
+          "200": 3462
+        },
+        "p50Ms": 90,
+        "p95Ms": 217,
+        "maxMs": 415
+      },
+      "byRoute": {
+        "/api/game/start": {
+          "requests": 20,
+          "ok": 20,
+          "statuses": {
+            "200": 20
+          },
+          "p50Ms": 182,
+          "p95Ms": 194,
+          "maxMs": 195
+        },
+        "/api/game/stage": {
+          "requests": 180,
+          "ok": 180,
+          "statuses": {
+            "200": 180
+          },
+          "p50Ms": 5,
+          "p95Ms": 145,
+          "maxMs": 292
+        },
+        "/api/game/events": {
+          "requests": 2962,
+          "ok": 2962,
+          "statuses": {
+            "200": 2962
+          },
+          "p50Ms": 98,
+          "p95Ms": 212,
+          "maxMs": 375
+        },
+        "/api/game/end": {
+          "requests": 180,
+          "ok": 180,
+          "statuses": {
+            "200": 180
+          },
+          "p50Ms": 5,
+          "p95Ms": 375,
+          "maxMs": 415
+        },
+        "/api/statistics": {
+          "requests": 100,
+          "ok": 100,
+          "statuses": {
+            "200": 100
+          },
+          "p50Ms": 7,
+          "p95Ms": 324,
+          "maxMs": 346
+        },
+        "/api/game/finish": {
+          "requests": 20,
+          "ok": 20,
+          "statuses": {
+            "200": 20
+          },
+          "p50Ms": 33,
+          "p95Ms": 41,
+          "maxMs": 42
+        }
+      },
+      "ping": {
+        "requests": 264,
+        "ok": 264,
+        "statuses": {
+          "200": 264
+        },
+        "p50Ms": 2,
+        "p95Ms": 15,
+        "maxMs": 42
+      },
+      "frames": {
+        "wallMs": 10017,
+        "fps": 16.4,
+        "p95FrameMs": 104,
+        "maxFrameMs": 135,
+        "over50ms": 109,
+        "longTasks": 0,
+        "maxLongTaskMs": 0,
+        "timerDriftMs": 2
+      },
+      "scoreComparisons": 180,
+      "scoreLossByGame": {
+        "detective": {
+          "stages": 20,
+          "affected": 0,
+          "maxLoss": 0
+        },
+        "quality": {
+          "stages": 20,
+          "affected": 0,
+          "maxLoss": 0
+        },
+        "loading": {
+          "stages": 20,
+          "affected": 0,
+          "maxLoss": 0
+        },
+        "packing": {
+          "stages": 20,
+          "affected": 0,
+          "maxLoss": 0
+        },
+        "picking": {
+          "stages": 20,
+          "affected": 0,
+          "maxLoss": 0
+        },
+        "conveyor": {
+          "stages": 20,
+          "affected": 0,
+          "maxLoss": 0
+        },
+        "memory": {
+          "stages": 20,
+          "affected": 0,
+          "maxLoss": 0
+        },
+        "barcode": {
+          "stages": 20,
+          "affected": 0,
+          "maxLoss": 0
+        },
+        "final": {
+          "stages": 20,
+          "affected": 0,
+          "maxLoss": 0
+        }
+      },
+      "stagesWithQueueScoreLoss": 0,
+      "maxQueueScoreLoss": 0,
+      "scoreLossExamples": [],
+      "failures": [],
+      "apiErrors": [],
+      "saved": 20,
+      "unique": 20,
+      "integrity": "ok"
+    },
+    {
+      "players": 30,
+      "durationSeconds": 54.7,
+      "completed": 30,
+      "api": {
+        "requests": 4204,
+        "ok": 4204,
+        "statuses": {
+          "200": 4204
+        },
+        "p50Ms": 13,
+        "p95Ms": 324,
+        "maxMs": 612
+      },
+      "byRoute": {
+        "/api/game/start": {
+          "requests": 30,
+          "ok": 30,
+          "statuses": {
+            "200": 30
+          },
+          "p50Ms": 108,
+          "p95Ms": 131,
+          "maxMs": 135
+        },
+        "/api/game/stage": {
+          "requests": 270,
+          "ok": 270,
+          "statuses": {
+            "200": 270
+          },
+          "p50Ms": 4,
+          "p95Ms": 220,
+          "maxMs": 304
+        },
+        "/api/game/events": {
+          "requests": 3454,
+          "ok": 3454,
+          "statuses": {
+            "200": 3454
+          },
+          "p50Ms": 64,
+          "p95Ms": 316,
+          "maxMs": 593
+        },
+        "/api/game/end": {
+          "requests": 270,
+          "ok": 270,
+          "statuses": {
+            "200": 270
+          },
+          "p50Ms": 5,
+          "p95Ms": 423,
+          "maxMs": 466
+        },
+        "/api/statistics": {
+          "requests": 150,
+          "ok": 150,
+          "statuses": {
+            "200": 150
+          },
+          "p50Ms": 5,
+          "p95Ms": 576,
+          "maxMs": 612
+        },
+        "/api/game/finish": {
+          "requests": 30,
+          "ok": 30,
+          "statuses": {
+            "200": 30
+          },
+          "p50Ms": 59,
+          "p95Ms": 74,
+          "maxMs": 75
+        }
+      },
+      "ping": {
+        "requests": 268,
+        "ok": 268,
+        "statuses": {
+          "200": 268
+        },
+        "p50Ms": 2,
+        "p95Ms": 10,
+        "maxMs": 41
+      },
+      "frames": {
+        "wallMs": 10011,
+        "fps": 17.3,
+        "p95FrameMs": 112,
+        "maxFrameMs": 166.2,
+        "over50ms": 106,
+        "longTasks": 0,
+        "maxLongTaskMs": 0,
+        "timerDriftMs": 0
+      },
+      "scoreComparisons": 270,
+      "scoreLossByGame": {
+        "detective": {
+          "stages": 30,
+          "affected": 0,
+          "maxLoss": 0
+        },
+        "quality": {
+          "stages": 30,
+          "affected": 0,
+          "maxLoss": 0
+        },
+        "loading": {
+          "stages": 30,
+          "affected": 0,
+          "maxLoss": 0
+        },
+        "packing": {
+          "stages": 30,
+          "affected": 0,
+          "maxLoss": 0
+        },
+        "picking": {
+          "stages": 30,
+          "affected": 0,
+          "maxLoss": 0
+        },
+        "conveyor": {
+          "stages": 30,
+          "affected": 0,
+          "maxLoss": 0
+        },
+        "memory": {
+          "stages": 30,
+          "affected": 0,
+          "maxLoss": 0
+        },
+        "barcode": {
+          "stages": 30,
+          "affected": 0,
+          "maxLoss": 0
+        },
+        "final": {
+          "stages": 30,
+          "affected": 0,
+          "maxLoss": 0
+        }
+      },
+      "stagesWithQueueScoreLoss": 0,
+      "maxQueueScoreLoss": 0,
+      "scoreLossExamples": [],
+      "failures": [],
+      "apiErrors": [],
+      "saved": 30,
+      "unique": 30,
+      "integrity": "ok"
+    },
+    {
+      "players": 40,
+      "durationSeconds": 55.2,
+      "completed": 40,
+      "api": {
+        "requests": 4906,
+        "ok": 4906,
+        "statuses": {
+          "200": 4906
+        },
+        "p50Ms": 5,
+        "p95Ms": 497,
+        "maxMs": 854
+      },
+      "byRoute": {
+        "/api/game/start": {
+          "requests": 40,
+          "ok": 40,
+          "statuses": {
+            "200": 40
+          },
+          "p50Ms": 162,
+          "p95Ms": 197,
+          "maxMs": 202
+        },
+        "/api/game/stage": {
+          "requests": 360,
+          "ok": 360,
+          "statuses": {
+            "200": 360
+          },
+          "p50Ms": 4,
+          "p95Ms": 389,
+          "maxMs": 591
+        },
+        "/api/game/events": {
+          "requests": 3906,
+          "ok": 3906,
+          "statuses": {
+            "200": 3906
+          },
+          "p50Ms": 5,
+          "p95Ms": 474,
+          "maxMs": 805
+        },
+        "/api/game/end": {
+          "requests": 360,
+          "ok": 360,
+          "statuses": {
+            "200": 360
+          },
+          "p50Ms": 4,
+          "p95Ms": 715,
+          "maxMs": 776
+        },
+        "/api/statistics": {
+          "requests": 200,
+          "ok": 200,
+          "statuses": {
+            "200": 200
+          },
+          "p50Ms": 8,
+          "p95Ms": 801,
+          "maxMs": 854
+        },
+        "/api/game/finish": {
+          "requests": 40,
+          "ok": 40,
+          "statuses": {
+            "200": 40
+          },
+          "p50Ms": 71,
+          "p95Ms": 90,
+          "maxMs": 92
+        }
+      },
+      "ping": {
+        "requests": 270,
+        "ok": 270,
+        "statuses": {
+          "200": 270
+        },
+        "p50Ms": 2,
+        "p95Ms": 14,
+        "maxMs": 52
+      },
+      "frames": {
+        "wallMs": 10013,
+        "fps": 16.1,
+        "p95FrameMs": 108,
+        "maxFrameMs": 198.2,
+        "over50ms": 104,
+        "longTasks": 2,
+        "maxLongTaskMs": 60,
+        "timerDriftMs": 2
+      },
+      "scoreComparisons": 360,
+      "scoreLossByGame": {
+        "quality": {
+          "stages": 40,
+          "affected": 0,
+          "maxLoss": 0
+        },
+        "detective": {
+          "stages": 40,
+          "affected": 0,
+          "maxLoss": 0
+        },
+        "loading": {
+          "stages": 40,
+          "affected": 0,
+          "maxLoss": 0
+        },
+        "picking": {
+          "stages": 40,
+          "affected": 0,
+          "maxLoss": 0
+        },
+        "packing": {
+          "stages": 40,
+          "affected": 0,
+          "maxLoss": 0
+        },
+        "conveyor": {
+          "stages": 40,
+          "affected": 0,
+          "maxLoss": 0
+        },
+        "memory": {
+          "stages": 40,
+          "affected": 0,
+          "maxLoss": 0
+        },
+        "barcode": {
+          "stages": 40,
+          "affected": 0,
+          "maxLoss": 0
+        },
+        "final": {
+          "stages": 40,
+          "affected": 0,
+          "maxLoss": 0
+        }
+      },
+      "stagesWithQueueScoreLoss": 0,
+      "maxQueueScoreLoss": 0,
+      "scoreLossExamples": [],
+      "failures": [],
+      "apiErrors": [],
+      "saved": 40,
+      "unique": 40,
+      "integrity": "ok"
+    },
+    {
+      "players": 50,
+      "durationSeconds": 56.5,
+      "completed": 50,
+      "api": {
+        "requests": 5507,
+        "ok": 5507,
+        "statuses": {
+          "200": 5507
+        },
+        "p50Ms": 5,
+        "p95Ms": 676,
+        "maxMs": 1319
+      },
+      "byRoute": {
+        "/api/game/start": {
+          "requests": 50,
+          "ok": 50,
+          "statuses": {
+            "200": 50
+          },
+          "p50Ms": 243,
+          "p95Ms": 293,
+          "maxMs": 299
+        },
+        "/api/game/stage": {
+          "requests": 450,
+          "ok": 450,
+          "statuses": {
+            "200": 450
+          },
+          "p50Ms": 7,
+          "p95Ms": 493,
+          "maxMs": 616
+        },
+        "/api/game/events": {
+          "requests": 4257,
+          "ok": 4257,
+          "statuses": {
+            "200": 4257
+          },
+          "p50Ms": 5,
+          "p95Ms": 652,
+          "maxMs": 1319
+        },
+        "/api/game/end": {
+          "requests": 450,
+          "ok": 450,
+          "statuses": {
+            "200": 450
+          },
+          "p50Ms": 5,
+          "p95Ms": 922,
+          "maxMs": 990
+        },
+        "/api/statistics": {
+          "requests": 250,
+          "ok": 250,
+          "statuses": {
+            "200": 250
+          },
+          "p50Ms": 44,
+          "p95Ms": 1262,
+          "maxMs": 1304
+        },
+        "/api/game/finish": {
+          "requests": 50,
+          "ok": 50,
+          "statuses": {
+            "200": 50
+          },
+          "p50Ms": 105,
+          "p95Ms": 126,
+          "maxMs": 127
+        }
+      },
+      "ping": {
+        "requests": 277,
+        "ok": 277,
+        "statuses": {
+          "200": 277
+        },
+        "p50Ms": 2,
+        "p95Ms": 10,
+        "maxMs": 35
+      },
+      "frames": {
+        "wallMs": 10017,
+        "fps": 17,
+        "p95FrameMs": 100.7,
+        "maxFrameMs": 177.2,
+        "over50ms": 105,
+        "longTasks": 1,
+        "maxLongTaskMs": 55,
+        "timerDriftMs": 0
+      },
+      "scoreComparisons": 450,
+      "scoreLossByGame": {
+        "quality": {
+          "stages": 50,
+          "affected": 0,
+          "maxLoss": 0
+        },
+        "detective": {
+          "stages": 50,
+          "affected": 0,
+          "maxLoss": 0
+        },
+        "loading": {
+          "stages": 50,
+          "affected": 0,
+          "maxLoss": 0
+        },
+        "picking": {
+          "stages": 50,
+          "affected": 0,
+          "maxLoss": 0
+        },
+        "packing": {
+          "stages": 50,
+          "affected": 0,
+          "maxLoss": 0
+        },
+        "conveyor": {
+          "stages": 50,
+          "affected": 0,
+          "maxLoss": 0
+        },
+        "memory": {
+          "stages": 50,
+          "affected": 0,
+          "maxLoss": 0
+        },
+        "barcode": {
+          "stages": 50,
+          "affected": 0,
+          "maxLoss": 0
+        },
+        "final": {
+          "stages": 50,
+          "affected": 0,
+          "maxLoss": 0
+        }
+      },
+      "stagesWithQueueScoreLoss": 0,
+      "maxQueueScoreLoss": 0,
+      "scoreLossExamples": [],
+      "failures": [],
+      "apiErrors": [],
+      "saved": 50,
+      "unique": 50,
+      "integrity": "ok"
+    }
+  ],
+  "idleBrowser": {
+    "wallMs": 10008,
+    "fps": 32.5,
+    "p95FrameMs": 55.6,
+    "maxFrameMs": 119.7,
+    "over50ms": 29,
+    "longTasks": 0,
+    "maxLongTaskMs": 0,
+    "timerDriftMs": 0
+  },
+  "sourceSnapshot": {
+    "description": "Uncommitted benchmark candidate on baseline commit; commit identifies the base, not the optimized revision.",
+    "sha256": {
+      "server.py": "26ce3884529b515672746f74d655f2aee884ae49e3110a80bc9f5310c0e13a7b",
+      "game_sessions.py": "5ef03d6719d26702aacf8965148f34becb8415f36493ba7af44b182885ca2020",
+      "verifier_pool.py": "f77c71cb01faef29ba4bc9f25586f7a2b0b1cc75bb6fc8fe8fd047d782641b68",
+      "game-verifier.mjs": "9a6e11999bd4bade1e9873f6863adbf76a57f179f0858498246a88f3d4fca34b",
+      "game-protocol.js": "83b86a7007827ea2aa1c739cfd672f15976ca581bb6e04cf0ec4222366573148",
+      "scripts/load-benchmark.cjs": "eb955189edcea2ee7a26694ff46c526ff7ae95c99faa931d9d00d96579a0d90a"
+    }
+  },
+  "postBenchmarkChanges": {
+    "game-protocol.js": {
+      "sha256": "d2177e08ee4ae30febfedb841497a543afbbdd03037286e477187fab01f91b6a",
+      "description": "After load measurement, real-browser regression found finish could race stage end. Added explicit stage-end promise barrier for next stage/finalization; batching and backend unchanged. Covered by protocol regression and repeated verified browser flow."
+    }
+  }
+}

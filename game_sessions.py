@@ -3,16 +3,20 @@ import hashlib
 import json
 import math
 import secrets
-import subprocess
 import time
 from http.cookies import SimpleCookie, CookieError
 from pathlib import Path
+from dataclasses import dataclass
+from verifier_pool import verify, InvalidTrace, VerificationUnavailable
 
 ROOT = Path(__file__).resolve().parent
 SCHEMA = '''
 CREATE TABLE IF NOT EXISTS public_sessions (token_hash TEXT PRIMARY KEY, id TEXT UNIQUE NOT NULL, created REAL NOT NULL, seen REAL NOT NULL, visible INTEGER NOT NULL, last_write REAL NOT NULL DEFAULT 0, expires REAL NOT NULL);
 CREATE TABLE IF NOT EXISTS game_sessions (id TEXT PRIMARY KEY, owner TEXT NOT NULL, created REAL NOT NULL, expires REAL NOT NULL, state TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS request_limits (key TEXT PRIMARY KEY, started REAL NOT NULL, count INTEGER NOT NULL);
+CREATE INDEX IF NOT EXISTS game_sessions_owner_created ON game_sessions(owner,created DESC);
+CREATE INDEX IF NOT EXISTS public_sessions_expiry ON public_sessions(expires);
+CREATE INDEX IF NOT EXISTS request_limits_expiry ON request_limits(started);
 '''
 
 class APIError(Exception):
@@ -25,22 +29,35 @@ def digest(value):
 
 
 def limit(db, key, maximum, seconds, now):
-    row = db.execute('SELECT started, count FROM request_limits WHERE key=?', (key,)).fetchone()
-    if row and now - row[0] < seconds:
-        if row[1] >= maximum:
-            raise APIError(429, 'Too many requests. Try again later.')
-        db.execute('UPDATE request_limits SET count=count+1 WHERE key=?', (key,))
-    else:
-        db.execute('INSERT OR REPLACE INTO request_limits VALUES (?, ?, 1)', (key, now))
+    # One atomic statement: concurrent requests cannot all pass the same count.
+    row = db.execute('''INSERT INTO request_limits VALUES (?, ?, 1)
+        ON CONFLICT(key) DO UPDATE SET
+          started=CASE WHEN ?-started>=? THEN ? ELSE started END,
+          count=CASE WHEN ?-started>=? THEN 1 ELSE count+1 END
+        WHERE ?-started>=? OR count<? RETURNING count''',
+        (key, now, now, seconds, now, now, seconds, now, seconds, maximum)).fetchone()
+    if row is None:
+        raise APIError(429, 'Too many requests. Try again later.')
+
+
+@dataclass
+class VerificationWork:
+    payload: dict
+    owner: str
+    operation: str
+    game_id: str = ''
+    expected_state: str = ''
+    name: str = ''
+    email: str = ''
+    received_at: float = 0
 
 
 def worker(data):
     try:
-        result = subprocess.run(['node', str(ROOT / 'game-verifier.mjs')], input=json.dumps(data), text=True, capture_output=True, timeout=5, check=True)
-        return json.loads(result.stdout)
-    except subprocess.CalledProcessError:
+        return verify(data)
+    except InvalidTrace:
         raise APIError(400, 'Invalid gameplay trace') from None
-    except (OSError, subprocess.TimeoutExpired, ValueError):
+    except VerificationUnavailable:
         raise APIError(503, 'Gameplay verification unavailable') from None
 
 
@@ -72,11 +89,12 @@ def credit(db, owner, now):
             config = state['plan']['configs'][state['index']]
             seconds = max(0, min(now, state['started']+config['time'])-max(row[1], state['started']))
     db.execute('UPDATE statistics_visits SET play_ms=play_ms+? WHERE id=?', (round(min(seconds, 20)*1000), row[0]))
-    db.execute('UPDATE public_sessions SET seen=? WHERE token_hash=?', (now, owner))
+    db.execute('UPDATE public_sessions SET seen=MAX(seen,?) WHERE token_hash=?', (now, owner))
 
 
 def handle(db, handler, route, data):
     now = time.time()
+    received_at = getattr(handler, 'request_received_at', now)
     if not isinstance(data, dict):
         raise APIError(400, 'Expected JSON object')
     ip = handler.client_address[0]  # Never trust arbitrary forwarded client addresses.
@@ -89,8 +107,8 @@ def handle(db, handler, route, data):
             return {'session': True}, None
         except APIError:
             pass
-        limit(db, 'visit-minute:'+ip, 30, 60, now)
-        limit(db, 'visit-hour:'+ip, 120, 3600, now)
+        limit(db, 'visit-minute:'+ip, 120, 60, now)
+        limit(db, 'visit-hour:'+ip, 600, 3600, now)
         db.execute('DELETE FROM public_sessions WHERE expires<?', (now,))
         db.execute('DELETE FROM game_sessions WHERE expires<?', (now-86400,))
         db.execute('DELETE FROM request_limits WHERE started<?', (now-86400,))
@@ -117,13 +135,7 @@ def handle(db, handler, route, data):
         if set(data)-{'name', 'email'} or not isinstance(data.get('name'), str) or not 1 <= len(data['name'].strip()) <= 100 or not isinstance(data.get('email'), str) or len(data['email']) > 254 or '@' not in data['email']:
             raise APIError(400, 'Valid participant details required')
         limit(db, 'game-start:'+owner, 10, 60, now)
-        plan = worker({'op': 'plan', 'seed': secrets.token_urlsafe(32)})
-        identifier = secrets.token_urlsafe(24)
-        credit(db, owner, now)
-        db.execute('UPDATE game_sessions SET expires=? WHERE owner=? AND expires>?', (now, owner, now))
-        state = {'plan': plan, 'index': 0, 'active': False, 'name': data['name'].strip(), 'email': data['email'].strip(), 'results': [], 'finished': False}
-        db.execute('INSERT INTO game_sessions VALUES (?, ?, ?, ?, ?)', (identifier, owner, now, now+2700, json.dumps(state)))
-        return {'id': identifier, **plan}, None
+        return VerificationWork({'op':'plan','seed':secrets.token_urlsafe(32)}, owner, 'start', name=data['name'].strip(), email=data['email'].strip()), None
     allowed = {'/api/game/stage': {'gameId', 'id'}, '/api/game/events': {'gameId', 'nonce', 'seq', 'events'}, '/api/game/end': {'gameId', 'nonce'}, '/api/game/finish': {'gameId'}}
     if route not in allowed or set(data)-allowed[route]:
         raise APIError(400, 'Client result fields are not accepted')
@@ -148,6 +160,17 @@ def handle(db, handler, route, data):
         db.execute('INSERT OR IGNORE INTO statistics_runs VALUES (?, ?, ?)', (identifier, state['name'], state['email']))
         state['finished'] = True; save()
         return {'run': run}, None
+    # Only the identical last request can recover its lost acknowledgement.
+    # Owner, expiry, allowed fields and per-visitor limits were checked above.
+    if route == '/api/game/events':
+        receipt = state.get('checkpoint_receipt')
+        fingerprint = digest(json.dumps(data, sort_keys=True, separators=(',', ':'), allow_nan=False))
+        if receipt and secrets.compare_digest(fingerprint, receipt['fingerprint']):
+            return receipt['response'], None
+    if route == '/api/game/end' and isinstance(data.get('nonce'), str):
+        receipt = state.get('end_receipt')
+        if receipt and secrets.compare_digest(digest(data['nonce']), receipt['nonce']):
+            return {'result': receipt['result']}, None
     if state['finished'] or state['index'] >= len(state['plan']['configs']):
         raise APIError(409, 'Game already completed')
     config = state['plan']['configs'][state['index']]
@@ -156,12 +179,14 @@ def handle(db, handler, route, data):
             raise APIError(409, 'Invalid stage sequence')
         nonce = secrets.token_urlsafe(24)
         state.update(active=True, started=now, nonce=digest(nonce), seq=0, events=[])
+        state.pop('last_received', None)
+        state.pop('checkpoint_receipt', None)
         db.execute('UPDATE public_sessions SET seen=?,visible=1 WHERE token_hash=?', (now, owner))
         save()
         return {'nonce': nonce}, None
     if not state['active'] or not isinstance(data.get('nonce'), str) or not secrets.compare_digest(digest(data['nonce']), state['nonce']):
         raise APIError(409, 'Invalid stage checkpoint')
-    elapsed = now-state['started']
+    elapsed = max(0, received_at-state['started'])
     if elapsed > config['time']+10:
         raise APIError(410, 'Stage expired')
     if route == '/api/game/events':
@@ -180,11 +205,42 @@ def handle(db, handler, route, data):
         if elapsed*1000-previous > 2500:
             raise APIError(400, 'Stale gameplay checkpoint')
         state['events'].extend(events); state['seq'] += 1
-        nonce = secrets.token_urlsafe(24); state['nonce'] = digest(nonce); save()
-        return {'nonce': nonce, 'seq': state['seq']}, None
+        state['last_received'] = received_at
+        nonce = secrets.token_urlsafe(24); state['nonce'] = digest(nonce)
+        response = {'nonce': nonce, 'seq': state['seq']}
+        state['checkpoint_receipt'] = {'fingerprint':fingerprint, 'response':response}
+        save()
+        return response, None
     if route == '/api/game/end':
-        result = worker({'op': 'replay', 'config': config, 'task': state['plan']['tasks'][config['id']], 'events': state['events'], 'elapsed': min(elapsed, config['time'])})
-        credit(db, owner, now)
-        state['results'].append(result); state['index'] += 1; state['active'] = False; save()
-        return {'result': result}, None
+        payload = {'op':'replay', 'config':config, 'task':state['plan']['tasks'][config['id']], 'events':state['events'], 'elapsed':min(elapsed,config['time']), 'completionElapsed':min(elapsed,config['time'],max(0,state.get('last_received',received_at)-state['started']))}
+        return VerificationWork(payload, owner, 'end', game_id=identifier, expected_state=game[0], received_at=received_at), None
     raise APIError(404, 'Not found')
+
+
+def complete_work(db, handler, work, result):
+    now = time.time()
+    row = visit(db, handler, now)
+    if row[0] != work.owner:
+        raise APIError(401, 'Invalid visitor session')
+    if work.operation == 'start':
+        identifier = secrets.token_urlsafe(24)
+        credit(db, work.owner, now)
+        db.execute('UPDATE game_sessions SET expires=? WHERE owner=? AND expires>?', (now, work.owner, now))
+        state = {'plan':result,'index':0,'active':False,'name':work.name,'email':work.email,'results':[],'finished':False}
+        db.execute('INSERT INTO game_sessions VALUES (?,?,?,?,?)', (identifier,work.owner,now,now+2700,json.dumps(state)))
+        return {'id':identifier,**result}, None
+    game = db.execute('SELECT state FROM game_sessions WHERE id=? AND owner=? AND expires>?', (work.game_id,work.owner,now)).fetchone()
+    if not game:
+        raise APIError(401, 'Invalid or expired game session')
+    # Another checkpoint/end/start can win during verification; never overwrite it.
+    if game[0] != work.expected_state:
+        receipt = json.loads(game[0]).get('end_receipt')
+        if receipt and secrets.compare_digest(receipt['nonce'], json.loads(work.expected_state)['nonce']):
+            return {'result':receipt['result']}, None
+        raise APIError(409, 'Stage changed during verification')
+    state = json.loads(game[0])
+    credit(db, work.owner, work.received_at)
+    state['end_receipt'] = {'nonce':state['nonce'], 'result':result}
+    state['results'].append(result);state['index']+=1;state['active']=False
+    db.execute('UPDATE game_sessions SET state=? WHERE id=?', (json.dumps(state),work.game_id))
+    return {'result':result}, None

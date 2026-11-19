@@ -1,4 +1,7 @@
-# Wydajność — 19 listopada 2026
+# Wydajność przed poprawkami — 19 listopada 2026
+
+Ten raport zachowuje pomiar wersji sprzed optymalizacji. Wyniki po zmianach:
+[raport po poprawkach](performance-after-2026-11-19.md).
 
 ## Wniosek
 
