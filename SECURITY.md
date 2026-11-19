@@ -90,3 +90,39 @@ source, databases or directory listings.
 Tests create disposable databases and random administrator passwords. They
 never require production credentials. The verified browser flow checks a full
 competition and verifies that injected local scores do not reach the server.
+
+## Administrator imports, visibility and archives
+
+The old `?organizer=1` tools and the public `?seed=` override have been removed.
+All administrative data changes require the server administrator session.
+
+- **Upload Leaderboard** accepts `.xlsx` (up to 5 MB and 20,000 participant rows).
+  Required columns are `Name`, `Email`, `Points` (0–1000). The optional `Hidden`
+  column accepts Yes/No. Export Excel downloads a compatible workbook.
+- Imports show a preview before replacement. The server validates the workbook
+  again, saves the complete previous dataset to disk, and replaces it in one
+  database transaction. A backup failure leaves the existing data intact.
+  Imported entries are explicitly marked `admin-import`, rather than claiming
+  to be server-verified gameplay. Importing a leaderboard does not create games
+  or play time in statistics.
+- The eye button changes public visibility of one result. Hidden results stay
+  in the administrator table, exports and backups; the public API excludes them.
+- **BackUps** lists private server workbooks. Open displays a read-only preview
+  inside the page; Download retrieves the actual `.xlsx`. Backups retain full
+  JSON snapshots, including visibility and original result metadata, inside the
+  workbook ZIP. Public users cannot list, preview or download these archives.
+- Statistics has its own Export Excel, Upload Statistics, BackUps and Reset.
+  Its workbook uses `Metric`, `Value`, `Email`, `Completed games` columns with
+  Visits, Play time (ms), Completed games, Since, and optional Player rows.
+  Use an exported workbook as the import template. Reset and import back up
+  statistics independently; leaderboard results are kept. Imports become a
+  baseline, with subsequent observed visits, time and games added to it.
+- The server creates both leaderboard and statistics backups after midnight
+  in `BACKUP_TIMEZONE` (default Europe/Berlin), checking every 15 seconds and
+  catching up on startup. It does not require an open browser. Statistics
+  archives live in the private `statistics/` subdirectory of the backup folder.
+
+Only modern `.xlsx` files are supported. Formula cells, encrypted archives,
+external worksheet links and oversized/invalid ZIPs are rejected; formulas are
+never evaluated. Uploaded workbooks are read from their visible cells, so Excel
+edits take effect even if a previous backup's embedded snapshot is still present.

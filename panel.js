@@ -1,102 +1,30 @@
-import {backupDate,createBrowserBackup,chooseBackupDirectory,startDailyBackups} from './backup-store.js?v=43';
-import {resultsWorkbook} from './excel.js?v=2';
-import {LeaderboardManager, LocalLeaderboardStore} from './storage.js?v=64';
-const $=id=>document.getElementById(id),local=new LeaderboardManager(new LocalLeaderboardStore());
-const api=new URL('api/panel/',new URL('./',import.meta.url));
-const PAGE_SIZE=10;
-let rows=[],mode='sql',page=0,statistics=null;
+import {LeaderboardManager} from './storage.js?v=64';
+const $=id=>document.getElementById(id),api=new URL('api/panel/',new URL('./',import.meta.url)),PAGE_SIZE=10;
+let rows=[],page=0,statistics=null,pendingImport=null,archiveKind='leaderboard',archivePreview=null;
 const number=new Intl.NumberFormat('en-GB');
-function renderStatistics(){
-  const stats=statistics;
-  $('stat-visits').textContent=stats?number.format(stats.visits):'—';
-  $('stat-games').textContent=stats?number.format(stats.games):'—';
-  const seconds=Math.floor((stats?.playMs||0)/1000),hours=Math.floor(seconds/3600),minutes=Math.floor(seconds%3600/60);
-  $('stat-time').textContent=stats?`${hours}h ${minutes}m ${seconds%60}s`:'—';
-  $('stat-player').textContent=stats?.topPlayer?.name||'No games yet';
-  $('stat-player-detail').textContent=stats?.topPlayer?`${number.format(stats.topPlayer.count)} completed ${stats.topPlayer.count===1?'game':'games'}${stats.topPlayer.email?' · '+stats.topPlayer.email:''}`:'Complete a game to appear here';
-}
-
-function showLogin(message=''){rows=[];page=0;$('results').replaceChildren();$('result-count').textContent='0';$('confirm').close();$('statistics-dialog').close();$('panel-screen').hidden=true;$('login-screen').hidden=false;$('login-error').textContent=message;}
-function render(){
-  renderStatistics();
-  const pages=Math.max(1,Math.ceil(rows.length/PAGE_SIZE));
-  page=Math.max(0,Math.min(page,pages-1));
-  const start=page*PAGE_SIZE;
-  $('page-info').textContent=`Page ${page+1} of ${pages}`;
-  $('result-range').textContent=rows.length?`${start+1}–${Math.min(start+PAGE_SIZE,rows.length)} of ${rows.length} results`:'0 results';
-  $('previous-page').disabled=page===0;
-  $('next-page').disabled=page===pages-1;
-  $('results').replaceChildren();
-  for(const run of rows.slice(start,start+PAGE_SIZE)){const tr=document.createElement('tr');for(const value of [run.name,run.email||'—',run.score]){const td=document.createElement('td');td.textContent=String(value??'');tr.append(td);}$('results').append(tr);}
-  if(!rows.length){const tr=document.createElement('tr'),td=document.createElement('td');td.colSpan=3;td.className='empty-state';td.textContent='No completed runs yet.';tr.append(td);$('results').append(tr);}
-  $('backup-folder').hidden=mode!=='sql'||['localhost','127.0.0.1','[::1]'].includes(location.hostname);
-  $('result-count').textContent=rows.length;
-  $('delete').disabled=!rows.length;$('export').disabled=!rows.length;
-}
-async function refresh(){
-  try{const response=await fetch(new URL('results',api),{cache:'no-store',signal:AbortSignal.timeout(5000)});if(response.status===401){showLogin();return;}if(!response.ok)throw Error();const data=await response.json();if(!Array.isArray(data.runs))throw Error();rows=data.runs;statistics=data.statistics||null;mode='sql';$('status').textContent=`Shared competition results · ${rows.length} ${rows.length===1?'run':'runs'}`;}
-  catch{showLogin('Server connection required. Offline sign-in is disabled.');return;}
-  $('login-screen').hidden=true;$('panel-screen').hidden=false;rows.sort(LeaderboardManager.compareRuns);render();
-}
-function exportExcel(snapshot=rows,name=`Leaderboard - ${backupDate()}.xlsx`,blob=resultsWorkbook(snapshot)){const url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download=name;link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
+function showLogin(message=''){rows=[];page=0;pendingImport=null;for(const d of document.querySelectorAll('dialog[open]'))d.close();$('results').replaceChildren();$('result-count').textContent='0';$('panel-screen').hidden=true;$('login-screen').hidden=false;$('login-error').textContent=message;}
+async function request(path,{body,blob=false}={}){const response=await fetch(new URL(path,api),{cache:'no-store',...(body?{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}:{}),signal:AbortSignal.timeout(20000)});if(response.status===401){showLogin('Your session has expired. Please sign in again.');throw Error('Sign in required.');}if(!response.ok){let message='The server could not complete this request.';try{message=(await response.json()).error||message;}catch{}throw Error(message);}return blob?response.blob():response.json();}
+function renderStatistics(){const s=statistics;$('stat-visits').textContent=s?number.format(s.visits):'—';$('stat-games').textContent=s?number.format(s.games):'—';const seconds=Math.floor((s?.playMs||0)/1000);$('stat-time').textContent=s?`${Math.floor(seconds/3600)}h ${Math.floor(seconds%3600/60)}m ${seconds%60}s`:'—';$('stat-player').textContent=s?.topPlayer?.name||'No games yet';$('stat-player-detail').textContent=s?.topPlayer?`${number.format(s.topPlayer.count)} completed ${s.topPlayer.count===1?'game':'games'}${s.topPlayer.email?' · '+s.topPlayer.email:''}`:'Complete a game to appear here';}
+const eye=hidden=>`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/>${hidden?'<path d="m3 3 18 18"/>':''}</svg>`;
+function render(){renderStatistics();const pages=Math.max(1,Math.ceil(rows.length/PAGE_SIZE));page=Math.max(0,Math.min(page,pages-1));const start=page*PAGE_SIZE;$('page-info').textContent=`Page ${page+1} of ${pages}`;$('result-range').textContent=rows.length?`${start+1}–${Math.min(start+PAGE_SIZE,rows.length)} of ${rows.length} results`:'0 results';$('previous-page').disabled=page===0;$('next-page').disabled=page===pages-1;$('results').replaceChildren();for(const run of rows.slice(start,start+PAGE_SIZE)){const tr=document.createElement('tr');tr.dataset.runId=run.id;if(run.hidden)tr.classList.add('record-hidden');for(const value of [run.name,run.email||'—',run.score]){const td=document.createElement('td');td.textContent=String(value??'');tr.append(td);}const td=document.createElement('td'),button=document.createElement('button');button.type='button';button.className='visibility-toggle';button.innerHTML=eye(run.hidden);button.setAttribute('aria-label',`${run.hidden?'Show':'Hide'} ${run.name} ${run.hidden?'in':'from'} public leaderboard`);button.setAttribute('aria-pressed',String(!!run.hidden));button.title=run.hidden?'Hidden from public leaderboard · click to show':'Visible in public leaderboard · click to hide';button.onclick=async()=>{button.disabled=true;try{await request('visibility',{body:{id:run.id,hidden:!run.hidden}});await refresh();}catch(e){$('status').textContent=e.message;}finally{button.disabled=false;}};td.append(button);tr.append(td);if(run.hidden){const badge=document.createElement('small');badge.className='hidden-badge';badge.textContent='Hidden';tr.firstChild.append(badge);}$('results').append(tr);}if(!rows.length){const tr=document.createElement('tr'),td=document.createElement('td');td.colSpan=4;td.className='empty-state';td.textContent='No completed runs yet.';tr.append(td);$('results').append(tr);}$('result-count').textContent=rows.length;$('delete').disabled=!rows.length;$('export').disabled=!rows.length;}
+async function refresh(){try{const data=await request('results');if(!Array.isArray(data.runs))throw Error('Invalid server response.');rows=data.runs;statistics=data.statistics;rows.sort(LeaderboardManager.compareRuns);$('login-screen').hidden=true;$('panel-screen').hidden=false;$('status').textContent=`Shared competition results · ${rows.length} runs · ${rows.filter(r=>r.hidden).length} hidden`;render();}catch(e){if(!$('panel-screen').hidden)showLogin('Server connection required. Offline sign-in is disabled.');else $('login-error').textContent=e.message;}}
+async function download(path,name){const blob=await request(path,{blob:true}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
+const fileName=kind=>`${kind==='leaderboard'?'Leaderboard':'Statistics'} - ${new Date().toISOString().slice(0,10)}.xlsx`;
+$('export').onclick=()=>void download('export?kind=leaderboard',fileName('leaderboard')).catch(e=>$('status').textContent=e.message);
+$('export-statistics').onclick=()=>void download('export?kind=statistics',fileName('statistics')).catch(e=>$('statistics-status').textContent=e.message);
 let statisticsRefreshing=false;
-async function refreshStatistics(){
-  if(statisticsRefreshing||!$('statistics-dialog').open||document.hidden||$('panel-screen').hidden)return;
-  statisticsRefreshing=true;
-  try{
-    const response=await fetch(new URL('results',api),{cache:'no-store',signal:AbortSignal.timeout(5000)});
-    if(!$('statistics-dialog').open)return;
-    if(response.status===401){showLogin('Your session has expired. Please sign in again.');return;}
-    if(!response.ok)return;
-    const data=await response.json();
-    if(data.statistics&&$('statistics-dialog').open){statistics=data.statistics;renderStatistics();}
-  }catch{/* Keep the last statistics visible during a temporary connection failure. */}
-  finally{statisticsRefreshing=false;}
-}
-setInterval(()=>void refreshStatistics(),5000);
-document.addEventListener('visibilitychange',()=>{if(!document.hidden)void refreshStatistics();});
-$('open-statistics').onclick=()=>{renderStatistics();$('statistics-dialog').showModal();void refreshStatistics();};
-$('close-statistics').onclick=()=>$('statistics-dialog').close();
-$('export').onclick=()=>exportExcel();
-$('backup-folder').onclick=async()=>{try{await chooseBackupDirectory();$('status').textContent='Backup folder: leaderboard backups.';}catch(error){if(error.name!=='AbortError')$('status').textContent=error.message;}};
-$('delete').onclick=()=>{$('delete-error').textContent='';$('confirm').showModal();};
-$('confirm-delete').onclick=async()=>{
-  if($('confirm-delete').disabled)return;
-  const snapshot=rows.map(run=>({...run}));
-  $('confirm-delete').disabled=true;
-  try{
-    // Initiate the backup in the click handler, before the destructive request.
-    const backup=await createBrowserBackup(snapshot);
-    if(!backup.written)exportExcel(snapshot,backup.name,backup.blob);
-    if(mode==='sql'){
-      const response=await fetch(new URL('delete',api),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({confirmation:'DELETE',ids:snapshot.map(run=>run.id)}),signal:AbortSignal.timeout(10000)});
-      if(response.status===401){showLogin('Your session has expired. Please sign in again.');return;}if(!response.ok)throw Error('Results could not be deleted. Please try again.');
-    }
-    // Remove only the backed-up IDs; a run saved by another tab must survive.
-    const data=local.store.read(),deletedIds=new Set(snapshot.map(run=>run.id));
-    const kept=data.runs.filter(run=>!deletedIds.has(run.id));
-    const cleared=!local.store.error&&(kept.length===data.runs.length||local.store.write({...data,runs:kept})!==false);
-    if(!cleared&&mode==='local')throw Error('Results could not be cleared from this browser.');
-    $('confirm').close();await refresh();
-  }catch(error){$('delete-error').textContent=error.message;}
-  finally{$('confirm-delete').disabled=false;}
-};
-$('previous-page').onclick=()=>{page--;render();};
-$('next-page').onclick=()=>{page++;render();};
-$('login-form').onsubmit=async event=>{
-  event.preventDefault();$('sign-in').disabled=true;$('login-error').textContent='';
-  const username=$('username').value,password=$('password').value;
-  try{
-    const response=await fetch(new URL('login',api),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username,password}),signal:AbortSignal.timeout(5000)});
-    if(!response.ok)throw Error(response.status===401?'Incorrect username or password.':'Server sign-in is unavailable. Contact the administrator.');
-    if((await response.json()).authenticated!==true)throw Error('Server session could not be verified.');$('password').value='';await refresh();
-  }catch(error){showLogin(error.message);}
-  finally{$('sign-in').disabled=false;}
-};
-$('logout').onclick=async()=>{
-  try{const response=await fetch(new URL('logout',api),{method:'POST',headers:{'Content-Type':'application/json'},body:'{}',signal:AbortSignal.timeout(10000)});if(!response.ok&&response.status!==401)throw Error();showLogin();}
-  catch{$('status').textContent='Sign out failed. Please try again.';}
-};
+async function refreshStatistics(){if(statisticsRefreshing||!$('statistics-dialog').open||document.hidden||$('panel-screen').hidden)return;statisticsRefreshing=true;try{const data=await request('results');if($('statistics-dialog').open){statistics=data.statistics;renderStatistics();}}catch{/* Preserve the last confirmed statistics during transient failures. */}finally{statisticsRefreshing=false;}}
+setInterval(()=>void refreshStatistics(),5000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)void refreshStatistics();});
+$('open-statistics').onclick=()=>{renderStatistics();$('statistics-dialog').showModal();void refreshStatistics();};$('close-statistics').onclick=()=>$('statistics-dialog').close();
+function preview(container,kind,data){container.replaceChildren();if(kind==='statistics'){const dl=document.createElement('dl');dl.className='preview-metrics';for(const [label,value]of [['Visits',data.visits],['Play time (ms)',data.playMs],['Completed games',data.games],['Since',data.since]]){const dt=document.createElement('dt'),dd=document.createElement('dd');dt.textContent=label;dd.textContent=String(value??'');dl.append(dt,dd);}container.append(dl);data=(data.players||[]).map(p=>({name:p.name,email:p.email,score:p.count}));}const note=document.createElement('p');note.className='preview-note';note.textContent=`${data.length} ${kind==='statistics'?'players':'results'}${data.length>100?' · preview shows the first 100':''}`;container.append(note);if(!data.length)return;const table=document.createElement('table'),head=document.createElement('thead'),hr=document.createElement('tr');for(const label of ['Name','Email',kind==='statistics'?'Completed games':'Points',...(kind==='leaderboard'?['Visibility']:[])]){const th=document.createElement('th');th.textContent=label;hr.append(th);}head.append(hr);table.append(head);const body=document.createElement('tbody');for(const r of data.slice(0,100)){const tr=document.createElement('tr');for(const value of [r.name,r.email||'—',r.score,...(kind==='leaderboard'?[r.hidden?'Hidden':'Public']:[])]){const td=document.createElement('td');td.textContent=String(value);tr.append(td);}body.append(tr);}table.append(body);container.append(table);}
+for(const kind of ['leaderboard','statistics']){const input=$(`upload-${kind}-file`);$(kind==='leaderboard'?'upload-leaderboard':'upload-statistics').onclick=()=>input.click();input.onchange=async()=>{const file=input.files[0];input.value='';if(!file)return;const status=$(kind==='leaderboard'?'status':'statistics-status');try{if(!/\.xlsx$/i.test(file.name)||file.size>5000000)throw Error('Choose an .xlsx file smaller than 5 MB.');status.textContent='Reading and validating workbook…';const bytes=new Uint8Array(await file.arrayBuffer());let binary='';for(let i=0;i<bytes.length;i+=8192)binary+=String.fromCharCode(...bytes.subarray(i,i+8192));const body={kind,file:btoa(binary)},result=await request('import-preview',{body});pendingImport=body;$('import-title').textContent=`Replace ${kind}?`;$('import-description').textContent=`${file.name} will replace the current ${kind}. A complete server backup is saved first. Other data is kept.`;$('import-error').textContent='';preview($('import-preview'),kind,result.data);$('import-confirm').showModal();status.textContent='Workbook validated. Review the preview before replacing data.';}catch(e){status.textContent=e.message;}};}
+$('cancel-import').onclick=()=>{$('import-confirm').close();pendingImport=null;};$('import-confirm').addEventListener('close',()=>{pendingImport=null;});$('confirm-import').onclick=async()=>{if(!pendingImport)return;$('confirm-import').disabled=true;try{const result=await request('import',{body:{...pendingImport,confirmation:'REPLACE'}});$('import-confirm').close();await refresh();$('status').textContent=`Import complete. Previous data saved as ${result.backup}.`;$('statistics-status').textContent=`Import complete. Previous data saved as ${result.backup}.`;}catch(e){$('import-error').textContent=e.message;}finally{$('confirm-import').disabled=false;}};
+async function showArchives(kind){archiveKind=kind;archivePreview=null;$('archive-title').textContent=`${kind==='leaderboard'?'Leaderboard':'Statistics'} BackUps`;$('archive-content').replaceChildren();$('archive-status').textContent='Loading server backups…';$('archive-back').hidden=true;$('archive-download').hidden=true;if(!$('archive-dialog').open)$('archive-dialog').showModal();try{const {files,timezone}=await request(`backups?kind=${kind}`);$('archive-status').textContent=files.length?`${files.length} saved backups · automatic copies at midnight (${timezone})`:'No backups yet. The server saves a daily copy and a copy before replacement or reset.';for(const file of files){const article=document.createElement('article');article.className='archive-entry';const info=document.createElement('div'),title=document.createElement('strong'),small=document.createElement('small');title.textContent=file.name;small.textContent=`${new Date(file.created).toLocaleString('en-GB')} · ${number.format(Math.ceil(file.size/1024))} KB`;info.append(title,small);const actions=document.createElement('div');actions.className='toolbar';for(const [label,action]of [['Open',()=>openArchive(kind,file.name)],['Download',()=>download(`backup/download?kind=${kind}&name=${encodeURIComponent(file.name)}`,file.name)]]){const b=document.createElement('button');b.type='button';b.textContent=label;b.onclick=()=>void action().catch(e=>$('archive-status').textContent=e.message);actions.append(b);}article.append(info,actions);$('archive-content').append(article);}}catch(e){$('archive-status').textContent=e.message;}}
+async function openArchive(kind,name){const result=await request(`backup?kind=${kind}&name=${encodeURIComponent(name)}`);archivePreview={kind,name};$('archive-title').textContent=name;$('archive-status').textContent='Read-only backup preview. Download the workbook to keep a copy or upload it to restore.';$('archive-back').hidden=false;$('archive-download').hidden=false;preview($('archive-content'),kind,result.data);}
+$('open-backups').onclick=()=>void showArchives('leaderboard');$('statistics-backups').onclick=()=>void showArchives('statistics');$('close-archives').onclick=()=>$('archive-dialog').close();$('archive-back').onclick=()=>void showArchives(archiveKind);$('archive-download').onclick=()=>{const f=archivePreview;if(f)void download(`backup/download?kind=${f.kind}&name=${encodeURIComponent(f.name)}`,f.name).catch(e=>$('archive-status').textContent=e.message);};
+$('reset-statistics').onclick=()=>{$('reset-error').textContent='';$('reset-confirm').showModal();};$('cancel-statistics-reset').onclick=()=>$('reset-confirm').close();$('confirm-statistics-reset').onclick=async()=>{const b=$('confirm-statistics-reset');b.disabled=true;try{const result=await request('statistics/reset',{body:{confirmation:'RESET'}});$('reset-confirm').close();await refresh();$('statistics-status').textContent=`Statistics reset. Backup saved as ${result.backup}.`;}catch(e){$('reset-error').textContent=e.message;}finally{b.disabled=false;}};
+$('delete').onclick=()=>{$('delete-error').textContent='';$('confirm').showModal();};$('confirm-delete').onclick=async()=>{const b=$('confirm-delete');if(b.disabled)return;b.disabled=true;try{await request('delete',{body:{confirmation:'DELETE',ids:rows.map(r=>r.id)}});$('confirm').close();await refresh();}catch(e){$('delete-error').textContent=e.message;}finally{b.disabled=false;}};
+$('previous-page').onclick=()=>{page--;render();};$('next-page').onclick=()=>{page++;render();};
+$('login-form').onsubmit=async event=>{event.preventDefault();$('sign-in').disabled=true;$('login-error').textContent='';try{const data=await request('login',{body:{username:$('username').value,password:$('password').value}});if(data.authenticated!==true)throw Error('Server session could not be verified.');$('password').value='';await refresh();}catch(e){showLogin(e.message);}finally{$('sign-in').disabled=false;}};
+$('logout').onclick=async()=>{try{await request('logout',{body:{}});showLogin();}catch(e){$('status').textContent=e.message;}};
 void refresh();
-
-startDailyBackups(async()=>{if($('panel-screen').hidden)return null;if(mode==='sql')await refresh();return $('panel-screen').hidden?null:rows;},()=>{$('status').textContent='Automatic backup failed. Check folder access.';});

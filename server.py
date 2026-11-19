@@ -10,11 +10,14 @@ import math
 import os
 from pathlib import Path
 import sqlite3
-from urllib.parse import urlsplit
+from urllib.parse import urlsplit, parse_qs, quote
 from game_sessions import SCHEMA, APIError, handle as gameplay_api, limit as rate_limit
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 
 from backups import BackupManager
+from stats_state import snapshot as statistics_snapshot
+import admin_data
+from excel_io import MIME
 
 ROOT = Path(__file__).resolve().parent
 
@@ -29,23 +32,16 @@ def connect(path):
     db.execute('CREATE TABLE IF NOT EXISTS statistics_meta (key TEXT PRIMARY KEY, value TEXT NOT NULL)')
     db.execute("INSERT OR IGNORE INTO statistics_meta VALUES ('since', ?)", (time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()),))
     db.executescript(SCHEMA)
+    if not db.execute("SELECT 1 FROM statistics_meta WHERE key='statistics_seeded_v1'").fetchone():
+        rows = [json.loads(r[0]) for r in db.execute('SELECT payload FROM runs')]
+        db.executemany('INSERT OR IGNORE INTO statistics_runs VALUES (?, ?, ?)', [(r['id'], r.get('name', ''), r.get('email', '') or '') for r in rows])
+        db.execute("INSERT INTO statistics_meta VALUES ('statistics_seeded_v1','1')")
     db.commit()
     return db
 
 
-def statistics(db, rows):
-    # Migrate pre-existing results without inventing historical visits or play time.
-    db.executemany('INSERT OR IGNORE INTO statistics_runs VALUES (?, ?, ?)', [(r['id'], r.get('name', ''), r.get('email', '') or '') for r in rows])
-    visits, play_ms = db.execute('SELECT COUNT(*), COALESCE(SUM(play_ms), 0) FROM statistics_visits').fetchone()
-    games = db.execute('SELECT COUNT(*) FROM statistics_runs').fetchone()[0]
-    players = {}
-    for name, email in db.execute('SELECT name, email FROM statistics_runs ORDER BY id'):
-        key = (email or name).strip().casefold()
-        if key:
-            player = players.setdefault(key, {'name': name, 'email': email, 'count': 0})
-            player['count'] += 1
-    top = sorted(players.values(), key=lambda p: (-p['count'], p['name']))
-    return {'visits': visits, 'playMs': play_ms, 'games': games, 'topPlayer': top[0] if top else None, 'since': db.execute("SELECT value FROM statistics_meta WHERE key = 'since'").fetchone()[0]}
+def statistics(db, rows=None):
+    return statistics_snapshot(db)
 
 
 class Handler(SimpleHTTPRequestHandler):
@@ -107,6 +103,28 @@ class Handler(SimpleHTTPRequestHandler):
         if route.startswith('/api/panel/') and not self.authenticated():
             self.reply(401, {'error': 'Sign in required'})
             return
+        if route in {'/api/panel/export', '/api/panel/backups', '/api/panel/backup', '/api/panel/backup/download'}:
+            try:
+                with connect(self.server.db_path) as db:
+                    db.execute('BEGIN')
+                    value, filename = admin_data.get(db, self, route, parse_qs(urlsplit(self.path).query))
+                if filename:
+                    self.send_response(200)
+                    self.send_header('Content-Type', MIME)
+                    self.send_header('Content-Disposition', "attachment; filename*=UTF-8''"+quote(filename))
+                    self.send_header('Cache-Control', 'no-store')
+                    self.send_header('Content-Length', str(len(value)))
+                    self.end_headers()
+                    self.wfile.write(value)
+                else:
+                    self.reply(200, value)
+            except APIError as error:
+                self.reply(error.status, {'error': error.message})
+            except (ValueError, KeyError):
+                self.reply(400, {'error': 'Invalid backup request'})
+            except (OSError, sqlite3.Error):
+                self.reply(503, {'error': 'Archive unavailable'})
+            return
         if route in {'/test', '/tests'}:
             self.path = route + '/index.html'
         if route == '/panel':
@@ -120,7 +138,7 @@ class Handler(SimpleHTTPRequestHandler):
                 if route == '/api/panel/results':
                     self.reply(200, {'runs': rows, 'statistics': stats})
                 else:
-                    self.reply(200, {'runs': [{key: value for key, value in row.items() if key not in {'email', 'playerEmail', 'runSeed'}} for row in rows if row.get('verification') == 'server-v1'], 'deleted': deleted})
+                    self.reply(200, {'runs': [{key: value for key, value in row.items() if key not in {'email', 'playerEmail', 'runSeed'}} for row in rows if row.get('verification') in {'server-v1', 'admin-import'} and not row.get('hidden', False)], 'deleted': deleted})
             except sqlite3.Error:
                 self.reply(503, {'error': 'Database unavailable'})
             return
@@ -147,7 +165,7 @@ class Handler(SimpleHTTPRequestHandler):
         self.send_error(405)
 
     def do_POST(self):
-        if self.path not in {'/api/leaderboard', '/api/session', '/api/statistics', '/api/game/start', '/api/game/stage', '/api/game/events', '/api/game/end', '/api/game/finish', '/api/panel/delete', '/api/panel/login', '/api/panel/logout'}:
+        if self.path not in {'/api/leaderboard', '/api/session', '/api/statistics', '/api/game/start', '/api/game/stage', '/api/game/events', '/api/game/end', '/api/game/finish', '/api/panel/delete', '/api/panel/login', '/api/panel/logout', '/api/panel/import-preview', '/api/panel/import', '/api/panel/visibility', '/api/panel/statistics/reset'}:
             self.reply(404, {'error': 'Not found'})
             return
         if self.path == '/api/leaderboard':
@@ -171,12 +189,13 @@ class Handler(SimpleHTTPRequestHandler):
         if self.headers.get('Content-Type', '').split(';')[0] != 'application/json' or self.headers.get('Sec-Fetch-Site') == 'cross-site':
             self.reply(403, {'error': 'Forbidden'})
             return
-        if self.path in {'/api/panel/delete', '/api/panel/logout'} and not self.authenticated():
+        if self.path.startswith('/api/panel/') and self.path != '/api/panel/login' and not self.authenticated():
             self.reply(401, {'error': 'Sign in required'})
             return
         try:
             length = int(self.headers.get('Content-Length', '0'))
-            if not 0 < length <= 1_000_000:
+            maximum = 7_000_000 if self.path in {'/api/panel/import', '/api/panel/import-preview'} else 1_000_000
+            if not 0 < length <= maximum:
                 raise ValueError()
             data = json.loads(self.rfile.read(length))
             if self.path in {'/api/session', '/api/statistics', '/api/game/start', '/api/game/stage', '/api/game/events', '/api/game/end', '/api/game/finish'}:
@@ -184,6 +203,12 @@ class Handler(SimpleHTTPRequestHandler):
                     db.execute('BEGIN IMMEDIATE')
                     value, cookie = gameplay_api(db, self, self.path, data)
                 self.reply(200, value, cookie)
+                return
+            if self.path in {'/api/panel/import-preview', '/api/panel/import', '/api/panel/visibility', '/api/panel/statistics/reset'}:
+                with connect(self.server.db_path) as db:
+                    db.execute('BEGIN IMMEDIATE')
+                    result = admin_data.post(db, self, self.path, data)
+                self.reply(200, result)
                 return
             if self.path == '/api/panel/login':
                 if not isinstance(data, dict):
@@ -236,8 +261,8 @@ class Handler(SimpleHTTPRequestHandler):
         except (sqlite3.Error, OSError):
             self.reply(503, {'error': 'Backup or database unavailable; results have not been deleted'})
             return
-        except (ValueError, AttributeError):
-            self.reply(400, {'error': 'Invalid results'})
+        except (ValueError, AttributeError) as error:
+            self.reply(400, {'error': str(error)[:200] or 'Invalid request'})
             return
 
 
@@ -270,12 +295,15 @@ def main():
     server.public_origin = args.public_origin.rstrip('/') if args.public_origin else None
     server.db_path = db_path
     server.backups = BackupManager(db_path, args.backup_dir, args.backup_timezone)
+    server.statistics_backups = BackupManager(db_path, Path(args.backup_dir) / 'statistics', args.backup_timezone, kind='statistics')
     server.backups.start()
+    server.statistics_backups.start()
     print(f'Game: http://{args.host}:{args.port}', flush=True)
     try:
         server.serve_forever()
     finally:
         server.backups.stopped.set()
+        server.statistics_backups.stopped.set()
         server.server_close()
 
 

@@ -200,7 +200,7 @@ assert(csv.includes('"Ana ""Ace"", Smith"')&&csv.includes('"999"')&&csv.includes
 assert(interactions.includes("setPointerCapture")&&interactions.includes("pointercancel")&&interactions.includes("requestAnimationFrame"),"shared drag controller captures pointers, cancels safely, and paints on animation frames");
 assert(minigames.match(/attachPointerDrag/g).length>=3,"packing and truck loading use the shared pointer drag controller");
 assert(effects.includes("prefers-reduced-motion")&&css.includes("prefers-reduced-motion"),"arcade effects respect reduced-motion preferences in JS and CSS");
-assert(game.includes("permanently delete ALL results")&&game.includes('value!=="RESET"'),"competition reset requires explicit confirmation");
+assert(!game.includes("showOrganizer")&&!game.includes("organizerEnabled")&&!game.includes('get("seed")'),"public organizer tools and URL seed overrides are removed");
 assert(!/class TruckLoading[\s\S]*?draw\(\)/.test(minigames),"truck loading never rebuilds its scene after initial render");
 assert(minigames.includes("this.setSlot(sourceIndex,occupant)")&&minigames.includes("pallet-yard-cards"),"occupied truck positions swap predictably or return their pallet to the yard");
 assert(minigames.includes("cards=new Map")&&minigames.includes("slot.append(card)"),"truck loading moves persistent pallet nodes instead of recreating them");

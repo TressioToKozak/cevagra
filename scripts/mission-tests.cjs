@@ -14,7 +14,7 @@ const origin = process.env.TEST_ORIGIN || 'http://127.0.0.1:8002/';
     page.on('response', r => { if(r.status()>=400) errors.push(`${r.status()} ${r.url()}`); });
     await page.goto(origin);
     await page.evaluate(async () => {
-      window.qa = (await import('./game.js?v=64')).manager;
+      window.qa = (await import('./game.js?v=65')).manager;
       window.configs = (await import('./tasks.js?v=52')).GAME_CONFIGS;
       window.make = (await import('./tasks.js?v=52')).buildCompetition;
       window.RNG = (await import('./rng.js?v=20')).SeededRandom;
@@ -111,7 +111,7 @@ const origin = process.env.TEST_ORIGIN || 'http://127.0.0.1:8002/';
     await setup('quality',true);const ready=page.locator('#ready-button');await ready.focus();await page.keyboard.press('Tab');await page.keyboard.press('Shift+Tab');assert.equal(await ready.evaluate(n=>getComputedStyle(n).outlineStyle),'solid');await rapid(ready);assert.equal(await page.evaluate(()=>qa.state),'countdown');assert(await page.evaluate(()=>qa.guard.closed));const qaStateReset=await page.evaluate(()=>{qa.reset();qa.landing();return qa.state;});assert.equal(qaStateReset,'menu');
     // The image-only fallback cancels dragstart, without blanket pointer cancellation.
     const prevented=await page.locator('#app img').first().evaluate(img=>{const event=new DragEvent('dragstart',{bubbles:true,cancelable:true});img.dispatchEvent(event);return event.defaultPrevented;});assert(prevented);
-    const admin=await browser.newPage();await admin.goto(origin+'?organizer=1');await admin.locator('#competition-seed').fill('Organizer editable');await admin.locator('#competition-seed').press('ControlOrMeta+A');assert.equal(await admin.locator('#competition-seed').evaluate(n=>n.selectionEnd-n.selectionStart),18);await admin.close();
+    const admin=await browser.newPage();await admin.goto(origin+'?organizer=1&seed=FORGED');assert.equal(await admin.locator('#competition-seed,#save-seed,#reset-results').count(),0);await admin.close();
     assert.deepEqual(errors,[]);
     console.log(process.env.SELECTION_ONLY?'Selection/drag prevention and editable exceptions passed.':'27 premium briefings, 9 result scenarios, rank #1/#101, long names, uniform cards, progress ratios, return/leaderboard, rapid clicks across nine games, custom drags, no native image dragging, and editable exceptions passed.');
   } finally {await browser.close();}

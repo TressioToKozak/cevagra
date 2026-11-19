@@ -11,6 +11,8 @@ from threading import Event, RLock, Thread
 from xml.sax.saxutils import escape
 from zipfile import ZIP_DEFLATED, ZipFile
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
+from excel_io import export_book
+from stats_state import snapshot as statistics_snapshot
 
 
 def workbook(rows):
@@ -46,8 +48,9 @@ def workbook(rows):
 
 
 class BackupManager:
-    def __init__(self, db_path, directory, timezone='Europe/Berlin'):
+    def __init__(self, db_path, directory, timezone='Europe/Berlin', kind='leaderboard'):
         self.db_path = db_path
+        self.kind = kind
         self.directory = Path(directory).resolve()
         self.directory.mkdir(parents=True, exist_ok=True)
         try:
@@ -61,12 +64,13 @@ class BackupManager:
     def create(self, rows, daily=False, now=None):
         now = now or datetime.now(self.zone)
         date = now.astimezone(self.zone).strftime('%d.%m.%Y')
-        stem = f'Leaderboard BackUp - {date}' if daily else f'Leaderboard - {date}'
+        title = self.kind.title()
+        stem = f'{title} BackUp - {date}' if daily else f'{title} - {date}'
         with self.lock:
             target = self.directory / f'{stem}.xlsx'
             if daily and target.exists():
                 return target.name
-            payload = workbook(rows)
+            payload = export_book(self.kind, rows)
             # Publish only a fully written workbook; a crash cannot leave a partial .xlsx.
             fd, temporary_name = tempfile.mkstemp(prefix='.leaderboard-', suffix='.tmp', dir=self.directory)
             temporary = Path(temporary_name)
@@ -79,6 +83,12 @@ class BackupManager:
                 while True:
                     try:
                         os.link(temporary, target)  # Atomic, and never overwrites another backup.
+                        if hasattr(os, 'O_DIRECTORY'):
+                            directory_fd = os.open(self.directory, os.O_DIRECTORY)
+                            try:
+                                os.fsync(directory_fd)
+                            finally:
+                                os.close(directory_fd)
                         return target.name
                     except FileExistsError:
                         if daily:
@@ -90,12 +100,14 @@ class BackupManager:
 
     def daily(self, now=None):
         now = now or datetime.now(self.zone)
-        name = f'Leaderboard BackUp - {now.astimezone(self.zone).strftime("%d.%m.%Y")}.xlsx'
-        with self.lock:
-            if (self.directory / name).exists():
-                return name
-            with sqlite3.connect(self.db_path, timeout=10) as db:
-                rows = [json.loads(row[0]) for row in db.execute('SELECT payload FROM runs')]
+        name = f'{self.kind.title()} BackUp - {now.astimezone(self.zone).strftime("%d.%m.%Y")}.xlsx'
+        if (self.directory / name).is_file():
+            return name
+        # Match mutation lock ordering: database first, then filesystem lock.
+        # This also prevents a midnight snapshot from racing a replacement.
+        with sqlite3.connect(self.db_path, timeout=10) as db:
+            db.execute('BEGIN IMMEDIATE')
+            rows = [json.loads(row[0]) for row in db.execute('SELECT payload FROM runs')] if self.kind == 'leaderboard' else statistics_snapshot(db)
             return self.create(rows, daily=True, now=now)
 
     def start(self):

@@ -1,3 +1,2 @@
 const {spawnSync}=require('node:child_process');
-const result=spawnSync('python3',['scripts/backup-tests.py'],{stdio:'inherit'});
-process.exitCode=result.status??1;
+for(const file of ['scripts/backup-tests.py','scripts/admin-data-tests.py']){const result=spawnSync('python3',[file],{stdio:'inherit'});if(result.status){process.exitCode=result.status;break;}}

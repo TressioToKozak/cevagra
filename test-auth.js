@@ -1,6 +1,6 @@
 const form=document.getElementById('test-login-form'),button=document.getElementById('test-sign-in'),error=document.getElementById('test-login-error');
 const api=new URL('api/panel/',import.meta.url);let opening=null;
-async function openTests(){if(!opening)opening=import('./game.js?v=64').then(()=>document.body.classList.remove('test-login-active')).catch(e=>{opening=null;throw e;});await opening;}
+async function openTests(){if(!opening)opening=import('./game.js?v=65').then(()=>document.body.classList.remove('test-login-active')).catch(e=>{opening=null;throw e;});await opening;}
 form.onsubmit=async event=>{event.preventDefault();button.disabled=true;error.textContent='';try{
  const response=await fetch(new URL('login',api),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:document.getElementById('test-username').value,password:document.getElementById('test-password').value}),signal:AbortSignal.timeout(5000)});
  if(!response.ok)throw Error(response.status===401?'Incorrect username or password.':'Server sign-in is unavailable. Contact the administrator.');

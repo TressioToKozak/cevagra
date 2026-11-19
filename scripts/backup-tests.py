@@ -23,7 +23,8 @@ def sheet_values(payload):
     with ZipFile(BytesIO(payload)) as archive:
         assert archive.testzip() is None
         for name in archive.namelist():
-            ET.fromstring(archive.read(name))
+            if name.endswith('.xml') or name.endswith('.rels'):
+                ET.fromstring(archive.read(name))
         sheet = ET.fromstring(archive.read('xl/worksheets/sheet1.xml'))
         ns = {'s': 'http://schemas.openxmlformats.org/spreadsheetml/2006/main'}
         return [node.text for node in sheet.findall('.//s:t', ns)], [node.text for node in sheet.findall('.//s:v', ns)]
