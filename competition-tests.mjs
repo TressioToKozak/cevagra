@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import {existsSync,readFileSync} from 'node:fs';
 import {SeededRandom,createRunId,createRunSeed} from './rng.js';
-import {buildCompetition,buildGameOrder,GAME_CONFIGS,PACKING_SETS} from './tasks.js';
+import {buildCompetition,buildGameOrder,GAME_CONFIGS,PACKING_SETS,LOADING_CITIES} from './tasks.js';
 import {packingInventoryLayout,packingBoxAsset,MINIGAME_CLASSES} from './minigames.js';
 import {scoreStandard,sumScores} from './scoring.js';
 import {LeaderboardManager,LocalLeaderboardStore,CompetitionSettings,leaderboardCsv} from './storage.js';
@@ -11,6 +11,8 @@ let checks=0;const check=(condition,message)=>{checks++;assert(condition,message
 const ids=Array.from({length:1000},createRunId),seeds=Array.from({length:1000},createRunSeed);
 check(new Set(ids).size===1000&&new Set(seeds).size===1000,'secure run identifiers and seeds are unique');
 const qualityCounts=new Map([[3,0],[4,0],[5,0]]),repeatedIssues=new Set();
+const citySets=new Set(),cityOrders=new Set(),deliveryOrders=new Set(),seenCities=new Set();
+check(LOADING_CITIES.length===48&&new Set(LOADING_CITIES).size===48&&LOADING_CITIES.every(city=>city.length<=7),'48 distinct short European city names');
 const lastPositions=new Set(),variants=new Set(),zones=new Set(),actions={HOLD:0,RELEASE:0};
 for(let i=0;i<500;i++){
  const seed=`BALANCED-${i}`,rng=new SeededRandom(seed),data=buildCompetition(seed,rng),again=buildCompetition(seed,new SeededRandom(seed)),order=buildGameOrder(rng.fork('game-order'));
@@ -21,6 +23,9 @@ for(let i=0;i<500;i++){
   for(const round of data[name].rounds){check(round.options.length===6,'every round keeps exactly six choices');const position=round.options.indexOf(round.target);check(position>=0&&position!==previous,'no consecutive matching positions');check(round.options.length===round.variants.length&&new Set(round.options).size===round.options.length,'complete unique options and artwork');counts[position]++;previous=position;}
   check(Math.max(...counts)<=2,'each correct slot appears at most twice over ten rounds');
  }
+ const pallets=data.loading.pallets;check(pallets.length===7&&new Set(pallets.map(p=>p.city)).size===7,'seven distinct cities per load');check(pallets.every(p=>LOADING_CITIES.includes(p.city)),'only curated European cities');
+ citySets.add(pallets.map(p=>p.city).sort().join('|'));cityOrders.add(pallets.map(p=>p.city).join('|'));deliveryOrders.add(pallets.map(p=>p.stop).join());pallets.forEach(p=>seenCities.add(p.city));
+ check(!pallets.every((p,i)=>p.stop===i+1)&&!pallets.every((p,i)=>p.stop===7-i),'starting pallets are mixed, never pre-solved');check(data.loading.solution.map(id=>pallets.find(p=>p.id===id).stop).join()==='7,6,5,4,3,2,1','reverse delivery order remains the solution');
  check(data.conveyor.carriers.length===6&&new Set(data.conveyor.carriers).size===6,'all six carrier zones');zones.add(data.conveyor.carriers.join());
  check(data.conveyor.carriers.every(c=>data.conveyor.parcels.filter(p=>p.carrier===c).length===2),'equal sorting workload for all carriers');
  check(data.packing.boxes.length===10&&data.packing.boxes.reduce((s,b)=>s+b.w*b.h,0)===30,'packing variants all have ten boxes covering thirty cells');variants.add(data.packing.set);
@@ -48,6 +53,7 @@ for(const path of COMPETITION_ASSETS)check(existsSync(path)&&readFileSync(path).
 check(COMPETITION_ASSETS.every(p=>!/(mockup|approved-|reference-full|\/reference\/|\/examples\/)/.test(p)),'no mockups are downloaded');
 const report=JSON.parse(readFileSync('assets/optimization-report.json'));check(report.after<report.before*.2,'runtime image bytes reduced by over 80 percent');
 const storeData={version:3,runs:[]},store={read:()=>structuredClone(storeData),write:data=>{Object.assign(storeData,structuredClone(data));return true;},clear:()=>{storeData.runs=[];return true;}};
+check(citySets.size===500&&cityOrders.size===500&&deliveryOrders.size>400&&seenCities.size===LOADING_CITIES.length,'500 seeds vary city selections and waiting order across the entire European pool');
 const board=new LeaderboardManager(store);
 for(const id of ids.slice(0,100))board.saveRun({id,name:'Same Name',normalizedName:'same name',score:500,accuracy:80,mistakes:2,runSeed:'seed-'+id,eventId:'EVENT'});
 check(board.getLeaderboard().length===100&&new Set(board.getLeaderboard().map(r=>r.id)).size===100,'identical player names remain separate');check(board.getLeaderboard().every(r=>r.timestamp&&r.runSeed),'timestamps and seeds retained');

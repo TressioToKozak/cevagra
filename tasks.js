@@ -1,13 +1,15 @@
 export const CARRIERS=["DHL","UPS","TNT","TOF","KLG","BRINGCARGO"];
 export const GIFTS=["TEDDY BEAR","TRAIN SET","SNOW GLOBE","PUZZLE","ROBOT","RED SLED","DRUM","DOLL","SKATES","BLOCKS"];
+// Short European names keep the existing pallet labels readable at every size.
+export const LOADING_CITIES=["Oslo","Bergen","Umea","Espoo","Turku","Aarhus","Odense","Malmo","London","Dublin","Bristol","Nice","Paris","Lyon","Lille","Nantes","Berlin","Munich","Bremen","Cologne","Prague","Brno","Vienna","Graz","Zurich","Basel","Bern","Geneva","Milan","Turin","Verona","Rome","Madrid","Bilbao","Seville","Porto","Lisbon","Warsaw","Gdansk","Krakow","Riga","Tallinn","Vilnius","Zagreb","Split","Pecs","Ghent","Leiden"];
 export const GAME_CONFIGS=[
   {id:"picking",name:"SPEED PICKING",time:15,max:100,action:"CLICK",instruction:"Find the requested SKU. Click the matching warehouse location.",hint:"A correct SKU immediately brings the next pick."},
   {id:"conveyor",name:"CONVEYOR RUSH",time:20,max:100,action:"DRAG",instruction:"Drag each moving box into its matching carrier zone.",hint:"Sort it before it leaves the conveyor."},
-  {id:"barcode",name:"PALLET SEALING",time:15,max:100,action:"HOLD",instruction:"Hold the film roll. Cover every part of the pallet. Start anywhere.",hint:"Move up or down. Fill every gap and avoid using too much film."},
+  {id:"barcode",name:"PALLET SEALING",time:15,max:100,action:"HOLD",instruction:"Hold the seal roll. Cover every part of the pallet. Start anywhere.",hint:"Move up or down. Fill every gap and avoid using too much seal."},
   {id:"packing",name:"PACKING TETRIS",time:25,max:100,action:"DRAG",instruction:"Drag boxes onto the pallet. Fit every box without overlaps.",hint:"Green placement fits; red means blocked."},
   {id:"detective",name:"WMS DETECTIVE",time:15,max:100,action:"SELECT",instruction:"Select every row where the WMS SKU differs from the scanner SKU.",hint:"Flag the records, then confirm your selection."},
-  {id:"loading",name:"TRUCK LOADING",time:20,max:100,action:"DRAG",instruction:"Load the last delivery deepest inside the truck.",hint:"Click a pallet then a slot, or drag it. Swap pallets to change the load order."},
-  {id:"memory",name:"MEMORY CHALLENGE",time:15,max:100,action:"MEMORIZE",instruction:"Remember the five gifts. Then select the same gifts.",hint:"Then select only the gifts from Santa’s manifest."},
+  {id:"loading",name:"TRUCK LOADING",time:20,max:100,action:"DRAG",instruction:"Load the last delivery deepest inside the truck.",hint:"Drag a pallet into a truck slot. Swap pallets to change the load order."},
+  {id:"memory",name:"MEMORY CHALLENGE",time:15,max:100,action:"MEMORIZE",instruction:"Remember the five gifts.",hint:"Then select only the gifts from Santa’s manifest."},
   {id:"quality",name:"QUALITY CONTROL",time:15,max:100,action:"SELECT",instruction:"Inspect the parcels and find every visible problem.",hint:"Look for damage, bad labels, missing data and wrong SKUs."},
   {id:"final",name:"FINAL DISPATCH",time:25,max:200,action:"CHECK",instruction:"Compare the order with the packed shipment.",hint:"Flag mismatches and choose RELEASE or HOLD. Points decrease every second."}
 ];
@@ -68,7 +70,14 @@ export function buildTask(type,rng){
     const rows=rng.shuffle(Array.from({length:8},(_,index)=>{const expected=sku(rng),actual=wrongRows.has(index)?similarSkus(rng,expected,2).find(value=>value!==expected):expected;return {id:`REC-${index+1}`,location:locations[index],expected,actual};}));
     return {rows,solution:rows.filter(row=>row.expected!==row.actual).map(row=>row.id)};
   }
-  if(type==="loading"){const ids=unique(7,()=>`PLT-${digits(rng,4)}`),cities=rng.shuffle(["Oslo","Boston","Zurich","Toronto","Helsinki","Edinburgh","Copenhagen"]),pallets=Array.from({length:7},(_,index)=>({id:ids[index],stop:index+1,city:cities[index]}));return {pallets:rng.shuffle(pallets),solution:[...pallets].sort((a,b)=>b.stop-a.stop).map(item=>item.id)};}
+  if(type==="loading"){
+    const ids=unique(7,()=>`PLT-${digits(rng,4)}`),cities=rng.shuffle(LOADING_CITIES).slice(0,7);
+    const pallets=Array.from({length:7},(_,index)=>({id:ids[index],stop:index+1,city:cities[index]}));
+    let waiting;
+    // Start mixed: neither delivery order nor an already solved reverse order.
+    do{waiting=rng.shuffle(pallets);}while(waiting.every((p,i)=>p.stop===i+1)||waiting.every((p,i)=>p.stop===7-i));
+    return {pallets:waiting,solution:[...pallets].reverse().map(item=>item.id)};
+  }
   if(type==="memory"){const shipment=rng.shuffle(GIFTS).slice(0,5);return {shipment,options:rng.shuffle([...shipment,...rng.shuffle(GIFTS.filter(gift=>!shipment.includes(gift))).slice(0,3)])};}
   if(type==="quality"){const count=rng.int(3,5),types=["dented","wrong-label","missing","wrong-sku"],issues=rng.shuffle([...Array.from({length:count},()=>rng.pick(types)),...Array(8-count).fill(null)]),parcels=Array.from({length:8},(_,index)=>({id:`GIFT-${index+1}`,sku:sku(rng),carrier:rng.pick(CARRIERS),issue:issues[index],variant:rng.fork(`parcel-art-${index}`).int(0,2)}));return {parcels:rng.shuffle(parcels),solution:parcels.filter(parcel=>parcel.issue).map(parcel=>parcel.id)};}
   if(type==="final"){

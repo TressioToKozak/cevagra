@@ -11,5 +11,6 @@ for kind in ['picking','conveyor','barcode','packing','detective','loading','mem
     if os.environ.get('RECORD_GAMES') and kind not in os.environ['RECORD_GAMES'].split(','):
         continue
     frames=ROOT/'work/tutorial-recordings'/kind
-    subprocess.run(['ffmpeg','-hide_banner','-loglevel','error','-y','-framerate','8','-i',str(frames/'%04d.png'),'-filter_complex','[0:v]scale=800:450:flags=lanczos,split[a][b];[a]palettegen=max_colors=128:stats_mode=diff[p];[b][p]paletteuse=dither=bayer:bayer_scale=4:diff_mode=rectangle','-loop','0',str(OUT/f'{kind}.gif')],check=True)
+    size='640:360' if kind=='barcode' else '800:450'
+    subprocess.run(['ffmpeg','-hide_banner','-loglevel','error','-y','-framerate','8','-i',str(frames/'%04d.png'),'-filter_complex',f'[0:v]scale={size}:flags=lanczos,split[a][b];[a]palettegen=max_colors=128:stats_mode=diff[p];[b][p]paletteuse=dither=bayer:bayer_scale=4:diff_mode=rectangle','-loop','0',str(OUT/f'{kind}.gif')],check=True)
     print(kind,(OUT/f'{kind}.gif').stat().st_size,flush=True)

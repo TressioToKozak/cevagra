@@ -7,8 +7,8 @@ const {chromium}=require('playwright');
   page.on('pageerror',e=>errors.push(e.message));
   await page.goto(process.env.TEST_ORIGIN||'http://127.0.0.1:8002/');
   await page.evaluate(async()=>{
-   window.qa=(await import('./game.js?v=67')).manager;
-   const tasks=await import('./tasks.js?v=52');window.configs=tasks.GAME_CONFIGS;window.make=tasks.buildCompetition;
+   window.qa=(await import('./game.js?v=68')).manager;
+   const tasks=await import('./tasks.js?v=68');window.configs=tasks.GAME_CONFIGS;window.make=tasks.buildCompetition;
    window.RNG=(await import('./rng.js?v=20')).SeededRandom;
   });
   await page.locator('#player-name').fill('Alex');
@@ -81,6 +81,22 @@ const {chromium}=require('playwright');
    assert(!(await page.locator('.leaderboard').innerText()).includes('alex@example.com'));
    await page.locator('#modal-close').click();console.log(`${width}x${height}: all screens fit; six stable pallets; email saved and hidden from ranking`);
   }
+  // Every allowed city must fit both waiting and loaded pallets, including phones.
+  const cityCount=await page.evaluate(async()=>{window.cityLabels=(await import('./tasks.js?v=68')).LOADING_CITIES;return cityLabels.length;});
+  for(const [width,height] of [[1920,1080],[1366,768],[1024,768],[390,844],[320,568]]){
+   await page.setViewportSize({width,height});
+   await page.evaluate(async()=>{qa.reset();document.body.classList.remove('menu-active','results-active');qa.gameConfigs=configs;qa.tasks=make('CITY-LABELS',new RNG('CITY-LABELS'));qa.index=configs.findIndex(c=>c.id==='loading');qa.playerName='CITY LABEL QA';qa.state='countdown';await qa.startGame();qa.stopTimer();});
+   await page.waitForTimeout(100);
+   for(const loaded of [false,true]){
+    if(loaded)await page.evaluate(()=>qa.active.data.pallets.forEach((p,i)=>qa.active.place(p.id,i)));
+    for(let offset=0;offset<cityCount;offset+=7){
+     const clipped=await page.evaluate(offset=>{const cards=qa.active.data.pallets.map(p=>qa.active.cards.get(p.id));cards.forEach((c,i)=>{c.querySelector('.pallet-copy b').textContent=cityLabels[(offset+i)%cityLabels.length];});return cards.map(c=>{const label=c.querySelector('.pallet-copy b'),copy=c.querySelector('.pallet-copy'),a=label.getBoundingClientRect(),r=copy.getBoundingClientRect();return {city:label.textContent,clipped:label.scrollWidth>label.clientWidth+1||a.right>r.right+1||a.bottom>r.bottom+1};}).filter(x=>x.clipped);},offset);
+     assert.deepEqual(clipped,[],`${width}x${height}: all European names fit ${loaded?'truck':'yard'} labels`);
+    }
+    await page.screenshot({path:`/tmp/ceva-european-cities-${width}-${loaded?'truck':'yard'}.png`});
+   }
+  }
+  console.log('All 48 European city names fit waiting and loaded pallet labels on five desktop/tablet/phone viewports.');
   assert.deepEqual(errors,[]);
  }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exit(1);});
