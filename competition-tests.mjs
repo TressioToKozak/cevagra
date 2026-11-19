@@ -12,7 +12,7 @@ const ids=Array.from({length:1000},createRunId),seeds=Array.from({length:1000},c
 check(new Set(ids).size===1000&&new Set(seeds).size===1000,'secure run identifiers and seeds are unique');
 const qualityCounts=new Map([[3,0],[4,0],[5,0]]),repeatedIssues=new Set();
 const citySets=new Set(),cityOrders=new Set(),deliveryOrders=new Set(),seenCities=new Set();
-check(LOADING_CITIES.length===48&&new Set(LOADING_CITIES).size===48&&LOADING_CITIES.every(city=>city.length<=7),'48 distinct short European city names');
+check(LOADING_CITIES.length===48&&new Set(LOADING_CITIES).size===48&&LOADING_CITIES.every(city=>city.length<=6),'48 distinct short European city names');
 const lastPositions=new Set(),variants=new Set(),zones=new Set(),actions={HOLD:0,RELEASE:0};
 for(let i=0;i<500;i++){
  const seed=`BALANCED-${i}`,rng=new SeededRandom(seed),data=buildCompetition(seed,rng),again=buildCompetition(seed,new SeededRandom(seed)),order=buildGameOrder(rng.fork('game-order'));

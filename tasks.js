@@ -1,7 +1,7 @@
 export const CARRIERS=["DHL","UPS","TNT","TOF","KLG","BRINGCARGO"];
 export const GIFTS=["TEDDY BEAR","TRAIN SET","SNOW GLOBE","PUZZLE","ROBOT","RED SLED","DRUM","DOLL","SKATES","BLOCKS"];
 // Short European names keep the existing pallet labels readable at every size.
-export const LOADING_CITIES=["Oslo","Bergen","Umea","Espoo","Turku","Aarhus","Odense","Malmo","London","Dublin","Bristol","Nice","Paris","Lyon","Lille","Nantes","Berlin","Munich","Bremen","Cologne","Prague","Brno","Vienna","Graz","Zurich","Basel","Bern","Geneva","Milan","Turin","Verona","Rome","Madrid","Bilbao","Seville","Porto","Lisbon","Warsaw","Gdansk","Krakow","Riga","Tallinn","Vilnius","Zagreb","Split","Pecs","Ghent","Leiden"];
+export const LOADING_CITIES=["Oslo","Bergen","Umea","Espoo","Turku","Aarhus","Odense","Malmo","London","Dublin","Leeds","Nice","Paris","Lyon","Lille","Nantes","Berlin","Munich","Bremen","Bonn","Prague","Brno","Vienna","Graz","Zurich","Basel","Bern","Geneva","Milan","Turin","Verona","Rome","Madrid","Bilbao","Cadiz","Porto","Lisbon","Lodz","Gdansk","Sopot","Riga","Tartu","Kaunas","Zagreb","Split","Pecs","Ghent","Leiden"];
 export const GAME_CONFIGS=[
   {id:"picking",name:"SPEED PICKING",time:15,max:100,action:"CLICK",instruction:"Find the requested SKU. Click the matching warehouse location.",hint:"A correct SKU immediately brings the next pick."},
   {id:"conveyor",name:"CONVEYOR RUSH",time:20,max:100,action:"DRAG",instruction:"Drag each moving box into its matching carrier zone.",hint:"Sort it before it leaves the conveyor."},
