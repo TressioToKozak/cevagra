@@ -98,6 +98,40 @@ class HTTPConcurrency(unittest.TestCase):
             state['started']=time.time()-seconds
             db.execute('UPDATE game_sessions SET state=? WHERE id=?',(json.dumps(state),game['id']))
 
+    def test_checkpoint_persists_observed_time_without_statistics_heartbeat(self):
+        game=self.start();config=game['configs'][0]
+        code,stage=self.post('/api/game/stage',{'gameId':game['id'],'id':config['id']});self.assertEqual(code,200)
+        self.age(game,.5)
+        with server.database(self.path) as db:
+            db.execute('UPDATE public_sessions SET seen=?',(time.time()-.5,))
+        payload={'gameId':game['id'],'nonce':stage['nonce'],'seq':1,'events':[{'type':'submit','at':500}]}
+        code,receipt=self.post('/api/game/events',payload);self.assertEqual(code,200,receipt)
+        with server.database(self.path) as db:credited=db.execute('SELECT SUM(play_ms) FROM statistics_visits').fetchone()[0]
+        self.assertGreaterEqual(credited,450);self.assertLess(credited,1000)
+        self.assertEqual(self.post('/api/game/events',payload),(200,receipt))
+        with server.database(self.path) as db:
+            self.assertEqual(db.execute('SELECT SUM(play_ms) FROM statistics_visits').fetchone()[0],credited)
+            # A reset can remove the visit while its server cookie remains valid.
+            db.execute('DELETE FROM statistics_visits')
+        time.sleep(.02)
+        next_payload={'gameId':game['id'],'nonce':receipt['nonce'],'seq':2,'events':[{'type':'submit','at':520}]}
+        self.assertEqual(self.post('/api/game/events',next_payload)[0],200)
+        with server.database(self.path) as db:self.assertEqual(db.execute('SELECT COUNT(*) FROM statistics_visits').fetchone()[0],1)
+
+    def test_older_heartbeat_cannot_reopen_a_newer_hidden_state(self):
+        from types import SimpleNamespace
+        from game_sessions import handle
+        jar=next(h.cookiejar for h in self.client.handlers if hasattr(h,'cookiejar'))
+        cookie='; '.join(f'{c.name}={c.value}' for c in jar)
+        now=time.time()
+        handler=SimpleNamespace(headers={'Cookie':cookie},client_address=('127.0.0.1',1),request_received_at=now)
+        with server.database(self.path) as db:
+            handle(db,handler,'/api/statistics',{'visible':False})
+            handler.request_received_at=now-.1
+            result,_=handle(db,handler,'/api/statistics',{'visible':True})
+            self.assertTrue(result['superseded'])
+            self.assertEqual(db.execute('SELECT visible FROM public_sessions').fetchone()[0],0)
+
     def test_verification_does_not_hold_the_database_writer(self):
         entered=threading.Event();release=threading.Event();original=server.worker
         def slow(data):entered.set();release.wait(4);return original(data)

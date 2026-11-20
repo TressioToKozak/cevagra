@@ -77,14 +77,16 @@ def visit(db, handler, now):
     return row
 
 
-def credit(db, owner, now):
+def credit(db, owner, now, state=None):
     row = db.execute('SELECT id,seen,visible FROM public_sessions WHERE token_hash=?', (owner,)).fetchone()
     if not row:
         return
-    active = db.execute('SELECT state FROM game_sessions WHERE owner=? AND expires>? ORDER BY created DESC LIMIT 1', (owner, now)).fetchone()
+    db.execute('INSERT OR IGNORE INTO statistics_visits VALUES (?,0)', (row[0],))
+    if state is None:
+        active = db.execute('SELECT state FROM game_sessions WHERE owner=? AND expires>? ORDER BY created DESC LIMIT 1', (owner, now)).fetchone()
+        state = json.loads(active[0]) if active else None
     seconds = 0
-    if active and row[2] and now-row[1] <= 30:
-        state = json.loads(active[0])
+    if state and row[2] and now-row[1] <= 30:
         if state.get('active'):
             config = state['plan']['configs'][state['index']]
             seconds = max(0, min(now, state['started']+config['time'])-max(row[1], state['started']))
@@ -122,13 +124,15 @@ def handle(db, handler, route, data):
         if set(data)-{'visible'} or type(data.get('visible', True)) is not bool:
             raise APIError(400, 'Client visit IDs and play durations are not accepted')
         db.execute('INSERT OR IGNORE INTO statistics_visits VALUES (?,0)', (row[1],))
+        if received_at < row[4]:
+            return {'saved': True, 'superseded': True}, None
         changed = int(data.get('visible', True)) != row[3]
         if changed:
             limit(db, 'visibility:'+owner, 10, 60, now)
         if now-row[4] < 5 and not changed:
             return {'saved': True, 'throttled': True}, None
-        credit(db, owner, now)
-        db.execute('UPDATE public_sessions SET visible=?,last_write=? WHERE token_hash=?', (int(data.get('visible', True)), now, owner))
+        credit(db, owner, received_at)
+        db.execute('UPDATE public_sessions SET visible=?,last_write=? WHERE token_hash=?', (int(data.get('visible', True)), received_at, owner))
         return {'saved': True}, None
     limit(db, 'game-api:'+owner, 360, 60, now)
     if route == '/api/game/start':
@@ -181,7 +185,7 @@ def handle(db, handler, route, data):
         state.update(active=True, started=now, nonce=digest(nonce), seq=0, events=[])
         state.pop('last_received', None)
         state.pop('checkpoint_receipt', None)
-        db.execute('UPDATE public_sessions SET seen=?,visible=1 WHERE token_hash=?', (now, owner))
+        db.execute('UPDATE public_sessions SET seen=?,visible=1,last_write=? WHERE token_hash=?', (now, now, owner))
         save()
         return {'nonce': nonce}, None
     if not state['active'] or not isinstance(data.get('nonce'), str) or not secrets.compare_digest(digest(data['nonce']), state['nonce']):
@@ -205,6 +209,7 @@ def handle(db, handler, route, data):
         if elapsed*1000-previous > 2500:
             raise APIError(400, 'Stale gameplay checkpoint')
         state['events'].extend(events); state['seq'] += 1
+        credit(db, owner, received_at, state=state)
         state['last_received'] = received_at
         nonce = secrets.token_urlsafe(24); state['nonce'] = digest(nonce)
         response = {'nonce': nonce, 'seq': state['seq']}
