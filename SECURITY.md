@@ -175,3 +175,16 @@ Transient final-save failures expose RETRY SAVE and keep the result open; perman
 verification errors are not retried. No client score is uploaded during recovery.
 Run `node scripts/run-tests.cjs result-save concurrency security verified-flow` to
 check dropped acknowledgements, rejected saves, nonce receipts and normal play.
+
+## Statistics delivery
+
+The tracker retries session setup on later online/heartbeat events, checks HTTP
+errors, renews a rejected visitor session, and serializes heartbeat requests.
+A final hidden-state beacon uses the same server cookie; no browser duration or
+visitor ID is accepted. The server ignores visibility updates older than the
+last accepted server-received update. Accepted gameplay checkpoints persist
+observed active time as well, so recording does not depend solely on a later
+heartbeat or stage completion. Exact checkpoint retries do not credit time twice.
+After a statistics reset, active verified gameplay can recreate its current visit
+row without replacing the server cookie. Time remains bounded by stage deadlines,
+visibility and server-observed intervals.

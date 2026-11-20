@@ -1,5 +1,5 @@
-import {createGameProtocol} from './game-protocol.js?v=72';
-import {createGameAnalytics} from './analytics.js?v=72';
+import {createGameProtocol} from './game-protocol.js?v=73';
+import {createGameAnalytics} from './analytics.js?v=73';
 import {startDailyBackups} from "./backup-store.js?v=43";
 import {installEditingCursor} from "./editing-cursor.js?v=39";
 import { CompetitionSettings, LeaderboardManager, SqlLeaderboardStore, leaderboardCsv, normalizeName } from "./storage.js?v=64";
