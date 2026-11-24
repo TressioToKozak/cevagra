@@ -15,8 +15,8 @@ export function replay({config,task,events,elapsed,completionElapsed=elapsed}){
  const timing=complete=>({timeRemaining:Math.max(0,config.time-(complete?completionElapsed:elapsed)),timeLimit:config.time});let correct=0,mistakes=0,attempts=0,score=0,complete=false;
  const id=config.id,selected=new Set();let action=null;
  if(id==='picking'){
-  let index=0;const cooldown=new Map();for(const e of events){if(e.type!=='pick'||index>=task.rounds.length||!task.rounds[index].options.includes(e.sku))fail('Invalid pick');if((cooldown.get(e.sku)||0)>e.at)fail('Pick cooldown');if(e.sku===task.rounds[index].target){correct++;index++;cooldown.clear();}else{mistakes++;cooldown.set(e.sku,e.at+250);}}
-  complete=correct===task.rounds.length;score=scoreSpeedPicking({correct,total:task.rounds.length,mistakes,...timing(complete)});attempts=task.rounds.length+mistakes;mistakes+=task.rounds.length-correct;
+  let index=0;const pickTimes=[],cooldown=new Map();for(const e of events){if(e.type!=='pick'||index>=task.rounds.length||!task.rounds[index].options.includes(e.sku))fail('Invalid pick');if((cooldown.get(e.sku)||0)>e.at)fail('Pick cooldown');if(e.sku===task.rounds[index].target){pickTimes.push(Math.min(config.time,e.at/1000));correct++;index++;cooldown.clear();}else{mistakes++;cooldown.set(e.sku,e.at+250);}}
+  complete=correct===task.rounds.length;score=scoreSpeedPicking({pickTimes,correct,total:task.rounds.length,mistakes,...timing(complete)});attempts=task.rounds.length+mistakes;mistakes+=task.rounds.length-correct;
  }else if(id==='conveyor'){
   let index=0;for(const e of events){const item=task.parcels[index];if(!item||!['sort','miss'].includes(e.type)||e.id!==item.id)fail('Invalid parcel order');if(e.type==='sort'&&!task.carriers.includes(e.carrier))fail('Invalid chute');if(e.type==='sort'&&e.carrier===item.carrier)correct++;else mistakes++;index++;}
   complete=index===task.parcels.length;score=scoreStandard({correct,total:task.parcels.length,mistakes,completed:correct===task.parcels.length,...timing(complete)});attempts=task.parcels.length;mistakes+=task.parcels.length-index;

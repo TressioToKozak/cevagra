@@ -1,7 +1,7 @@
 import {createPalletSealing} from "./sealing.js?v=78";
 import { SeededRandom } from "./rng.js?v=20";
 import { CARRIERS } from "./tasks.js?v=69";
-import { scoreClassification, scoreStandard, scoreSpeedPicking } from "./scoring.js?v=76";
+import { scoreClassification, scoreStandard, scoreSpeedPicking } from "./scoring.js?v=79";
 import { attachPointerDrag } from "./interactions.js?v=23";
 
 export function planPalletMove(slots,id,targetIndex){
@@ -93,7 +93,7 @@ class RapidFind extends BaseMinigame {
   constructor(kind){super();this.kind=kind;}
   render(){this.index=0;this.draw();}
   draw(){const round=this.data.rounds[this.index%this.data.rounds.length],isBarcode=this.kind==="barcode";this.current=round;this.root.innerHTML=`<div class="focus-card"><span>${isBarcode?"SANTA’S BARCODE":"TARGET GIFT SKU"}</span><strong>${round.target}</strong></div><div class="${isBarcode?"barcode-grid":"inventory-grid"}">${round.options.map((value,index)=>`<button class="${isBarcode?"barcode-parcel":"stock-card"}" data-sku="${value}">${isBarcode?'<i class="barcode"></i>':`<small>LOC ${String(index+1).padStart(2,"0")}</small>`}<strong>${value}</strong>${isBarcode?'<span>CEVA GIFT</span>':'<span>READY</span>'}</button>`).join("")}</div>`;this.root.querySelectorAll("[data-sku]").forEach(button=>this.listen(button,"click",()=>this.choose(button)));}
-  choose(button){if(this.locked||button.disabled)return;this.ctx.trace?.({type:'pick',sku:button.dataset.sku});const round=this.current,correct=button.dataset.sku===round.target;button.classList.remove("choice-correct","choice-wrong");void button.offsetWidth;button.classList.add(correct?"choice-correct":"choice-wrong",this.kind==="barcode"?"scan-result":"pick-result");this.ctx.motion?.(button,this.kind==="barcode"?"scanner-confirm":"pick-confirm",220);if(correct){this.correct++;this.index++;this.flash("✓",this.kind==="barcode"?"SCAN CORRECT":"CORRECT SKU",button);if(this.index>=this.data.rounds.length)return this.ctx.finish();this.draw();}else{button.disabled=true;this.mistakes++;this.flash("×",this.kind==="barcode"?"WRONG BARCODE":"WRONG SKU",button);this.timeout(()=>{if(this.current!==round)return;button.classList.remove("choice-wrong","scan-result","pick-result");button.disabled=false;},260);}}
+  choose(button){if(this.locked||button.disabled)return;const traceAt=this.ctx.trace?.({type:'pick',sku:button.dataset.sku});const round=this.current,correct=button.dataset.sku===round.target;button.classList.remove("choice-correct","choice-wrong");void button.offsetWidth;button.classList.add(correct?"choice-correct":"choice-wrong",this.kind==="barcode"?"scan-result":"pick-result");this.ctx.motion?.(button,this.kind==="barcode"?"scanner-confirm":"pick-confirm",220);if(correct){this.onCorrectPick?.(traceAt);this.correct++;this.index++;this.flash("✓",this.kind==="barcode"?"SCAN CORRECT":"CORRECT SKU",button);if(this.index>=this.data.rounds.length)return this.ctx.finish();this.draw();}else{button.disabled=true;this.mistakes++;this.flash("×",this.kind==="barcode"?"WRONG BARCODE":"WRONG SKU",button);this.timeout(()=>{if(this.current!==round)return;button.classList.remove("choice-wrong","scan-result","pick-result");button.disabled=false;},260);}}
   score(){return scoreStandard({correct:Math.min(this.correct,10),total:10,mistakes:this.mistakes,completed:this.correct>=10,timeRemaining:this.remaining,timeLimit:this.ctx.config.time});}
   complete(){const result=super.complete(),missed=Math.max(0,10-this.correct);return {...result,correct:this.correct,mistakes:this.mistakes+missed,attempts:10+this.mistakes,score:this.score()};}
 }
@@ -134,7 +134,9 @@ const BARCODE_CARTONS=[
 
 export class SpeedPicking extends RapidFind{
   constructor(){super("picking");}
-  score(){return scoreSpeedPicking({correct:this.correct,total:this.data.rounds.length,mistakes:this.mistakes,timeRemaining:this.remaining,timeLimit:this.ctx.config.time});}
+  render(){this.pickTimes=[];super.render();}
+  onCorrectPick(traceAt){this.pickTimes.push(Number.isFinite(traceAt)?Math.min(this.ctx.config.time,traceAt/1000):Math.max(0,this.ctx.config.time-this.remaining));}
+  score(){return scoreSpeedPicking({pickTimes:this.pickTimes,correct:this.correct,total:this.data.rounds.length,mistakes:this.mistakes,timeRemaining:this.remaining,timeLimit:this.ctx.config.time});}
   draw(){
     const round=this.data.rounds[this.index%this.data.rounds.length];this.current=round;
     if(!this.root.querySelector(".picking-locations"))this.root.innerHTML='<div class="picking-target" aria-live="polite"><span>TARGET SKU</span><strong></strong></div><div class="picking-locations"></div>';
