@@ -6,7 +6,7 @@ import { CompetitionSettings, LeaderboardManager, SqlLeaderboardStore, leaderboa
 import { ArcadeEffects, animateNumber } from "./effects.js?v=58";
 import { SeededRandom, createRunId, createRunSeed } from "./rng.js?v=20";
 import { GAME_CONFIGS, TRANSITION_SECONDS, buildCompetition, buildGameOrder } from "./tasks.js?v=69";
-import { MINIGAME_CLASSES } from "./minigames.js?v=76";
+import { MINIGAME_CLASSES } from "./minigames.js?v=77";
 import { sumScores } from "./scoring.js?v=76";
 import { StageGuard } from "./lifecycle.js?v=23";
 import { assetLoader, ASSET_PRIORITY } from "./asset-loader.js?v=20";

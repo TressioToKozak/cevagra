@@ -5,7 +5,7 @@ const assert=require('node:assert/strict');const{chromium}=require('playwright')
     await page.route('**/api/game/capabilities',route=>route.fulfill({json:{protocol:0,verifiedScores:false}}));await page.route('**/api/session',route=>route.abort());
     await page.route('**/api/leaderboard', route => route.abort());await page.route('**/api/statistics',route=>route.fulfill({json:{saved:true}}));
     page.on('pageerror',e=>errors.push(e.message));page.on('response',r=>{if(r.status()>=400)errors.push(`${r.status()} ${r.url()}`);});
- await page.goto(process.env.TEST_ORIGIN||'http://127.0.0.1:8002');await page.evaluate(async()=>{window.qa=(await import('./game.js?v=76')).manager;const {assetLoader}=await import('./asset-loader.js?v=20'),{COMPETITION_ASSETS}=await import('./asset-manifest.js?v=55');await assetLoader.preload(COMPETITION_ASSETS);});
+ await page.goto(process.env.TEST_ORIGIN||'http://127.0.0.1:8002');await page.evaluate(async()=>{window.qa=(await import('./game.js?v=77')).manager;const {assetLoader}=await import('./asset-loader.js?v=20'),{COMPETITION_ASSETS}=await import('./asset-manifest.js?v=55');await assetLoader.preload(COMPETITION_ASSETS);});
  for(const [width,height] of [[1920,1080],[1366,768],[1280,720]]){
   await page.setViewportSize({width,height});
   for(const id of ['picking','conveyor','barcode','packing','detective','loading','memory','quality','final']){
@@ -18,7 +18,7 @@ const assert=require('node:assert/strict');const{chromium}=require('playwright')
    const images=await page.locator('#minigame-root img').evaluateAll(nodes=>Promise.all(nodes.map(n=>n.decode().then(()=>n.complete&&n.naturalWidth>0))));assert(images.every(Boolean));
    for(const button of await page.locator('.lock-answer,[data-action]').all()){const r=await button.boundingBox();assert(r&&r.bottom!==null&&r.y+r.height<=height+1,`${id} confirmation fits`);}
    await page.screenshot({path:`/tmp/ceva-${id}-${width}.png`});
-   if(id==='memory'){await page.evaluate(()=>qa.active.hide());assert.equal(await page.locator('[data-remember-gift]').count(),0);assert.equal(await page.locator('[data-gift]').count(),8);await page.screenshot({path:`/tmp/ceva-memory-select-${width}.png`});}
+   if(id==='memory'){await require('./check-memory-logo.cjs')(page);await page.evaluate(()=>qa.active.hide());assert(await page.locator('.instruction-card').isVisible(),'Selection restores its instructions');assert.equal(await page.locator('[data-remember-gift]').count(),0);assert.equal(await page.locator('[data-gift]').count(),8);await page.screenshot({path:`/tmp/ceva-memory-select-${width}.png`});}
    if(id==='picking'){await page.evaluate(()=>{qa.active.index=9;qa.active.draw();});const late=await page.locator('[data-sku]').evaluateAll(nodes=>nodes.every(n=>{const r=n.getBoundingClientRect();return r.bottom<=innerHeight&&r.right<=innerWidth;}));assert(late,'late-round six-card layouts fit');await page.screenshot({path:`/tmp/ceva-${id}-late-${width}.png`});}
    console.log(`${id}: ${width}x${height} fit and asset decode passed.`);
   }
