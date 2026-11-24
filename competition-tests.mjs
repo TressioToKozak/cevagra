@@ -31,7 +31,7 @@ for(let i=0;i<500;i++){
  check(data.packing.boxes.length===10&&data.packing.boxes.reduce((s,b)=>s+b.w*b.h,0)===30,'packing variants all have ten boxes covering thirty cells');variants.add(data.packing.set);
  const solution=packingInventoryLayout(data.packing.boxes,8,5,new SeededRandom(data.packing.layoutSeed)),cells=new Set();
  for(const box of data.packing.boxes){check(existsSync(packingBoxAsset(box,box.variant)),'every box has valid artwork');const {x,y}=solution[box.id];check(x>=0&&y>=0&&x+box.w<=8&&y+box.h<=5,'packing solution stays in grid');for(let dy=0;dy<box.h;dy++)for(let dx=0;dx<box.w;dx++){const key=`${x+dx}:${y+dy}`;check(!cells.has(key),'generated packing solutions never overlap');cells.add(key);}}
- check(data.detective.solution.length===3&&data.detective.rows.filter(r=>r.expected!==r.actual).length===3,'detective has exactly three real discrepancies');
+ check([2,3,4].includes(data.detective.solution.length)&&data.detective.rows.filter(r=>r.expected!==r.actual).length===data.detective.solution.length,'detective has two to four genuine discrepancies');
  check(data.loading.solution.join()===data.loading.pallets.slice().sort((a,b)=>b.stop-a.stop).map(p=>p.id).join(),'truck physical direction is unchanged');
  check(data.memory.shipment.length===5&&data.memory.options.length===8,'memory keeps five gifts and three decoys');
  qualityCounts.set(data.quality.solution.length,(qualityCounts.get(data.quality.solution.length)||0)+1);

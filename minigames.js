@@ -1,7 +1,7 @@
 import {createPalletSealing} from "./sealing.js?v=78";
 import { SeededRandom } from "./rng.js?v=20";
-import { CARRIERS } from "./tasks.js?v=69";
-import { scoreClassification, scoreStandard, scoreSpeedPicking } from "./scoring.js?v=79";
+import { CARRIERS } from "./tasks.js?v=80";
+import { scoreClassification, scoreStandard, scoreSpeedPicking, scoreWmsDetective } from "./scoring.js?v=80";
 import { attachPointerDrag } from "./interactions.js?v=23";
 
 export function planPalletMove(slots,id,targetIndex){
@@ -315,7 +315,7 @@ export class WmsDetective extends BaseMinigame {
   }
   // Selection must not disclose correctness through the shared live-score HUD.
   get liveScore(){return this.locked?this.score():0;}
-  score(){return scoreClassification({selected:[...this.selected],timeSensitive:true,solution:this.data.solution,universe:this.data.rows.map(row=>row.id),timeRemaining:this.remaining,timeLimit:this.ctx.config.time});}
+  score(){return scoreWmsDetective({selected:[...this.selected],solution:this.data.solution,universe:this.data.rows.map(row=>row.id),timeRemaining:this.remaining,timeLimit:this.ctx.config.time});}
   complete(){const result=super.complete();const answers=new Set(this.data.solution);this.correct=this.data.rows.filter(row=>this.selected.has(row.id)===answers.has(row.id)).length;this.mistakes=this.data.rows.length-this.correct;return {...result,score:this.score(),correct:this.correct,mistakes:this.mistakes,attempts:this.data.rows.length};}
 }
 

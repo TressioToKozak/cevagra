@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import readline from 'node:readline';
 import {GAME_CONFIGS,buildGameOrder,buildCompetition} from './tasks.js';
 import {SeededRandom} from './rng.js';
-import {scoreStandard,scoreClassification,scoreSpeedPicking} from './scoring.js';
+import {scoreStandard,scoreClassification,scoreSpeedPicking,scoreWmsDetective} from './scoring.js';
 import {SealSimulation} from './sealing.js';
 const fail=message=>{throw Error(message);};
 const unique=(items,options)=>Array.isArray(items)&&new Set(items).size===items.length&&items.every(x=>options.includes(x));
@@ -34,7 +34,7 @@ export function replay({config,task,events,elapsed,completionElapsed=elapsed}){
   const options=id==='detective'?task.rows.map(x=>x.id):id==='quality'?task.parcels.map(x=>x.id):task.options;
   for(const e of events){if(id==='memory'&&e.at<3950)fail('Memory phase not finished');if(e.type==='toggle'){if(!options.includes(e.value))fail('Unknown selection');selected.has(e.value)?selected.delete(e.value):selected.add(e.value);}else if(e.type==='submit'){if(e!==events.at(-1))fail('Action after submission');if(id==='final'&&!['HOLD','RELEASE'].includes(e.action))fail('Invalid dispatch');action=e.action||null;complete=true;}else fail('Unknown action');}
   const solution=id==='memory'?task.shipment:task.solution;correct=options.filter(x=>selected.has(x)===solution.includes(x)).length;attempts=options.length;mistakes=attempts-correct;
-  score=scoreClassification({timeSensitive:['detective','quality'].includes(id),selected:[...selected],solution,universe:options,...timing(complete)});
+  score=(id==='detective'?scoreWmsDetective:scoreClassification)({timeSensitive:id==='quality',selected:[...selected],solution,universe:options,...timing(complete)});
   if(id==='final'){const remaining=timing(complete).timeRemaining;const base=solution.length?scoreClassification({selected:[...selected],solution,universe:options,timeRemaining:config.time,timeLimit:config.time,max:150}):scoreStandard({correct:selected.size===0?1:0,total:1,mistakes:selected.size,completed:selected.size===0,timeRemaining:config.time,timeLimit:config.time,max:150});score=!solution.length&&action===null?0:Math.round((base+(action===task.action?50:0))*(.25+.75*remaining/config.time));correct+=action===task.action?1:0;mistakes+=action===task.action?0:1;attempts++;}
  }else if(id==='barcode'){
   const sim=new SealSimulation();let consumed=0;for(const e of events){if(e.type!=='wrap'||!Number.isFinite(e.y)||Math.abs(e.y)>3||typeof e.holding!=='boolean'||!Number.isFinite(e.dt)||e.dt<=0||e.dt>.050001)fail('Invalid film sample');consumed+=e.dt;if(consumed>e.at/1000+.075)fail('Impossible film duration');sim.y=e.y;sim.hold(e.holding);sim.step(e.dt);}

@@ -8,7 +8,7 @@ let checks=0;const check=(condition,message)=>{checks++;assert(condition,message
 for(let i=0;i<5000;i++){
  const task=buildTask('detective',new SeededRandom(`UNIQUE-WMS-${i}`));
  check(task.rows.length===8&&new Set(task.rows.map(row=>row.location)).size===8,'eight unique locations in every WMS challenge');
- check(task.solution.length===3&&task.rows.filter(row=>row.expected!==row.actual).length===3,'exactly three genuine WMS discrepancies');
+ check([2,3,4].includes(task.solution.length)&&task.rows.filter(row=>row.expected!==row.actual).length===task.solution.length,'two to four genuine WMS discrepancies');
 }
 for(let i=0;i<100;i++){
  const task=buildTask('final',new SeededRandom(`SCORING-150-50-${i}`)),game=new MINIGAME_CLASSES.final().init({root:{},data:task,config:GAME_CONFIGS.at(-1),remaining:()=>25});
