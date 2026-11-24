@@ -7,9 +7,9 @@ const root=path.resolve(__dirname,'..','work','tutorial-recordings');
 (async()=>{const browser=await chromium.launch({executablePath:process.env.CHROMIUM_PATH||undefined,args:['--no-sandbox']});try{
 const page=await browser.newPage({viewport:{width:1366,height:768}}),errors=[];page.on('pageerror',e=>errors.push(e.message));
 await page.goto(origin);await page.evaluate(async()=>{
-window.qa=(await import('./game.js?v=79')).manager;
-window.configs=(await import('./tasks.js?v=69')).GAME_CONFIGS;
-window.make=(await import('./tasks.js?v=69')).buildCompetition;
+window.qa=(await import('./game.js?v=80')).manager;
+window.configs=(await import('./tasks.js?v=80')).GAME_CONFIGS;
+window.make=(await import('./tasks.js?v=80')).buildCompetition;
 window.RNG=(await import('./rng.js?v=20')).SeededRandom;
 await(await import('./asset-loader.js?v=20')).assetLoader.preload((await import('./asset-manifest.js?v=55')).COMPETITION_ASSETS);
 const cursor=document.createElement('img');cursor.id='recording-cursor';cursor.src='assets/cursor/pointer.png';Object.assign(cursor.style,{position:'fixed',width:'30px',height:'40px',zIndex:'999999',pointerEvents:'none',left:'-100px',top:'-100px',filter:'drop-shadow(0 2px 3px #000)'});document.body.append(cursor);

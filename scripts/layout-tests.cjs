@@ -7,8 +7,8 @@ const {chromium}=require('playwright');
   page.on('pageerror',e=>errors.push(e.message));
   await page.goto(process.env.TEST_ORIGIN||'http://127.0.0.1:8002/');
   await page.evaluate(async()=>{
-   window.qa=(await import('./game.js?v=79')).manager;
-   const tasks=await import('./tasks.js?v=69');window.configs=tasks.GAME_CONFIGS;window.make=tasks.buildCompetition;
+   window.qa=(await import('./game.js?v=80')).manager;
+   const tasks=await import('./tasks.js?v=80');window.configs=tasks.GAME_CONFIGS;window.make=tasks.buildCompetition;
    window.RNG=(await import('./rng.js?v=20')).SeededRandom;
   });
   await page.locator('#player-name').fill('Alex');
@@ -82,7 +82,7 @@ const {chromium}=require('playwright');
    await page.locator('#modal-close').click();console.log(`${width}x${height}: all screens fit; six stable pallets; email saved and hidden from ranking`);
   }
   // Every allowed city must fit both waiting and loaded pallets, including phones.
-  const cityCount=await page.evaluate(async()=>{window.cityLabels=(await import('./tasks.js?v=69')).LOADING_CITIES;return cityLabels.length;});
+  const cityCount=await page.evaluate(async()=>{window.cityLabels=(await import('./tasks.js?v=80')).LOADING_CITIES;return cityLabels.length;});
   for(const [width,height] of [[1920,1080],[1366,768],[1024,768],[390,844],[320,568]]){
    await page.setViewportSize({width,height});
    await page.evaluate(async()=>{qa.reset();document.body.classList.remove('menu-active','results-active');qa.gameConfigs=configs;qa.tasks=make('CITY-LABELS',new RNG('CITY-LABELS'));qa.index=configs.findIndex(c=>c.id==='loading');qa.playerName='CITY LABEL QA';qa.state='countdown';await qa.startGame();qa.stopTimer();});

@@ -12,6 +12,14 @@ const assert=require('node:assert/strict');
  if(events.length){assert.throws(()=>replay({config,task:t,events:[{...events[0],at:999999}],elapsed}),/time/);}
  console.log(config.id+': authoritative replay grades a legal perfect trace');
  }
+
+ const wmsCounts=new Set();
+ for(let i=0;i<100&&wmsCounts.size<3;i++){
+  const sample=plan('WMS-count-'+i),task=sample.tasks.detective,count=task.solution.length;if(wmsCounts.has(count))continue;
+  const config=sample.configs.find(c=>c.id==='detective'),events=[...task.solution.map((value,j)=>({type:'toggle',value,at:1000+j*100})),{type:'submit',at:7500}];
+  assert.equal(replay({config,task,events,elapsed:7.5}).score,({2:89,3:90,4:91})[count],'Server WMS allowance follows the generated hidden discrepancy count');wmsCounts.add(count);
+ }
+ assert.deepEqual([...wmsCounts].sort(),[2,3,4]);
  const picking=game.configs.find(c=>c.id==='picking'),task=game.tasks.picking;
  assert.throws(()=>replay({config:picking,task,events:[{type:'pick',sku:'FORGED',at:100}],elapsed:15}),/pick/);
  for(const [times,expected]of [[[3000,6000,9000,12000,15000],72],[[1000,2000,3000,4000,15000],74],[[1000,2000,3000,4000,5000],76]]){

@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { SeededRandom } from "./rng.js";
 import { ACTIVE_SECONDS, COMPETITION_SECONDS, GAME_CONFIGS, TRANSITION_SECONDS, buildCompetition, buildGameOrder } from "./tasks.js";
-import { scoreClassification, scoreStandard, scoreSpeedPicking, sumScores } from "./scoring.js";
+import { scoreClassification, scoreStandard, scoreSpeedPicking, scoreWmsDetective, sumScores } from "./scoring.js";
 import { StageGuard } from "./lifecycle.js";
 import { LeaderboardManager, normalizeName } from "./storage.js";
 import { MINIGAME_CLASSES, MEMORY_GIFT_ASSETS, FINAL_ISSUE_ASSETS, BaseMinigame, code128Svg, code128Values, gridDragAnchor, offsetGridCoordinate, packingDropCoordinate, packingBoxAsset, packingInventoryLayout, planPalletMove } from "./minigames.js";
@@ -43,7 +43,7 @@ assert(snapshotA.conveyor.parcels.length===12,"conveyor has a finite parcel set"
 assert(new Set(snapshotA.conveyor.parcels.map(parcel=>parcel.carrier)).size>1,"conveyor uses multiple carriers");
 assert(snapshotA.packing.boxes.every(box=>box.w>0&&box.h>0),"packing pieces have real dimensions");
 assert(snapshotA.packing.boxes.reduce((sum,box)=>sum+box.w*box.h,0)>=30,"packing layout uses a more challenging occupied area");
-assert(snapshotA.detective.solution.length===3,"WMS detective has equivalent discrepancy count");
+assert([2,3,4].includes(snapshotA.detective.solution.length),"WMS detective uses two to four discrepancies");
 assert(snapshotA.loading.solution.length===7,"truck loading has seven ordered pallets");
 assert(snapshotA.memory.shipment.length===5&&snapshotA.memory.options.length===8,"memory challenge has five targets and three decoys");
 assert([3,4,5].includes(snapshotA.quality.solution.length),"quality control has three to five visual issues");
@@ -102,13 +102,27 @@ assert(dragClasses.has("is-pointer-dragging"),"shared pointer drags expose a doc
 assert(container.child.style.transform==="translate3d(195px,100px,0)","drag ghost follows the pointer synchronously while preserving its grab offset");
 frames.shift()?.(performance.now());assert(target.classes.has("drag-over"),"cached target detection highlights the carrier under the pointer");
 source.dispatchEvent(pointer("pointerup",225,130));assert(dropped===target&&container.child.removed,"drop resolves the cached target and removes its ghost");assert(!dragClasses.has("is-pointer-dragging"),"completed pointer drags clear the custom cursor state");source.dispatchEvent(pointer("pointerdown",30,30));source.dispatchEvent(pointer("pointercancel",30,30));assert(!dragClasses.has("is-pointer-dragging"),"cancelled pointer drags clear the custom cursor state");detachDrag();delete global.document;
+const mismatchCounts=new Set();
 for(let run=0;run<1000;run++){
   const data=buildCompetition(`SEED-${run}`,new SeededRandom(`SEED-${run}`));
+  mismatchCounts.add(data.detective.solution.length);assert([2,3,4].includes(data.detective.solution.length),"WMS discrepancy count remains within 2–4");
   assert(data.detective.solution.every(id=>{const row=data.detective.rows.find(item=>item.id===id);return row.expected!==row.actual;}),"WMS solutions are genuine hidden mismatches");
   assert([0,2].includes(new Set(data.final.solution).size),"final discrepancies are unique");
   assert(new Set(data.loading.pallets.map(item=>item.id)).size===7,"pallet identifiers are unique");
 }
 
+assert([...mismatchCounts].sort().join()==="2,3,4","All three WMS discrepancy counts occur across seeded runs");
+// WMS difficulty changes only the small speed allowance, with a two-point spread.
+for(let remaining=0;remaining<=15;remaining+=.25){
+ const values=[2,3,4].map(count=>{const solution=Array.from({length:count},(_,i)=>'R'+i);return scoreWmsDetective({selected:solution,solution,timeRemaining:remaining,timeLimit:15});});
+ assert(values[0]<=values[1]&&values[1]<=values[2]&&values[2]-values[0]<=2,"WMS count adjustment is monotonic and stays within two points");
+ assert(values.every(n=>n>=0&&n<=100),"WMS adjustment keeps the normal score limits");
+}
+for(const [count,expected]of [[2,89],[3,90],[4,91]]){
+ const solution=Array.from({length:count},(_,i)=>'R'+i);
+ assert(scoreWmsDetective({selected:solution,solution,timeRemaining:7.5,timeLimit:15})===expected,"WMS midpoint adjustment remains subtle");
+ assert(scoreWmsDetective({selected:[],solution,timeRemaining:15,timeLimit:15})===0,"Time allowance cannot reward an empty answer");
+}
 // Balance: time matters earlier, while accurate late play still retains most points.
 for(const [elapsed,expected] of [[0,100],[.25,97],[.5,90],[.75,82],[1,75]]){
  assert(scoreStandard({correct:10,total:10,completed:true,timeRemaining:20*(1-elapsed),timeLimit:20,timeSensitive:true})===expected,"Timed tasks follow the bounded 25-point speed curve");
@@ -379,16 +393,16 @@ detectiveButtons[0].dispatchEvent(new Event("click"));
 assert(detectiveGame.selected.size===0&&!detectiveButtons[0].classes.has("selected")&&detectiveButtons[0].attributes["aria-pressed"]==="false"&&detectiveButtons[0].flag.textContent==="MARK"&&detectiveCount.textContent==="0 SELECTED"&&detectiveUpdates===2,"second WMS click restores the unflagged record without revealing accuracy");
 for(let mask=0;mask<256;mask++){
  detectiveGame.selected=new Set(detectiveData.rows.filter((_,index)=>mask&(1<<index)).map(row=>row.id));
- const expected=scoreClassification({selected:[...detectiveGame.selected],timeSensitive:true,solution:detectiveData.solution,universe:detectiveData.rows.map(row=>row.id),timeRemaining:10,timeLimit:15});
+ const expected=scoreWmsDetective({selected:[...detectiveGame.selected],solution:detectiveData.solution,universe:detectiveData.rows.map(row=>row.id),timeRemaining:10,timeLimit:15});
  assert(detectiveGame.score()===expected,`WMS combination ${mask} preserves classification scoring`);
  assert(detectiveGame.liveScore===0,`WMS combination ${mask} cannot leak correctness through live HUD points`);
 }
 const detectiveRender=MINIGAME_CLASSES.detective.prototype.render.toString();
 assert(!detectiveRender.includes("solution")&&!/MATCH|MISMATCH|row_result|status_match|status_mismatch/.test(detectiveRoot.innerHTML),"WMS rendering never reads the solution or emits answer-dependent labels and artwork");
 detectiveGame.selected=new Set(detectiveData.solution);detectiveConfirm.dispatchEvent(new Event("click"));detectiveConfirm.dispatchEvent(new Event("click"));
-assert(detectiveFinishes===1&&detectiveGame.liveScore===95,"WMS confirm calls finish exactly once and exposes the existing score only after submission");
+assert(detectiveFinishes===1&&detectiveGame.liveScore===scoreWmsDetective({selected:detectiveData.solution,solution:detectiveData.solution,timeRemaining:10,timeLimit:15}),"WMS confirm calls finish exactly once and exposes the existing score only after submission");
 const detectiveResult=detectiveGame.complete();
-assert(detectiveResult.correct===8&&detectiveResult.mistakes===0&&detectiveResult.attempts===8&&detectiveResult.score===95,"WMS perfect submission preserves accuracy, attempts, speed points and score");
+assert(detectiveResult.correct===8&&detectiveResult.mistakes===0&&detectiveResult.attempts===8&&detectiveResult.score===scoreWmsDetective({selected:detectiveData.solution,solution:detectiveData.solution,timeRemaining:10,timeLimit:15}),"WMS perfect submission preserves accuracy, attempts, speed points and score");
 const selectedBeforeCleanup=[...detectiveGame.selected].join();detectiveGame.cleanup();detectiveButtons[0].dispatchEvent(new Event("click"));detectiveConfirm.dispatchEvent(new Event("click"));
 assert([...detectiveGame.selected].join()===selectedBeforeCleanup&&detectiveFinishes===1&&detectiveGame.cleanups.length===0,"WMS cleanup detaches record and confirm handlers");
 assert(game.includes("this.active.liveScore??this.active.score()"),"only minigames explicitly overriding liveScore change their score presentation");

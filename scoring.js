@@ -17,6 +17,13 @@ export function scoreClassification({selected=[],solution=[],universe=[],timeRem
   return scoreStandard({correct,total:solution.length,mistakes,completed:perfect,timeRemaining,timeLimit,max,timeSensitive});
 }
 
+// Four mismatches allow half a second more pace tolerance; two allow half a second less.
+export function scoreWmsDetective(options={}){
+  const {solution=[],timeRemaining=0,timeLimit=15}=options;
+  const allowance=clamp(solution.length-3,-1,1)*.5;
+  return scoreClassification({...options,timeSensitive:true,timeRemaining:clamp(timeRemaining+allowance,0,timeLimit),timeLimit});
+}
+
 export const sumScores = (scores) => Math.min(1000,Object.values(scores).reduce((sum,value)=>sum+value,0));
 
 export function scoreSpeedPicking({correct=0,total=10,mistakes=0,timeRemaining=0,timeLimit=15,pickTimes=null}){
