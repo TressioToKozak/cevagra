@@ -1,3 +1,5 @@
+import {installEditingCursor} from './editing-cursor.js?v=74';
+installEditingCursor();
 import {LeaderboardManager} from './storage.js?v=64';
 const $=id=>document.getElementById(id),api=new URL('api/panel/',new URL('./',import.meta.url)),PAGE_SIZE=10;
 let rows=[],page=0,statistics=null,pendingImport=null,archiveKind='leaderboard',archivePreview=null;

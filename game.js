@@ -1,7 +1,7 @@
 import {createGameProtocol} from './game-protocol.js?v=73';
 import {createGameAnalytics} from './analytics.js?v=73';
 import {startDailyBackups} from "./backup-store.js?v=43";
-import {installEditingCursor} from "./editing-cursor.js?v=39";
+import {installEditingCursor} from "./editing-cursor.js?v=74";
 import { CompetitionSettings, LeaderboardManager, SqlLeaderboardStore, leaderboardCsv, normalizeName } from "./storage.js?v=64";
 import { ArcadeEffects, animateNumber } from "./effects.js?v=58";
 import { SeededRandom, createRunId, createRunSeed } from "./rng.js?v=20";
