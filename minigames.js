@@ -1,7 +1,7 @@
-import {createPalletSealing} from "./sealing.js?v=68";
+import {createPalletSealing} from "./sealing.js?v=76";
 import { SeededRandom } from "./rng.js?v=20";
 import { CARRIERS } from "./tasks.js?v=69";
-import { scoreClassification, scoreStandard, scoreSpeedPicking } from "./scoring.js?v=66";
+import { scoreClassification, scoreStandard, scoreSpeedPicking } from "./scoring.js?v=76";
 import { attachPointerDrag } from "./interactions.js?v=23";
 
 export function planPalletMove(slots,id,targetIndex){
@@ -291,7 +291,7 @@ export class PackingTetris extends BaseMinigame {
     this.clearPreview();this.flash("✓","BOX PACKED");
     this.ctx.motion?.(this.root.querySelector(".pallet-grid"),"pallet-confirm",220);if(this.correct===this.data.boxes.length)this.ctx.finish();
   }
-  score(){const occupied=this.cells.flat().filter(Boolean).length,total=this.data.boxes.reduce((sum,box)=>sum+box.w*box.h,0);return scoreStandard({correct:occupied,total,mistakes:this.mistakes,completed:this.correct===this.data.boxes.length,timeRemaining:this.remaining,timeLimit:this.ctx.config.time});}
+  score(){const occupied=this.cells.flat().filter(Boolean).length,total=this.data.boxes.reduce((sum,box)=>sum+box.w*box.h,0);return scoreStandard({timeSensitive:true,correct:occupied,total,mistakes:this.mistakes,completed:this.correct===this.data.boxes.length,timeRemaining:this.remaining,timeLimit:this.ctx.config.time});}
   complete(){const result=super.complete(),missed=this.data.boxes.length-this.correct;return {...result,mistakes:this.mistakes+missed,attempts:this.data.boxes.length+this.mistakes,score:this.score()};}
 }
 
@@ -313,7 +313,7 @@ export class WmsDetective extends BaseMinigame {
   }
   // Selection must not disclose correctness through the shared live-score HUD.
   get liveScore(){return this.locked?this.score():0;}
-  score(){return scoreClassification({selected:[...this.selected],solution:this.data.solution,universe:this.data.rows.map(row=>row.id),timeRemaining:this.remaining,timeLimit:this.ctx.config.time});}
+  score(){return scoreClassification({selected:[...this.selected],timeSensitive:true,solution:this.data.solution,universe:this.data.rows.map(row=>row.id),timeRemaining:this.remaining,timeLimit:this.ctx.config.time});}
   complete(){const result=super.complete();const answers=new Set(this.data.solution);this.correct=this.data.rows.filter(row=>this.selected.has(row.id)===answers.has(row.id)).length;this.mistakes=this.data.rows.length-this.correct;return {...result,score:this.score(),correct:this.correct,mistakes:this.mistakes,attempts:this.data.rows.length};}
 }
 
@@ -401,7 +401,7 @@ export class QualityControl extends BaseMinigame {
     }));
   }
   get liveScore(){return this.locked?this.score():0;}
-  score(){return scoreClassification({selected:[...this.selected],solution:this.data.solution,universe:this.data.parcels.map(parcel=>parcel.id),timeRemaining:this.remaining,timeLimit:this.ctx.config.time});}
+  score(){return scoreClassification({selected:[...this.selected],timeSensitive:true,solution:this.data.solution,universe:this.data.parcels.map(parcel=>parcel.id),timeRemaining:this.remaining,timeLimit:this.ctx.config.time});}
   complete(){const result=super.complete(),answers=new Set(this.data.solution),correct=this.data.parcels.filter(parcel=>this.selected.has(parcel.id)===answers.has(parcel.id)).length;return {...result,correct,mistakes:this.data.parcels.length-correct,attempts:this.data.parcels.length,score:this.score()};}
 }
 
