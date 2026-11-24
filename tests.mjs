@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { SeededRandom } from "./rng.js";
 import { ACTIVE_SECONDS, COMPETITION_SECONDS, GAME_CONFIGS, TRANSITION_SECONDS, buildCompetition, buildGameOrder } from "./tasks.js";
-import { scoreClassification, scoreStandard, sumScores } from "./scoring.js";
+import { scoreClassification, scoreStandard, scoreSpeedPicking, sumScores } from "./scoring.js";
 import { StageGuard } from "./lifecycle.js";
 import { LeaderboardManager, normalizeName } from "./storage.js";
 import { MINIGAME_CLASSES, MEMORY_GIFT_ASSETS, FINAL_ISSUE_ASSETS, BaseMinigame, code128Svg, code128Values, gridDragAnchor, offsetGridCoordinate, packingDropCoordinate, packingBoxAsset, packingInventoryLayout, planPalletMove } from "./minigames.js";
@@ -109,6 +109,16 @@ for(let run=0;run<1000;run++){
   assert(new Set(data.loading.pallets.map(item=>item.id)).size===7,"pallet identifiers are unique");
 }
 
+// Balance: time matters earlier, while accurate late play still retains most points.
+for(const [elapsed,expected] of [[0,100],[.25,97],[.5,90],[.75,82],[1,75]]){
+ assert(scoreStandard({correct:10,total:10,completed:true,timeRemaining:20*(1-elapsed),timeLimit:20,timeSensitive:true})===expected,"Timed tasks follow the bounded 25-point speed curve");
+}
+for(const [elapsed,expected] of [[0,100],[.25,98],[.5,91],[.75,85],[1,79]]){
+ assert(scoreSpeedPicking({correct:10,timeRemaining:15*(1-elapsed)})===expected,"Picking retains a short grace period and penalizes slower completion");
+}
+assert(scoreSpeedPicking({correct:1,timeRemaining:15})===32,"A correct early pick awards more progress points");
+assert(scoreSpeedPicking({correct:5,timeRemaining:15})===66,"Half the early picks earn 66 points");
+assert(scoreSpeedPicking({correct:5,timeRemaining:0})===58,"Slow partial picking still rewards accurate work");
 assert(scoreStandard({correct:10,total:10,completed:true,timeRemaining:15,timeLimit:15})===100,"perfect fast standard result scores 100");
 assert(scoreStandard({correct:20,total:10,completed:true,timeRemaining:99,timeLimit:15})===100,"standard score cannot exceed cap");
 assert(scoreStandard({correct:0,total:10,mistakes:10})===0,"poor standard result cannot go below zero");
@@ -288,13 +298,13 @@ qualityButtons[0].dispatchEvent(new Event("click"));
 assert(qualityGame.selected.size===0&&!qualityButtons[0].classes.has("selected")&&qualityButtons[0].attributes["aria-pressed"]==="false","a second click deselects without confirming the parcel");
 for(let mask=0;mask<256;mask++){
   qualityGame.selected=new Set(qualityData.parcels.filter((_,index)=>mask&(1<<index)).map(parcel=>parcel.id));
-  const expected=scoreClassification({selected:[...qualityGame.selected],solution:qualityData.solution,universe:qualityData.parcels.map(parcel=>parcel.id),timeRemaining:10,timeLimit:15});
+  const expected=scoreClassification({selected:[...qualityGame.selected],timeSensitive:true,solution:qualityData.solution,universe:qualityData.parcels.map(parcel=>parcel.id),timeRemaining:10,timeLimit:15});
   assert(qualityGame.score()===expected,`Quality selection ${mask} preserves classification scoring`);
 }
 qualityGame.selected=new Set(qualityData.solution);qualityLock.dispatchEvent(new Event("click"));qualityLock.dispatchEvent(new Event("click"));
 assert(qualityFinishes===1,"double-clicking LOCK confirms Quality exactly once before stage cleanup");
 const qualityResult=qualityGame.complete();
-assert(qualityResult.correct===8&&qualityResult.mistakes===0&&qualityResult.attempts===8&&qualityResult.score===100,"perfect Quality selection preserves accuracy, attempts and speed score");
+assert(qualityResult.correct===8&&qualityResult.mistakes===0&&qualityResult.attempts===8&&qualityResult.score===95,"perfect Quality selection preserves accuracy, attempts and speed score");
 qualityLock.dispatchEvent(new Event("click"));assert(qualityFinishes===1,"LOCK QUALITY CHECK calls the original stage finish callback");
 qualityGame.cleanup();qualityLock.dispatchEvent(new Event("click"));assert(qualityFinishes===1&&qualityGame.cleanups.length===0,"Quality cleanup detaches lock and parcel listeners");
 assert(!qualityRoot.innerHTML.includes("box_success")&&!qualityRoot.innerHTML.includes("box_error"),"Quality does not reveal selection correctness before lock");
@@ -363,16 +373,16 @@ detectiveButtons[0].dispatchEvent(new Event("click"));
 assert(detectiveGame.selected.size===0&&!detectiveButtons[0].classes.has("selected")&&detectiveButtons[0].attributes["aria-pressed"]==="false"&&detectiveButtons[0].flag.textContent==="MARK"&&detectiveCount.textContent==="0 SELECTED"&&detectiveUpdates===2,"second WMS click restores the unflagged record without revealing accuracy");
 for(let mask=0;mask<256;mask++){
  detectiveGame.selected=new Set(detectiveData.rows.filter((_,index)=>mask&(1<<index)).map(row=>row.id));
- const expected=scoreClassification({selected:[...detectiveGame.selected],solution:detectiveData.solution,universe:detectiveData.rows.map(row=>row.id),timeRemaining:10,timeLimit:15});
+ const expected=scoreClassification({selected:[...detectiveGame.selected],timeSensitive:true,solution:detectiveData.solution,universe:detectiveData.rows.map(row=>row.id),timeRemaining:10,timeLimit:15});
  assert(detectiveGame.score()===expected,`WMS combination ${mask} preserves classification scoring`);
  assert(detectiveGame.liveScore===0,`WMS combination ${mask} cannot leak correctness through live HUD points`);
 }
 const detectiveRender=MINIGAME_CLASSES.detective.prototype.render.toString();
 assert(!detectiveRender.includes("solution")&&!/MATCH|MISMATCH|row_result|status_match|status_mismatch/.test(detectiveRoot.innerHTML),"WMS rendering never reads the solution or emits answer-dependent labels and artwork");
 detectiveGame.selected=new Set(detectiveData.solution);detectiveConfirm.dispatchEvent(new Event("click"));detectiveConfirm.dispatchEvent(new Event("click"));
-assert(detectiveFinishes===1&&detectiveGame.liveScore===100,"WMS confirm calls finish exactly once and exposes the existing score only after submission");
+assert(detectiveFinishes===1&&detectiveGame.liveScore===95,"WMS confirm calls finish exactly once and exposes the existing score only after submission");
 const detectiveResult=detectiveGame.complete();
-assert(detectiveResult.correct===8&&detectiveResult.mistakes===0&&detectiveResult.attempts===8&&detectiveResult.score===100,"WMS perfect submission preserves accuracy, attempts, speed points and score");
+assert(detectiveResult.correct===8&&detectiveResult.mistakes===0&&detectiveResult.attempts===8&&detectiveResult.score===95,"WMS perfect submission preserves accuracy, attempts, speed points and score");
 const selectedBeforeCleanup=[...detectiveGame.selected].join();detectiveGame.cleanup();detectiveButtons[0].dispatchEvent(new Event("click"));detectiveConfirm.dispatchEvent(new Event("click"));
 assert([...detectiveGame.selected].join()===selectedBeforeCleanup&&detectiveFinishes===1&&detectiveGame.cleanups.length===0,"WMS cleanup detaches record and confirm handlers");
 assert(game.includes("this.active.liveScore??this.active.score()"),"only minigames explicitly overriding liveScore change their score presentation");
