@@ -17,6 +17,14 @@ export function scoreClassification({selected=[],solution=[],universe=[],timeRem
   return scoreStandard({correct,total:solution.length,mistakes,completed:perfect,timeRemaining,timeLimit,max,timeSensitive});
 }
 
+// Quality Control is a timed inspection: no opening grace period.
+export function scoreQualityControl(options={}){
+  const {timeRemaining=0,timeLimit=15}=options;
+  const accuracyScore=scoreClassification({...options,timeSensitive:true,timeRemaining:timeLimit,timeLimit});
+  const pace=.6+.4*clamp(timeRemaining/Math.max(.001,timeLimit),0,1);
+  return Math.round(clamp(accuracyScore*pace,0,options.max??100));
+}
+
 // Four mismatches allow half a second more pace tolerance; two allow half a second less.
 export function scoreWmsDetective(options={}){
   const {solution=[],timeRemaining=0,timeLimit=15}=options;
