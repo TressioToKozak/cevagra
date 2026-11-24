@@ -14,6 +14,11 @@ const assert=require('node:assert/strict');
  }
  const picking=game.configs.find(c=>c.id==='picking'),task=game.tasks.picking;
  assert.throws(()=>replay({config:picking,task,events:[{type:'pick',sku:'FORGED',at:100}],elapsed:15}),/pick/);
+ for(const [times,expected]of [[[3000,6000,9000,12000,15000],72],[[1000,2000,3000,4000,15000],74],[[1000,2000,3000,4000,5000],76]]){
+  const events=times.map((at,i)=>({type:'pick',sku:task.rounds[i].target,at}));
+  assert.equal(replay({config:picking,task,events,elapsed:15}).score,expected,'Server derives per-hit pace from the validated event trace, including incomplete runs');
+ }
+
  assert.throws(()=>replay({config:game.configs.find(c=>c.id==='memory'),task:game.tasks.memory,events:[{type:'toggle',value:game.tasks.memory.shipment[0],at:1}],elapsed:15}),/Memory/);
  assert.throws(()=>replay({config:game.configs.find(c=>c.id==='barcode'),task:game.tasks.barcode,events:[{type:'wrap',dt:.05,y:.5,holding:true,at:0},{type:'wrap',dt:.05,y:.5,holding:true,at:0},{type:'wrap',dt:.05,y:.5,holding:true,at:0}],elapsed:15}),/duration/);
  console.log('PASS: legal replays for all nine games and invalid tasks, phases, timestamps and film duration rejected');

@@ -25,7 +25,7 @@ export async function createGameProtocol(){
   void pending.then(()=>{if(stage.inFlight===pending)stage.inFlight=null;if(protocol.stage===stage&&protocol.game?.id===stage.gameId&&stage.events.length&&!protocol.failed)protocol.flush();});
   return pending;
  };
- protocol.record=event=>{const stage=protocol.stage;if(!stage||stage.closed||protocol.failed)return;stage.events.push({...event,at:Math.max(0,performance.now()-stage.started)});if(!stage.timer)stage.timer=setTimeout(()=>{stage.timer=null;protocol.flush();},event.type==='wrap'?200:50);};
+ protocol.record=event=>{const stage=protocol.stage;if(!stage||stage.closed||protocol.failed)return;const item={...event,at:Math.max(0,performance.now()-stage.started)};stage.events.push(item);if(!stage.timer)stage.timer=setTimeout(()=>{stage.timer=null;protocol.flush();},event.type==='wrap'?200:50);return item.at;};
  protocol.end=()=>{
   const stage=protocol.stage;if(!stage)return Promise.resolve();
   if(stage.ending)return stage.ending;

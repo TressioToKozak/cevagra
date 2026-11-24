@@ -19,10 +19,14 @@ export function scoreClassification({selected=[],solution=[],universe=[],timeRem
 
 export const sumScores = (scores) => Math.min(1000,Object.values(scores).reduce((sum,value)=>sum+value,0));
 
-export function scoreSpeedPicking({correct=0,total=10,mistakes=0,timeRemaining=0,timeLimit=15}){
-  const progress=clamp(correct/Math.max(1,total),0,1);
-  const remaining=clamp(timeRemaining/Math.max(.001,timeLimit),0,1);
-  const completion=correct>=total?10*clamp(remaining/.85,0,1):0;
-  const pace=.88+.12*clamp(remaining/.85,0,1);
-  return Math.round(clamp(90*Math.pow(progress,.45)*pace+completion-mistakes*4,0,100));
+export function scoreSpeedPicking({correct=0,total=10,mistakes=0,timeRemaining=0,timeLimit=15,pickTimes=null}){
+  const count=Math.min(Math.max(0,Math.floor(correct)),Math.max(1,total));
+  const progress=clamp(count/Math.max(1,total),0,1);
+  const elapsed=clamp(timeLimit-timeRemaining,0,timeLimit);
+  // Earn pace points on each correct hit; timeout must not erase them.
+  // Noninteractive callers without a trace use evenly spaced hits as a fallback.
+  const times=pickTimes?.length===count?pickTimes:Array.from({length:count},(_,i)=>elapsed*(i+1)/count);
+  let previous=0,pace=0;
+  for(const at of times){const response=Math.max(0,at-previous);pace+=Math.exp(-response/2.5);previous=at;}
+  return Math.round(clamp(85*Math.pow(progress,.3)+20*pace/Math.max(1,total)-mistakes*4,0,100));
 }

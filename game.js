@@ -1,13 +1,13 @@
-import {createGameProtocol} from './game-protocol.js?v=73';
-import {createGameAnalytics} from './analytics.js?v=73';
+import {createGameProtocol} from './game-protocol.js?v=79';
+import {createGameAnalytics} from './analytics.js?v=79';
 import {startDailyBackups} from "./backup-store.js?v=43";
 import {installEditingCursor} from "./editing-cursor.js?v=74";
 import { CompetitionSettings, LeaderboardManager, SqlLeaderboardStore, leaderboardCsv, normalizeName } from "./storage.js?v=64";
 import { ArcadeEffects, animateNumber } from "./effects.js?v=58";
 import { SeededRandom, createRunId, createRunSeed } from "./rng.js?v=20";
 import { GAME_CONFIGS, TRANSITION_SECONDS, buildCompetition, buildGameOrder } from "./tasks.js?v=69";
-import { MINIGAME_CLASSES } from "./minigames.js?v=78";
-import { sumScores } from "./scoring.js?v=76";
+import { MINIGAME_CLASSES } from "./minigames.js?v=79";
+import { sumScores } from "./scoring.js?v=79";
 import { StageGuard } from "./lifecycle.js?v=23";
 import { assetLoader, ASSET_PRIORITY } from "./asset-loader.js?v=20";
 import { COMMON_ASSETS, GAME_ASSETS, COMPETITION_ASSETS, GAMEPLAY_BACKGROUNDS } from "./asset-manifest.js?v=55";

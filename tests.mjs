@@ -113,12 +113,18 @@ for(let run=0;run<1000;run++){
 for(const [elapsed,expected] of [[0,100],[.25,97],[.5,90],[.75,82],[1,75]]){
  assert(scoreStandard({correct:10,total:10,completed:true,timeRemaining:20*(1-elapsed),timeLimit:20,timeSensitive:true})===expected,"Timed tasks follow the bounded 25-point speed curve");
 }
-for(const [elapsed,expected] of [[0,100],[.25,98],[.5,91],[.75,85],[1,79]]){
- assert(scoreSpeedPicking({correct:10,timeRemaining:15*(1-elapsed)})===expected,"Picking retains a short grace period and penalizes slower completion");
+for(const [elapsed,expected] of [[0,100],[.25,100],[.5,100],[.75,98],[1,96]]){
+ assert(scoreSpeedPicking({correct:10,timeRemaining:15*(1-elapsed)})===expected,"Picking retains a meaningful pace bonus for a complete run");
 }
-assert(scoreSpeedPicking({correct:1,timeRemaining:15})===32,"A correct early pick awards more progress points");
-assert(scoreSpeedPicking({correct:5,timeRemaining:15})===66,"Half the early picks earn 66 points");
-assert(scoreSpeedPicking({correct:5,timeRemaining:0})===58,"Slow partial picking still rewards accurate work");
+assert(scoreSpeedPicking({correct:1,timeRemaining:15})===45,"A correct early pick awards more progress points");
+assert(scoreSpeedPicking({correct:5,timeRemaining:15})===79,"Half the early picks earn 79 points");
+assert(scoreSpeedPicking({correct:5,timeRemaining:0})===72,"Five correct boxes at timeout exceed the former 58-point plateau");
+const slowPicks=[3,6,9,12,15],burstPicks=[1,2,3,4,15],fastPicks=[1,2,3,4,5];
+assert(scoreSpeedPicking({correct:5,timeRemaining:0,pickTimes:slowPicks})===72,"Five slower correct picks earn 72 points");
+assert(scoreSpeedPicking({correct:5,timeRemaining:0,pickTimes:burstPicks})===74,"The same count and last-hit time can still reward different response patterns");
+assert(scoreSpeedPicking({correct:5,timeRemaining:0,pickTimes:fastPicks})===76,"Fast partial picking keeps its earned pace bonus at timeout");
+assert(scoreSpeedPicking({correct:5,timeRemaining:10,pickTimes:fastPicks})===scoreSpeedPicking({correct:5,timeRemaining:0,pickTimes:fastPicks}),"Waiting until timeout cannot erase earned hit bonuses");
+assert(scoreSpeedPicking({correct:5,mistakes:1,timeRemaining:0,pickTimes:fastPicks})===72,"Wrong picks still cost four points");
 assert(scoreStandard({correct:10,total:10,completed:true,timeRemaining:15,timeLimit:15})===100,"perfect fast standard result scores 100");
 assert(scoreStandard({correct:20,total:10,completed:true,timeRemaining:99,timeLimit:15})===100,"standard score cannot exceed cap");
 assert(scoreStandard({correct:0,total:10,mistakes:10})===0,"poor standard result cannot go below zero");
