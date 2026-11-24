@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { SeededRandom } from "./rng.js";
 import { ACTIVE_SECONDS, COMPETITION_SECONDS, GAME_CONFIGS, TRANSITION_SECONDS, buildCompetition, buildGameOrder } from "./tasks.js";
-import { scoreClassification, scoreStandard, scoreSpeedPicking, scoreWmsDetective, sumScores } from "./scoring.js";
+import { scoreClassification, scoreStandard, scoreSpeedPicking, scoreWmsDetective, scoreQualityControl, sumScores } from "./scoring.js";
 import { StageGuard } from "./lifecycle.js";
 import { LeaderboardManager, normalizeName } from "./storage.js";
 import { MINIGAME_CLASSES, MEMORY_GIFT_ASSETS, FINAL_ISSUE_ASSETS, BaseMinigame, code128Svg, code128Values, gridDragAnchor, offsetGridCoordinate, packingDropCoordinate, packingBoxAsset, packingInventoryLayout, planPalletMove } from "./minigames.js";
@@ -112,6 +112,13 @@ for(let run=0;run<1000;run++){
 }
 
 assert([...mismatchCounts].sort().join()==="2,3,4","All three WMS discrepancy counts occur across seeded runs");
+// Quality time affects both perfect and imperfect answers from the first second.
+for(const [elapsed,expected]of [[0,100],[1,97],[3,92],[5,87],[7.5,80],[10,73],[15,60]]){
+ const solution=['A','B','C'];
+ assert(scoreQualityControl({selected:solution,solution,timeRemaining:15-elapsed,timeLimit:15})===expected,"Quality inspection time has a stronger continuous effect");
+}
+assert(scoreQualityControl({selected:[],solution:['A'],timeRemaining:15,timeLimit:15})===0,"Quality time cannot reward empty answers");
+assert(scoreQualityControl({selected:['A'],solution:['A','B'],timeRemaining:3,timeLimit:15})<scoreQualityControl({selected:['A'],solution:['A','B'],timeRemaining:12,timeLimit:15}),"Imperfect Quality answers also lose points over time");
 // WMS difficulty changes only the small speed allowance, with a two-point spread.
 for(let remaining=0;remaining<=15;remaining+=.25){
  const values=[2,3,4].map(count=>{const solution=Array.from({length:count},(_,i)=>'R'+i);return scoreWmsDetective({selected:solution,solution,timeRemaining:remaining,timeLimit:15});});
@@ -318,13 +325,13 @@ qualityButtons[0].dispatchEvent(new Event("click"));
 assert(qualityGame.selected.size===0&&!qualityButtons[0].classes.has("selected")&&qualityButtons[0].attributes["aria-pressed"]==="false","a second click deselects without confirming the parcel");
 for(let mask=0;mask<256;mask++){
   qualityGame.selected=new Set(qualityData.parcels.filter((_,index)=>mask&(1<<index)).map(parcel=>parcel.id));
-  const expected=scoreClassification({selected:[...qualityGame.selected],timeSensitive:true,solution:qualityData.solution,universe:qualityData.parcels.map(parcel=>parcel.id),timeRemaining:10,timeLimit:15});
+  const expected=scoreQualityControl({selected:[...qualityGame.selected],solution:qualityData.solution,universe:qualityData.parcels.map(parcel=>parcel.id),timeRemaining:10,timeLimit:15});
   assert(qualityGame.score()===expected,`Quality selection ${mask} preserves classification scoring`);
 }
 qualityGame.selected=new Set(qualityData.solution);qualityLock.dispatchEvent(new Event("click"));qualityLock.dispatchEvent(new Event("click"));
 assert(qualityFinishes===1,"double-clicking LOCK confirms Quality exactly once before stage cleanup");
 const qualityResult=qualityGame.complete();
-assert(qualityResult.correct===8&&qualityResult.mistakes===0&&qualityResult.attempts===8&&qualityResult.score===95,"perfect Quality selection preserves accuracy, attempts and speed score");
+assert(qualityResult.correct===8&&qualityResult.mistakes===0&&qualityResult.attempts===8&&qualityResult.score===87,"perfect Quality selection preserves accuracy, attempts and speed score");
 qualityLock.dispatchEvent(new Event("click"));assert(qualityFinishes===1,"LOCK QUALITY CHECK calls the original stage finish callback");
 qualityGame.cleanup();qualityLock.dispatchEvent(new Event("click"));assert(qualityFinishes===1&&qualityGame.cleanups.length===0,"Quality cleanup detaches lock and parcel listeners");
 assert(!qualityRoot.innerHTML.includes("box_success")&&!qualityRoot.innerHTML.includes("box_error"),"Quality does not reveal selection correctness before lock");

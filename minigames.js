@@ -1,7 +1,7 @@
 import {createPalletSealing} from "./sealing.js?v=78";
 import { SeededRandom } from "./rng.js?v=20";
 import { CARRIERS } from "./tasks.js?v=80";
-import { scoreClassification, scoreStandard, scoreSpeedPicking, scoreWmsDetective } from "./scoring.js?v=80";
+import { scoreClassification, scoreStandard, scoreSpeedPicking, scoreWmsDetective, scoreQualityControl } from "./scoring.js?v=81";
 import { attachPointerDrag } from "./interactions.js?v=23";
 
 export function planPalletMove(slots,id,targetIndex){
@@ -403,7 +403,7 @@ export class QualityControl extends BaseMinigame {
     }));
   }
   get liveScore(){return this.locked?this.score():0;}
-  score(){return scoreClassification({selected:[...this.selected],timeSensitive:true,solution:this.data.solution,universe:this.data.parcels.map(parcel=>parcel.id),timeRemaining:this.remaining,timeLimit:this.ctx.config.time});}
+  score(){return scoreQualityControl({selected:[...this.selected],solution:this.data.solution,universe:this.data.parcels.map(parcel=>parcel.id),timeRemaining:this.remaining,timeLimit:this.ctx.config.time});}
   complete(){const result=super.complete(),answers=new Set(this.data.solution),correct=this.data.parcels.filter(parcel=>this.selected.has(parcel.id)===answers.has(parcel.id)).length;return {...result,correct,mistakes:this.data.parcels.length-correct,attempts:this.data.parcels.length,score:this.score()};}
 }
 

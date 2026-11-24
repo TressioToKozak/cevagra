@@ -8,11 +8,17 @@ const assert=require('node:assert/strict');
  if(config.id==='loading'){events=t.solution.map((id,index)=>({type:'load',id,index,at:(index+1)*100}));events.push({type:'submit',at:1000});}
  if(['detective','quality','memory','final'].includes(config.id)){const solution=config.id==='memory'?t.shipment:t.solution;const start=config.id==='memory'?4100:100;events=solution.map((value,i)=>({type:'toggle',value,at:start+i*40}));events.push({type:'submit',...(config.id==='final'?{action:t.action}:{}),at:start+500});elapsed=config.id==='memory'?5:2;}
  if(config.id==='barcode'){const sim=new SealSimulation();for(let i=0;i<900&&!sim.sealed;i++){sim.y=sim.target;sim.hold(true);sim.step(1/60);events.push({type:'wrap',y:sim.y,holding:true,dt:1/60,at:(i+1)*1000/60});}elapsed=events.at(-1).at/1000;}
- const r=replay({config,task:t,events,elapsed});assert.equal(r.score,config.id==='final'?188:100,config.id+' perfect legal trace');assert.equal(r.mistakes,0,config.id+' legal trace mistakes');
+ const r=replay({config,task:t,events,elapsed});assert.equal(r.score,config.id==='final'?188:config.id==='quality'?95:100,config.id+' perfect legal trace');assert.equal(r.mistakes,0,config.id+' legal trace mistakes');
  if(events.length){assert.throws(()=>replay({config,task:t,events:[{...events[0],at:999999}],elapsed}),/time/);}
  console.log(config.id+': authoritative replay grades a legal perfect trace');
  }
 
+
+ const quality=game.configs.find(c=>c.id==='quality'),inspection=game.tasks.quality;
+ for(const [elapsed,expected]of [[3,92],[7.5,80],[15,60]]){
+  const events=[...inspection.solution.map((value,i)=>({type:'toggle',value,at:100+i*40})),{type:'submit',at:elapsed*1000}];
+  assert.equal(replay({config:quality,task:inspection,events,elapsed}).score,expected,'Server Quality scoring decays from the first second');
+ }
  const wmsCounts=new Set();
  for(let i=0;i<100&&wmsCounts.size<3;i++){
   const sample=plan('WMS-count-'+i),task=sample.tasks.detective,count=task.solution.length;if(wmsCounts.has(count))continue;
