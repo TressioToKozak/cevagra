@@ -44,3 +44,8 @@ tbody tr:nth-child(even){background:#142b414d}tbody tr:hover{background:#2044616
 @media(max-width:700px){.results-card table{min-width:570px}.wide-dialog{padding:20px}.archive-entry{align-items:flex-start;flex-direction:column}.archive-entry .toolbar{width:100%;justify-content:flex-start}.statistics-tools{gap:8px}.statistics-tools button{padding:10px 12px}.hidden-badge{margin-left:6px}.preview-content th,.preview-content td{padding:10px;font-size:12px}}
 
 .action-icon{width:16px;height:16px;flex:0 0 16px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}.panel-link{display:inline-flex;align-items:center;justify-content:center;gap:9px}#open-backups .action-icon,#statistics-backups .action-icon{color:#ffd46f}#upload-leaderboard .action-icon,#upload-statistics .action-icon,#open-statistics .action-icon{color:#7bdcff}
+
+/* Keep the pointer visible when the OS hides it during credential entry. */
+.login-card input{caret-color:#ffd779}
+html.editing-cursor-active,html.editing-cursor-active *{cursor:none!important}
+.editing-cursor{position:fixed;width:64px;height:64px;z-index:2147483647;pointer-events:none;user-select:none;-webkit-user-drag:none;max-width:none}.editing-cursor[hidden]{display:none}
